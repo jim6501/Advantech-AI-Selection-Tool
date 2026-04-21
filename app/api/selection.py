@@ -1,0 +1,223 @@
+from fastapi import APIRouter, HTTPException
+from typing import List, Dict
+from app.database import Database
+from app.models.selection import SubmitProdRequest, SubmitProdResponse, ProductItemResponse, SearchFeatureItem
+
+router = APIRouter()
+
+# =========================================================================
+# 【維護性設計】硬體進階條件對應表（Dict + Callable）
+# 由於 software category key 中含有 "." 字元（如 "VLAN(IEEE 802.1Q)"），
+# MongoDB dot-notation 會將 "." 誤解為路徑分隔符，導致查詢失敗。
+# 解決方案：軟體查詢改用 $expr + $getField，硬體查詢沿用 dot-notation。
+# =========================================================================
+base_hardware_mappings = {
+
+    "has_poe": lambda: {"$or": [
+        {"hardware.PoE RJ-45 100M": {"$regex": "^[1-9]"}},
+        {"hardware.PoE RJ-45 GbE": {"$regex": "^[1-9]"}},
+        {"hardware.PoE (D-code)": {"$regex": "^[1-9]"}},
+        {"hardware.PoE (X-code)": {"$regex": "^[1-9]"}}
+    ]},
+    "has_fiber": lambda: {"$or": [
+        {"hardware.Fiber 100M": {"$regex": "^[1-9]"}},
+        {"hardware.Fiber Gigabit": {"$regex": "^[1-9]"}},
+        {"hardware.Fiber GE Combo": {"$regex": "^[1-9]"}},
+        {"hardware.Fiber 10G": {"$regex": "^[1-9]"}}
+    ]},
+    "has_rj45": lambda: {"$or": [
+        {"hardware.RJ-45 10/100M": {"$regex": "^[1-9]"}},
+        {"hardware.RJ-45 Gigabit": {"$regex": "^[1-9]"}},
+        {"hardware.RJ-45 Combo": {"$regex": "^[1-9]"}},
+        {"hardware.RJ-45 10GbE": {"$regex": "^[1-9]"}}
+    ]},
+    "temp_wide": lambda: {"hardware.Temperature": {"$in": ["Wide", "wide", "T", "Wide Temp"]}}
+}
+
+# 三態值中合法的「有支援」值
+SW_SUPPORTED_VALUES = ["full",  "optional"] #"in_development" 先拿掉，算是尚不支援
+# 三態值欄位允許的所有值（排除非三態值字串如 "256", "8K"）
+SW_VALID_VALUES = set(SW_SUPPORTED_VALUES + ["no", ""])
+
+# =========================================================================
+# 【動態快取設計】
+# DYNAMIC_SW_MAPPINGS: 用於查詢，格式 { "item_key": {"category": "...", "feat_key": "..."} }
+# SEARCHABLE_ITEMS:   用於前端搜尋清單回傳。
+#
+# 關鍵設計：採用 "category|||feat_key" 作為唯一的 item_key。
+# 為什麼用 "|||"？
+# 1. 它是自訂分隔符（膠帶），把分類與功能捆在一起傳給前端。
+# 2. 避開 "." 字元：分類名（如 802.1Q）若含點，用 "." 分隔會導致 MongoDB 路徑解析錯誤。
+# 3. 唯一性：此符號極少出現在規格書中，拆解時非常安全。
+# =========================================================================
+DYNAMIC_SW_MAPPINGS: Dict[str, Dict[str, str]] = {}
+SEARCHABLE_ITEMS: List[SearchFeatureItem] = []
+
+
+def make_sw_expr_query(category: str, feat_key: str) -> dict:
+    """
+    使用 MongoDB $expr + $getField 建構軟體功能查詢。
+    可正確處理 category/feat_key 中含有 "." 等特殊字元的情況（dot-notation 無法處理）。
+    """
+    return {
+        "$expr": {
+            "$in": [
+                {
+                    "$getField": {
+                        "field": feat_key,
+                        "input": {
+                            "$getField": {
+                                "field": category,
+                                "input": "$software"
+                            }
+                        }
+                    }
+                },
+                SW_SUPPORTED_VALUES
+            ]
+        }
+    }
+
+
+def load_dynamic_mappings_if_needed():
+    """
+    從資料庫動態掃描所有軟體功能，建立搜尋對應表（快取於記憶體）。
+    高維護性：無需手動維護 65 項功能清單，Google Sheet 新增欄位即自動感知。
+    """
+    if SEARCHABLE_ITEMS:
+        return
+
+    db = Database.get_db()
+    sample_doc = db.product_specs.find_one({"software": {"$exists": True, "$ne": {}}})
+    if not sample_doc:
+        return
+
+    sw_data = sample_doc.get("software", {})
+
+    # 載入手動定義的硬體進階條件
+    for hd_key in base_hardware_mappings.keys():
+        SEARCHABLE_ITEMS.append(SearchFeatureItem(
+            label=hd_key.replace("_", " ").title(),
+            key=hd_key,
+            category="Hardware Feature"
+        ))
+
+    # 動態展開所有軟體功能：
+    # 這裡採「資料驅動」設計，程式會自動掃描 MongoDB 中的文件結構。
+    # 優點：未來 Google Sheet 新增功能分類，不需修改後端代碼，重啟即自動支援。
+    for category, features in sw_data.items():
+        if not isinstance(features, dict):
+            continue
+        for feat_key, feat_val in features.items():
+            # 【重要過濾邏輯】
+            # 只加入「三態值」欄位（如 full/optional/no/in_development）。
+            # 會跳過「純數值」或描述性欄位（如 "Max. Groups": "256" 或 "8K"）。
+            # 這是因為選型工具主要是找「有無支援該功能」，而非搜尋特定數據。
+            if feat_val not in SW_VALID_VALUES:
+                continue
+
+            # 封裝：將分類與功能名稱用 ||| 捆在一起
+            item_key = f"{category}|||{feat_key}"
+            DYNAMIC_SW_MAPPINGS[item_key] = {"category": category, "feat_key": feat_key}
+            SEARCHABLE_ITEMS.append(SearchFeatureItem(
+                label=feat_key,
+                key=item_key,
+                category=category
+            ))
+
+
+@router.get("/searchProdType", response_model=List[SearchFeatureItem])
+def search_product_features(q: str = ""):
+    """
+    即時搜尋 API：模糊比對所有軟硬體特徵（大小寫不敏感），供前端產生下拉選單。
+    """
+    try:
+        load_dynamic_mappings_if_needed()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"DB mapping init error: {str(e)}")
+
+    query_lower = q.lower()
+    results = [
+        item for item in SEARCHABLE_ITEMS
+        if query_lower in item.label.lower() or query_lower in item.category.lower()
+    ]
+    return results[:20]
+
+
+@router.post("/submitProdType", response_model=SubmitProdResponse)
+def submit_product_selection(req: SubmitProdRequest):
+    """
+    條件篩選 API：從 product_specs 篩出符合軟硬體條件的產品。
+    所有過濾均在 MongoDB 層執行（$and 組合），不在 Python 端做迴圈過濾。
+    """
+    db = Database.get_db()
+
+    try:
+        load_dynamic_mappings_if_needed()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"DB connection error: {str(e)}")
+
+    # Step 1：組裝基本硬體條件（直接對應資料庫原始欄位）
+    and_conditions = [
+        {"hardware.PLM Lifecycle": {"$nin": ["EOL", "Phase Out"]}}
+    ]
+
+    if req.type != "ALL":
+        and_conditions.append({"hardware.Function": req.type})
+
+    if req.portnum != -1:
+        # Port Numbers 在 DB 中以字串儲存
+        and_conditions.append({"hardware.Port Numbers": str(req.portnum)})
+
+    if req.application != "ALL":
+        and_conditions.append({"hardware.Application": req.application})
+
+    # Step 2：組裝軟硬體特徵條件
+    for requested_key in req.items:
+        if requested_key in DYNAMIC_SW_MAPPINGS:
+            # 軟體功能處理：
+            # 1. 將組合鍵拆解回原始的 category 與 feat_key。
+            # 2. 使用 $expr + $getField 避開 MongoDB dot-notation 對特殊字元的限制。
+            mapping = DYNAMIC_SW_MAPPINGS[requested_key]
+            and_conditions.append(make_sw_expr_query(mapping["category"], mapping["feat_key"]))
+        elif requested_key in base_hardware_mappings:
+            # 硬體進階條件：直接用 dict 合併
+            and_conditions.append(base_hardware_mappings[requested_key]())
+        # 未知 key 直接跳過，不中斷查詢
+
+    # Step 3：組合為單一 $and 查詢，一次打給 MongoDB
+    final_query = {"$and": and_conditions} if len(and_conditions) > 1 else and_conditions[0]
+
+    try:
+        matched_products = list(db.product_specs.find(final_query))
+    except Exception as e:
+        print(f"DB Query Error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to query products from database.")
+
+    # Step 4：映射資料庫欄位至前端顯示格式
+    def safe_int(v):
+        if not v:
+            return 0
+        try:
+            return int(str(v).strip())
+        except (ValueError, TypeError):
+            return 0
+
+    response_items = []
+    for doc in matched_products:
+        hw = doc.get("hardware", {})
+        response_items.append(ProductItemResponse(
+            prod_name=doc.get("product_pn", "Unknown"),
+            prod_model=doc.get("model_name", hw.get("Model Name", "Unknown")),
+            prod_type=hw.get("Function", "Unknown"),
+            prod_portnum=safe_int(hw.get("Port Numbers")),
+            prod_rj_100=safe_int(hw.get("RJ-45 10/100M")),
+            prod_rj_giga=safe_int(hw.get("RJ-45 Gigabit")),
+            prod_rj_100_combo=safe_int(hw.get("RJ-45 Combo")),
+            prod_fiber_100=safe_int(hw.get("Fiber 100M")),
+            prod_fiber_giga=safe_int(hw.get("Fiber Gigabit")),
+            prod_fiber_ge_combo=safe_int(hw.get("Fiber GE Combo")),
+            prod_w_n=hw.get("Temperature", "Normal")
+        ))
+
+    return SubmitProdResponse(products=response_items)
