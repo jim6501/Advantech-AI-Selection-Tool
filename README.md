@@ -46,7 +46,28 @@
 uv sync
 ```
 
-### 2. 啟動後端
+### 2. 設定金鑰與環境變數 (重要)
+由於安全因素，憑證檔案已被 Git 忽略。啟動前請確保 `configs/` 資料夾內包含以下檔案：
+
+#### A. 建立 `configs/.env`
+根據專案根目錄的 `.env.example` 建立，填入您的金鑰資訊：
+
+> [!TIP]
+> **注意**：`.env` 檔案必須放在 `configs/` 資料夾內（路徑為 `configs/.env`），因為專案腳本與後端程式已固定從該路徑讀取。
+
+```ini
+GOOGLE_SHEET_ID="您的_GOOGLE_SHEET_ID"
+GOOGLE_CREDENTIALS_PATH="configs/credentials.json"
+MONGO_URI="您的_MONGODB_連線字串"
+MONGO_DB_NAME="advantech_ind_sw_tool"
+```
+
+#### B. 放入 `configs/credentials.json`
+- 請從 Google Cloud Console 下載服務帳戶 (Service Account) 的 JSON 金鑰。
+- 檔案名稱請命名為 `credentials.json` 並放入 `configs/` 資料夾。
+- **注意**：請確保該服務帳戶對於您指定的 Google Sheet 擁有「檢視」權限。
+
+### 3. 啟動後端
 若需允許**其他電腦**連線（區域網路），啟動時必須指定 `--host 0.0.0.0`：
 ```bash
 # 啟動 FastAPI (允許外部連線)
