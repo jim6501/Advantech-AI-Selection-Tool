@@ -1012,6 +1012,7 @@
             <table class="data-display">
                 <thead>
                     <tr>
+                        <th>No.</th>
                         <th>Model Name</th>
                         <th>Type</th>
                         <th>Total Port</th>
@@ -1271,9 +1272,10 @@
                             renderSelected();
                             renderFilterTags();
 
-                            data_list.forEach(item => {
+                            data_list.forEach((item, index) => {
                                 const row = document.createElement('tr');
                                 row.innerHTML = `
+                    <td>${index + 1}</td>
                     <td>${item.prod_model}</td>
                     <td>${item.prod_type}</td>
                     <td>${item.prod_portnum || 0}</td>
