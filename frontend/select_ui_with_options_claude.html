@@ -1290,9 +1290,21 @@
                                 tableBody.appendChild(row);
                             });
                         } else {
-                            // 第一次搜尋就沒結果（無 snapshot 可比較），只清空顯示
-                            renderSelected();
-                            renderFilterTags();
+                            // 第一次搜尋就沒結果（無 snapshot 可比較），將所有條件都標示為紅色
+                            const allCulprits = {
+                                mgmt: !!thisSnapshot.mgmt,
+                                port: !!thisSnapshot.port
+                            };
+                            const allCulpritItems = new Set(thisSnapshot.items);
+
+                            renderSelected(allCulpritItems);
+                            renderFilterTags(allCulprits);
+
+                            const hint = document.createElement('div');
+                            hint.id = 'zeroResultHint';
+                            hint.className = 'zero-result-hint';
+                            hint.innerHTML = '⚠ 無符合產品。標示為紅色的條件是可能導致無結果的篩選項，請嘗試放寬條件。';
+                            document.querySelector('.lower-part.card').appendChild(hint);
                         }
 
                         updateContextBar();
