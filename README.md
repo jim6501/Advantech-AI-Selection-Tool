@@ -47,13 +47,23 @@ uv sync
 ```
 
 ### 2. 啟動後端
+若需允許**其他電腦**連線（區域網路），啟動時必須指定 `--host 0.0.0.0`：
 ```bash
-# 啟動 FastAPI (預設 Port 8000)
-uv run uvicorn app.main:app --reload
+# 啟動 FastAPI (允許外部連線)
+uv run uvicorn app.main:app --reload --host 0.0.0.0
 ```
 
-### 3. 使用前端
-直接在瀏覽器中開啟 `frontend/select_ui_with_options_claude.html` 即可開始使用。
+### 3. 使用前端 (兩路徑)
+
+#### A. 透過後台直接存取 (推薦)
+啟動後端後，直接在瀏覽器輸入您的 IP。這會自動處理 API 位址偵測，最適合多人使用：
+- **本機使用**：`http://localhost:8000`
+- **其他電腦連線**：`http://您的電腦IP:8000` (例如 `http://192.168.1.50:8000`)
+
+#### B. 點擊 HTML 檔案開啟
+直接在瀏覽器中開啟 `frontend/select_ui_with_options_claude.html`。
+> [!IMPORTANT]
+> 此方式下網頁會預設嘗試連線至 `127.0.0.1:8000`。若後台沒開在同一台電腦，搜尋功能將失效。
 
 ## 📅 資料維護與同步步驟 (Google Sheets)
 

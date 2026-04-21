@@ -1,7 +1,8 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pymongo.errors import PyMongoError
 
 from app.database import Database
@@ -57,8 +58,8 @@ app.include_router(selection.router, prefix="/api", tags=["Selection"])
 
 @app.get("/")
 def root():
-    return {
-        "message": "Advantech AI Selection Tool API is running.",
-        "docs": "/docs",
-        "version": "1.0.0",
-    }
+    # 當使用者存取後台根目錄時，直接回傳前端 HTML 介面
+    return FileResponse("frontend/select_ui_with_options_claude.html")
+
+# 掛載整個 frontend 資料夾作為靜態檔案，允許存取 /frontend/xxx.html (例如開啟其他分頁)
+app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")

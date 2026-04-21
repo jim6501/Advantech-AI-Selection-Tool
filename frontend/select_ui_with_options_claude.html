@@ -10,7 +10,7 @@
          已全面整合至單一 FastAPI (Port 8000)
     ═══════════════════════════════════════════════════════════════════════════ -->
     <script>
-        const API_BASE = "http://127.0.0.1:8000"; // 單一整合後端端點
+        // API_BASE 現在已移至下方動態偵測 (detectApiBase)
     </script>
 
     <link
@@ -1070,6 +1070,28 @@
 
     <script>
         // ═══════════════════════════════════════════════
+        // API 位址自動偵測 (Auto-detect API Base URL)
+        // ─────────────────────────────────────────────
+        // 規則：
+        //   1. file:// 或 localhost → 使用本機後台 (預設 8000 port)
+        //   2. 其他網域 → 使用相同主機的相同 port，自動對齊部署環境
+        //
+        // 若本機後台使用非 8000 的 port，請修改下方的 LOCAL_PORT 常數。
+        // ═══════════════════════════════════════════════
+        const LOCAL_PORT = 8000;
+
+        function detectApiBase() {
+            const { protocol, hostname } = window.location;
+            if (protocol === 'file:' || hostname === 'localhost' || hostname === '127.0.0.1') {
+                return `http://127.0.0.1:${LOCAL_PORT}`;
+            }
+            return window.location.origin;
+        }
+
+        const API_BASE = detectApiBase();
+        console.log(`[API] 後台連線位址: ${API_BASE}`);
+
+        // ═══════════════════════════════════════════════
         // Selection Tool 原有邏輯
         // ═══════════════════════════════════════════════
         let selectedItemsMap = {}; // 改用物件來儲存特徵 key-value
@@ -1078,7 +1100,8 @@
         const numInput = document.getElementById('numInput');
 
         function submitProductCreate() {
-            window.open("product_create.html", "_blank");
+            // 現已由 FastAPI 接管，路徑需指定掛載的 /frontend 資料夾
+            window.open("/frontend/product_create.html", "_blank");
         }
 
         document.getElementById("searchInput").addEventListener("input", function () {
