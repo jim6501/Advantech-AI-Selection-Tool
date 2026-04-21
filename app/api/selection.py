@@ -217,7 +217,7 @@ def submit_product_selection(req: SubmitProdRequest):
             prod_fiber_100=safe_int(hw.get("Fiber 100M")),
             prod_fiber_giga=safe_int(hw.get("Fiber Gigabit")),
             prod_fiber_ge_combo=safe_int(hw.get("Fiber GE Combo")),
-            prod_w_n=hw.get("Temperature", "Normal")
+            prod_w_n=hw.get("Temp Grade", "Normal")
         ))
 
     return SubmitProdResponse(products=response_items)
