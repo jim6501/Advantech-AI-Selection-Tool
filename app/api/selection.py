@@ -31,7 +31,7 @@ base_hardware_mappings = {
         {"hardware.RJ-45 Combo": {"$regex": "^[1-9]"}},
         {"hardware.RJ-45 10GbE": {"$regex": "^[1-9]"}}
     ]},
-    "temp_wide": lambda: {"hardware.Temperature": {"$in": ["Wide", "wide", "T", "Wide Temp"]}}
+    "temp_wide": lambda: {"hardware.Temp Grade": {"$in": ["Wide", "wide", "T", "Wide Temp"]}}
 }
 
 # 三態值中合法的「有支援」值
@@ -166,8 +166,15 @@ def submit_product_selection(req: SubmitProdRequest):
         and_conditions.append({"hardware.Function": req.type})
 
     if req.portnum != -1:
-        # Port Numbers 在 DB 中以字串儲存
-        and_conditions.append({"hardware.Port Numbers": str(req.portnum)})
+        # Port Numbers 在 DB 中以字串儲存，使用 $expr + $toInt 做 >= 比較
+        and_conditions.append({
+            "$expr": {
+                "$gte": [
+                    {"$toInt": {"$ifNull": ["$hardware.Port Numbers", "0"]}},
+                    req.portnum
+                ]
+            }
+        })
 
     if req.application != "ALL":
         and_conditions.append({"hardware.Application": req.application})
