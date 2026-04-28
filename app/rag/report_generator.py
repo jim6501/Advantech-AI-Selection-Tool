@@ -40,12 +40,13 @@ def _summarize_doc(doc: dict) -> dict:
         "application":  hw.get("Application", ""),
         "lifecycle":    hw.get("PLM Lifecycle", ""),
         "software":     sw_supported,
-        # Port 細節
-        "rj45_100m":    hw.get("RJ-45 10/100M", "0"),
-        "rj45_gige":    hw.get("RJ-45 Gigabit", "0"),
-        "fiber_gige":   hw.get("Fiber Gigabit", "0"),
-        "fiber_10g":    hw.get("Fiber 10G", "0"),
-        "poe_gbe":      hw.get("PoE RJ-45 GbE", "0"),
+        # Port 細節 (動態抓取非零的連接埠資訊，支援 Train SW 與 Ind SW)
+        "ports": {
+            k: v for k, v in hw.items()
+            if any(keyword in k for keyword in ["RJ-45", "Fiber", "PoE", "Combo", "D-code", "X-code", "10G", "100M"])
+            and "驗證" not in k
+            and v not in (0, "0", "", None, "None")
+        }
     }
 
 
