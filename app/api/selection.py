@@ -102,6 +102,16 @@ def load_dynamic_mappings_if_needed():
             category="Hardware Feature"
         ))
 
+    # 動態取得所有硬體 Application，也放到模糊篩選選項
+    distinct_apps = db.product_specs.distinct("hardware.Application")
+    for app_val in distinct_apps:
+        if app_val and isinstance(app_val, str) and app_val.strip() != "None":
+            SEARCHABLE_ITEMS.append(SearchFeatureItem(
+                label=app_val,
+                key=f"application|||{app_val}",
+                category="Application"
+            ))
+
     # 動態展開所有軟體功能：
     # 這裡採「資料驅動」設計，程式會自動掃描 MongoDB 中的文件結構。
     # 優點：未來 Google Sheet 新增功能分類，不需修改後端代碼，重啟即自動支援。
@@ -187,6 +197,10 @@ def submit_product_selection(req: SubmitProdRequest):
             # 2. 使用 $expr + $getField 避開 MongoDB dot-notation 對特殊字元的限制。
             mapping = DYNAMIC_SW_MAPPINGS[requested_key]
             and_conditions.append(make_sw_expr_query(mapping["category"], mapping["feat_key"]))
+        elif requested_key.startswith("application|||"):
+            # 動態 Application 處理
+            app_val = requested_key.split("|||")[1]
+            and_conditions.append({"hardware.Application": app_val})
         elif requested_key in base_hardware_mappings:
             # 硬體進階條件：直接用 dict 合併
             and_conditions.append(base_hardware_mappings[requested_key]())

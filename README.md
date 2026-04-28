@@ -20,20 +20,26 @@
 - **後端 (Backend)**: Python 3.10+, FastAPI, MongoDB
 - **前端 (Frontend)**: Vanilla HTML5, CSS3 (Glassmorphism design), JavaScript (ES6+)
 - **資料處理**: Pymongo, Uvicorn, UV Package Manager
-- **AI 整合**: RAG 虛擬架構 (整合中)
+- **AI 整合**: RAG 架構 (Phase 1 完成，準備進入 Phase 2 Vector Search)
 
 ## 📂 專案架構
 
 ```text
 .
 ├── app/
-│   ├── api/           # API 路由 (如 selection.py)
-│   ├── models/        # Pydantic 資料模型
+│   ├── api/           # API 路由 (selection.py, chat.py)
+│   ├── models/        # Pydantic 資料模型 (selection.py, chat.py)
+│   ├── rag/           # RAG 三階段管線 (intent_parser, hard_filter, report_generator)
 │   ├── database.py    # MongoDB 連線封裝
+│   ├── llm_gateway.py # LLM 統一呼叫層與用量控管
 │   └── main.py        # FastAPI 進入點
 ├── frontend/
+│   ├── css/           # 獨立樣式表 (style.css)
+│   ├── js/            # 獨立邏輯腳本 (app.js)
 │   └── select_ui_with_options_claude.html  # 主選型介面
-├── scratch/           # 開發除錯腳本
+├── configs/           # 環境變數與金鑰目錄 (.env, credentials.json)
+├── logs/              # 系統日誌 (如 llm_usage.log)
+├── scripts/           # 資料擷取與同步腳本
 └── README.md
 ```
 
@@ -116,10 +122,16 @@ uv run scripts/sync_specs_to_mongo.py
 > 同步過程會自動根據 Product PN 推導軟體系列，若無法配對，預設會回退至最新版的軟體規格。您可以查看 `data/validation_report.json` 確認哪些型號配對失敗。
 
 ## 📈 現階段更新紀錄 (Stage 1)
-- [x] 完成 MongoDB 動態特徵掃描邏輯。
+- [x] 完成 MongoDB 動態特徵掃描邏輯與三態值優化。
 - [x] 修正 PoE 與 RJ-45 欄位匹配邏輯（包含 M12 D-code/X-code 支援）。
-- [x] 優化 AI 助手型號鎖定欄位的展開/收起互動介面。
-- [x] 建立自動化特徵對應表，無需手動維護功能清單。
+- [x] 建立自動化特徵對應表，無需手動維護功能清單，並將 Application 動態野放至搜尋選項。
+- [x] 前端程式碼模組化重構 (分離 HTML/CSS/JS)，優化 Glassmorphism UI。
+- [x] **完成 RAG Chatbot Phase 1 基礎建設**：
+  - 實作 3-Stage Pipeline（意圖解析、資料庫篩選、報告生成）。
+  - 實作具備 RPM 限流與 Retry 機制的 LLM Gateway。
+  - 修正非同步事件迴圈阻塞問題，確保 Chatbot 思考時介面不卡頓。
+  - 優化 Chatbot 介面「📄 參考型號」的收納互動與 Chip 視覺。
+  - 升級至最新 `google-genai` SDK，配置 `gemini-2.5-flash` 模型。
 
 ---
-© 2024 Advantech | AI Selection Tool Project
+© 2026 Advantech | AI Selection Tool Project

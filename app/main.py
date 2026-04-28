@@ -7,6 +7,8 @@ from pymongo.errors import PyMongoError
 
 from app.database import Database
 from app.api import selection
+from app.api import chat
+from app.llm_gateway import get_gateway
 
 
 @asynccontextmanager
@@ -14,6 +16,7 @@ async def lifespan(app: FastAPI):
     """App 生命週期管理：啟動時連線 MongoDB，關閉時釋放資源"""
     print("[START] FastAPI App Starting...")
     Database.connect_db()
+    get_gateway()  # 預先初始化 LLM Gateway（驗證 API Key 是否設定正確）
     yield
     print("[STOP] FastAPI App Shutting Down...")
     Database.close_db()
@@ -54,6 +57,7 @@ async def pymongo_exception_handler(request: Request, exc: PyMongoError):
 # 掛載 API 路由
 # =========================================================================
 app.include_router(selection.router, prefix="/api", tags=["Selection"])
+app.include_router(chat.router,      prefix="/api", tags=["Chatbot"])
 
 
 @app.get("/")

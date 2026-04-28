@@ -15,4 +15,7 @@ configs/*.json
 configs/*.env
 credentials.json
 validation_report.json
-Plan/
+
+# Logs & temporary data
+logs/
+data/*.json
