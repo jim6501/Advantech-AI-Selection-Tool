@@ -83,6 +83,9 @@ body {
     box-shadow: 0 2px 12px rgba(0, 51, 102, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
     position: relative; overflow: hidden;
 }
+/* right-part 需要能撐開顯示完整內容，不裁切 */
+.right-part.card { overflow: visible; }
+
 .card::before {
     content: '';
     position: absolute; top: 0; left: 0; right: 0; height: 3px;
@@ -397,6 +400,124 @@ select:focus, input[type="text"]:focus {
     background: #fff5f5; border: 1px solid #fca5a5;
     border-radius: var(--radius-sm); padding: 10px 14px;
     font-size: 0.8rem; color: #b91c1c; margin-top: 10px; font-weight: 500;
+}
+
+/* ── SCENE TEMPLATE ──────────────────────────── */
+.scene-section {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed var(--adv-border);
+}
+.scene-section > label {
+    font-size: 0.72rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+.scene-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.scene-btn {
+    border: 1.5px solid var(--adv-border); border-radius: var(--radius-sm);
+    padding: 10px 12px; background: var(--adv-gray);
+    cursor: pointer; text-align: left; line-height: 1.3;
+    font-family: 'IBM Plex Sans', sans-serif;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.scene-btn:hover {
+    border-color: var(--adv-accent); background: var(--adv-light-blue);
+    transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,51,102,0.1);
+}
+.scene-btn.active {
+    border-color: var(--adv-blue); background: var(--adv-light-blue);
+    box-shadow: 0 0 0 2px rgba(0,51,102,0.18);
+}
+.scene-btn-icon { font-size: 1.1rem; display: block; margin-bottom: 4px; }
+.scene-btn-name { font-weight: 600; font-size: 0.82rem; color: var(--adv-blue); display: block; }
+.scene-btn-desc { font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 1px; }
+.scene-clear-link {
+    background: none; border: none; cursor: pointer; display: block;
+    font-size: 0.73rem; color: var(--text-muted); padding: 4px 0; margin-top: 6px;
+    text-decoration: underline; font-family: 'IBM Plex Sans', sans-serif;
+    transition: color 0.15s;
+}
+.scene-clear-link:hover { color: #b91c1c; }
+
+/* 場景按鈕已修改狀態（橘色） */
+.scene-btn.scene-modified {
+    border-color: #d4a017;
+    background: #fef9e7;
+    box-shadow: 0 0 0 2px rgba(212,160,23,0.2);
+}
+.scene-btn.scene-modified .scene-btn-name { color: #7a5800; }
+.scene-btn.scene-modified .scene-btn-desc  { color: #a07020; }
+
+/* 恢復預設按鈕 */
+.scene-restore-btn {
+    background: none; border: none; cursor: pointer; display: block;
+    font-size: 0.73rem; color: #d4a017; padding: 4px 0; margin-top: 2px;
+    text-decoration: underline; font-family: 'IBM Plex Sans', sans-serif;
+    transition: color 0.15s;
+}
+.scene-restore-btn:hover { color: #7a5800; }
+
+/* 條件被改過 Tag（橘色警示） */
+.filter-tag-modified {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: linear-gradient(135deg, #FAEEDA 0%, #fde8a0 100%);
+    border: 1.5px solid #d4a017; color: #7a5800;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 0.78rem; font-weight: 600; font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Select 欄位場景高亮 */
+select.scene-prefilled {
+    border-color: var(--adv-blue); background: var(--adv-light-blue);
+    color: var(--adv-blue); font-weight: 500;
+}
+select.scene-prefilled-sug {
+    border-color: #d4a017; background: #fef9e7;
+    color: #7a5800; font-weight: 500;
+}
+
+/* 場景來源 Tag（深藍） */
+.filter-tag-scene {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: linear-gradient(135deg, var(--adv-blue) 0%, #004d99 100%);
+    border: 1px solid var(--adv-blue); color: #fff;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 0.78rem; font-weight: 600; font-family: 'IBM Plex Mono', monospace;
+}
+/* 必選條件 Tag（藍色，無刪除） */
+.filter-tag-req {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: linear-gradient(135deg, #ddeaf8 0%, #c8dfff 100%);
+    border: 1px solid #7fb3e8; color: var(--adv-blue);
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 0.78rem; font-weight: 600; font-family: 'IBM Plex Mono', monospace;
+}
+/* 建議條件 Tag（橘色，可刪除） */
+.filter-tag-sug {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: linear-gradient(135deg, #fef3cd 0%, #fde8a0 100%);
+    border: 1px solid #f5c842; color: #7a5800;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 0.78rem; font-weight: 600; font-family: 'IBM Plex Mono', monospace;
+}
+.tag-remove {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 14px; height: 14px; background: rgba(122,88,0,0.15);
+    border-radius: 50%; color: #7a5800; font-size: 0.62rem;
+    cursor: pointer; transition: background 0.15s; flex-shrink: 0; font-style: normal;
+}
+.tag-remove:hover { background: #e84040; color: #fff; }
+
+/* 場景說明注解 */
+.scene-state-note {
+    font-size: 0.74rem; color: var(--text-muted); line-height: 1.5;
+    background: linear-gradient(90deg, #e8f2fc 0%, #f0f7ff 100%);
+    border-left: 3px solid var(--adv-accent);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 7px 10px; margin-top: 8px;
 }
 
 /* ── SCROLLBAR ───────────────────────────────── */

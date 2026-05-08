@@ -26,8 +26,13 @@ console.log(`[API] 後台連線位址: ${API_BASE}`);
 // 共用狀態
 // ═══════════════════════════════════════════════
 let selectedItemsMap = {};   // { key: label } 儲存已選取的特徵
-let acquiredModels    = [];  // 後端回傳的型號清單（供 Chatbot context 使用）
+let acquiredModels = [];  // 後端回傳的型號清單（供 Chatbot context 使用）
 let lastSuccessSnapshot = null; // 上一次有結果的條件快照 { mgmt, port, items: Set }
+
+// ── 場景模板狀態 ──────────────────────────────
+let activeScene = null;       // 目前啟用的場景 id
+let removedSugKeys = new Set();  // 使用者移除的建議條件 key
+let sceneOwnedItemKeys = new Set();  // 場景帶入 selectedItemsMap 的 key（避免雙重顯示）
 
 const numInput = document.getElementById('numInput');
 
@@ -84,17 +89,19 @@ function getSnapshotNow() {
 function renderSelected(culpritItems = new Set()) {
     const container = document.getElementById('selectedItems');
     container.innerHTML = '';
-    Object.keys(selectedItemsMap).forEach(key => {
-        const div = document.createElement('div');
-        div.className = 'selected-item' + (culpritItems.has(key) ? ' culprit' : '');
-        const remove = document.createElement('span');
-        remove.textContent = '✖';
-        remove.className = 'remove-btn';
-        remove.onclick = () => removeItem(key);
-        div.appendChild(remove);
-        div.appendChild(document.createTextNode(selectedItemsMap[key]));
-        container.appendChild(div);
-    });
+    Object.keys(selectedItemsMap)
+        .filter(key => !sceneOwnedItemKeys.has(key)) // 場景帶入的 item 由 filter tags 區顯示，不重複
+        .forEach(key => {
+            const div = document.createElement('div');
+            div.className = 'selected-item' + (culpritItems.has(key) ? ' culprit' : '');
+            const remove = document.createElement('span');
+            remove.textContent = '✖';
+            remove.className = 'remove-btn';
+            remove.onclick = () => removeItem(key);
+            div.appendChild(remove);
+            div.appendChild(document.createTextNode(selectedItemsMap[key]));
+            container.appendChild(div);
+        });
     renderFilterTags();
 }
 
@@ -105,24 +112,117 @@ function renderFilterTags(culprits = {}) {
     const filterDiv = document.getElementById('filterTags');
     filterDiv.innerHTML = '';
 
-    const mgmtVal = document.getElementById('mgmtType').value;
-    const portVal = document.getElementById('numInput').value;
+    if (activeScene) {
+        // ── 場景模式：場景 tag + 必選/建議 tag ────────────
+        const scene = SCENE_TEMPLATES.find(s => s.id === activeScene);
+        if (!scene) return;
 
-    if (mgmtVal) {
-        const label = mgmtVal === 'managed' ? 'Managed' : 'Unmanaged';
-        const tag = document.createElement('span');
-        tag.className = 'filter-tag' + (culprits.mgmt ? ' culprit' : '');
-        tag.innerHTML = `<span class="filter-icon">⚙</span> Type: ${label}`;
-        filterDiv.appendChild(tag);
-    }
-    if (portVal) {
-        const tag = document.createElement('span');
-        tag.className = 'filter-tag' + (culprits.port ? ' culprit' : '');
-        tag.innerHTML = `<span class="filter-icon">🔌</span> Port: ${portVal}`;
-        filterDiv.appendChild(tag);
-    }
-    if (!mgmtVal && !portVal) {
-        filterDiv.innerHTML = '<span style="font-size:0.78rem;color:var(--text-muted);font-style:italic;">No filters applied yet</span>';
+        // 場景來源 tag（深藍）
+        const sceneTag = document.createElement('span');
+        sceneTag.className = 'filter-tag-scene';
+        sceneTag.textContent = `${scene.icon} ${scene.label} 模板`;
+        filterDiv.appendChild(sceneTag);
+
+        // 各條件 tag
+        scene.conditions.forEach(cond => {
+            if (removedSugKeys.has(cond.key)) return;
+
+            // 對於有 DOM 對應的欄位（mgmtType / numPorts），
+            // 使用實際的下拉選單值，確保 tag 顯示與實際查詢一致
+            let effectiveCond = cond;
+            let isValueModified = false;
+            if (cond.key === 'mgmtType') {
+                const v = document.getElementById('mgmtType').value;
+                if (v) {
+                    effectiveCond = { ...cond, value: v };
+                    if (v !== cond.value) isValueModified = true;
+                }
+            } else if (cond.key === 'numPorts') {
+                const v = document.getElementById('numInput').value;
+                if (v) {
+                    effectiveCond = { ...cond, value: parseInt(v) || cond.value };
+                    if (v !== String(cond.value)) isValueModified = true;
+                }
+            }
+
+            const label = getConditionDisplayLabel(effectiveCond);
+            const tag = document.createElement('span');
+            if (isValueModified) {
+                tag.className = 'filter-tag-modified';
+                tag.textContent = `⚠ ${label}（已改）`;
+            } else if (cond.priority === 'required') {
+                tag.className = 'filter-tag-req';
+                tag.textContent = `🔒 ${label}`;
+            } else {
+                tag.className = 'filter-tag-sug';
+                tag.innerHTML = `${label} <span class="tag-remove" onclick="removeSuggestedCondition('${cond.key}')">×</span>`;
+            }
+            filterDiv.appendChild(tag);
+        });
+
+        // ── 補渲染使用者手動調整的欄位（不在場景條件或已移除建議時）──
+        const sceneMgmtActive = scene.conditions.some(c => c.key === 'mgmtType' && !removedSugKeys.has('mgmtType'));
+        const scenePortActive = scene.conditions.some(c => c.key === 'numPorts' && !removedSugKeys.has('numPorts'));
+
+        const mgmtManual = document.getElementById('mgmtType').value;
+        if (mgmtManual && !sceneMgmtActive) {
+            const lbl = mgmtManual === 'managed' ? 'Managed' : 'Unmanaged';
+            const t = document.createElement('span');
+            t.className = 'filter-tag';
+            t.textContent = `⚙ Type: ${lbl}`;
+            filterDiv.appendChild(t);
+        }
+
+        const portManual = document.getElementById('numInput').value;
+        if (portManual && !scenePortActive) {
+            const t = document.createElement('span');
+            t.className = 'filter-tag';
+            t.textContent = `🔌 Port: ≥${portManual}`;
+            filterDiv.appendChild(t);
+        }
+
+        // 場景說明注解
+        let note = document.getElementById('sceneStateNote');
+        if (!note) {
+            note = document.createElement('div');
+            note.id = 'sceneStateNote';
+            note.className = 'scene-state-note';
+            filterDiv.parentElement.appendChild(note);
+        }
+        const reqCount = scene.conditions.filter(c => c.priority === 'required' && !removedSugKeys.has(c.key)).length;
+        const sugCount = scene.conditions.filter(c => c.priority === 'suggested' && !removedSugKeys.has(c.key)).length;
+        const certNote = scene.conditions.some(c => c.key === 'certifications')
+            ? '認證條件目前為顯示用，DB 欄位確認後將納入查詢。' : '';
+        note.textContent = `套用「${scene.label}」模板：${reqCount} 項必選、${sugCount} 項建議條件。${certNote}`;
+
+        // 偵測場景是否已被使用者修改
+        checkSceneModified();
+
+    } else {
+        // ── 手動模式：原有綠色 tag 行為 ──────────────────
+        const mgmtVal = document.getElementById('mgmtType').value;
+        const portVal = document.getElementById('numInput').value;
+
+        if (mgmtVal) {
+            const label = mgmtVal === 'managed' ? 'Managed' : 'Unmanaged';
+            const tag = document.createElement('span');
+            tag.className = 'filter-tag' + (culprits.mgmt ? ' culprit' : '');
+            tag.innerHTML = `<span class="filter-icon">⚙</span> Type: ${label}`;
+            filterDiv.appendChild(tag);
+        }
+        if (portVal) {
+            const tag = document.createElement('span');
+            tag.className = 'filter-tag' + (culprits.port ? ' culprit' : '');
+            tag.innerHTML = `<span class="filter-icon">🔌</span> Port: ≥${portVal}`;
+            filterDiv.appendChild(tag);
+        }
+        if (!mgmtVal && !portVal) {
+            filterDiv.innerHTML = '<span style="font-size:0.78rem;color:var(--text-muted);font-style:italic;">No filters applied yet</span>';
+        }
+
+        // 清除場景注解（如果有的話）
+        const note = document.getElementById('sceneStateNote');
+        if (note) note.remove();
     }
 }
 
@@ -138,7 +238,7 @@ renderFilterTags();
 // ═══════════════════════════════════════════════
 function submitItems() {
     let typeVal = document.getElementById('mgmtType').value || 'ALL';
-    if (typeVal === 'managed')   typeVal = 'Managed';
+    if (typeVal === 'managed') typeVal = 'Managed';
     if (typeVal === 'unmanaged') typeVal = 'Unmanaged';
 
     let portVal = parseInt(numInput.value);
@@ -160,49 +260,49 @@ function submitItems() {
             application: 'ALL'
         })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.detail && !data.products) {
-            alert('API Error: ' + JSON.stringify(data.detail));
-            return;
-        }
-        if (!data.products) return;
+        .then(res => res.json())
+        .then(data => {
+            if (data.detail && !data.products) {
+                alert('API Error: ' + JSON.stringify(data.detail));
+                return;
+            }
+            if (!data.products) return;
 
-        const data_list  = data.products;
-        const tableBody  = document.getElementById('tableBody');
-        const itemCount  = document.getElementById('itemCount');
-        itemCount.textContent = data_list.length;
-        tableBody.innerHTML   = '';
+            const data_list = data.products;
+            const tableBody = document.getElementById('tableBody');
+            const itemCount = document.getElementById('itemCount');
+            itemCount.textContent = data_list.length;
+            tableBody.innerHTML = '';
 
-        // 更新 Chatbot context 用的型號清單
-        acquiredModels = data_list.map(item => item.prod_name || item);
+            // 更新 Chatbot context 用的型號清單
+            acquiredModels = data_list.map(item => item.prod_name || item);
 
-        if (data_list.length === 0 && lastSuccessSnapshot) {
-            // 有歷史快照 → 找出哪些條件是新增的（標紅）
-            const culprits     = {};
-            const culpritItems = new Set();
-            if (thisSnapshot.mgmt !== lastSuccessSnapshot.mgmt) culprits.mgmt = true;
-            if (thisSnapshot.port !== lastSuccessSnapshot.port) culprits.port = true;
-            thisSnapshot.items.forEach(key => {
-                if (!lastSuccessSnapshot.items.has(key)) culpritItems.add(key);
-            });
-            renderSelected(culpritItems);
-            renderFilterTags(culprits);
-            _appendZeroHint('⚠ 無符合產品。標示為紅色的條件是本次新增且可能導致無結果的篩選項。');
+            if (data_list.length === 0 && lastSuccessSnapshot) {
+                // 有歷史快照 → 找出哪些條件是新增的（標紅）
+                const culprits = {};
+                const culpritItems = new Set();
+                if (thisSnapshot.mgmt !== lastSuccessSnapshot.mgmt) culprits.mgmt = true;
+                if (thisSnapshot.port !== lastSuccessSnapshot.port) culprits.port = true;
+                thisSnapshot.items.forEach(key => {
+                    if (!lastSuccessSnapshot.items.has(key)) culpritItems.add(key);
+                });
+                renderSelected(culpritItems);
+                renderFilterTags(culprits);
+                _appendZeroHint('⚠ 無符合產品。標示為紅色的條件是本次新增且可能導致無結果的篩選項。');
 
-        } else if (data_list.length > 0) {
-            // 有結果 → 更新快照，清除警告，渲染表格
-            lastSuccessSnapshot = {
-                mgmt: thisSnapshot.mgmt,
-                port: thisSnapshot.port,
-                items: new Set(thisSnapshot.items)
-            };
-            renderSelected();
-            renderFilterTags();
+            } else if (data_list.length > 0) {
+                // 有結果 → 更新快照，清除警告，渲染表格
+                lastSuccessSnapshot = {
+                    mgmt: thisSnapshot.mgmt,
+                    port: thisSnapshot.port,
+                    items: new Set(thisSnapshot.items)
+                };
+                renderSelected();
+                renderFilterTags();
 
-            data_list.forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
+                data_list.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${item.prod_model}</td>
                     <td>${item.prod_type}</td>
@@ -215,29 +315,29 @@ function submitItems() {
                     <td>${item.prod_fiber_ge_combo || 0}</td>
                     <td>${item.prod_w_n}</td>
                 `;
-                tableBody.appendChild(row);
-            });
+                    tableBody.appendChild(row);
+                });
 
-        } else {
-            // 第一次搜尋就無結果 → 全部條件標紅
-            const allCulprits     = { mgmt: !!thisSnapshot.mgmt, port: !!thisSnapshot.port };
-            const allCulpritItems = new Set(thisSnapshot.items);
-            renderSelected(allCulpritItems);
-            renderFilterTags(allCulprits);
-            _appendZeroHint('⚠ 無符合產品。標示為紅色的條件是可能導致無結果的篩選項，請嘗試放寬條件。');
-        }
+            } else {
+                // 第一次搜尋就無結果 → 全部條件標紅
+                const allCulprits = { mgmt: !!thisSnapshot.mgmt, port: !!thisSnapshot.port };
+                const allCulpritItems = new Set(thisSnapshot.items);
+                renderSelected(allCulpritItems);
+                renderFilterTags(allCulprits);
+                _appendZeroHint('⚠ 無符合產品。標示為紅色的條件是可能導致無結果的篩選項，請嘗試放寬條件。');
+            }
 
-        updateContextBar();
-    })
-    .catch(err => {
-        console.error(err);
-        alert('連線後端發生錯誤！');
-    });
+            updateContextBar();
+        })
+        .catch(err => {
+            console.error(err);
+            alert('連線後端發生錯誤！');
+        });
 }
 
 function _appendZeroHint(text) {
     const hint = document.createElement('div');
-    hint.id        = 'zeroResultHint';
+    hint.id = 'zeroResultHint';
     hint.className = 'zero-result-hint';
     hint.innerHTML = text;
     document.querySelector('.lower-part.card').appendChild(hint);
@@ -247,9 +347,11 @@ function _appendZeroHint(text) {
 // 重置全部條件
 // ═══════════════════════════════════════════════
 function resetAll() {
-    document.getElementById('mgmtType').value    = '';
-    document.getElementById('numInput').value     = '';
-    document.getElementById('searchInput').value  = '';
+    clearScene();  // 先清除場景（會 restore 場景帶入的 form 值）
+
+    document.getElementById('mgmtType').value = '';
+    document.getElementById('numInput').value = '';
+    document.getElementById('searchInput').value = '';
     document.getElementById('searchResults').innerHTML = '';
 
     selectedItemsMap = {};
@@ -257,7 +359,7 @@ function resetAll() {
 
     acquiredModels = [];
     document.getElementById('itemCount').textContent = '0';
-    document.getElementById('tableBody').innerHTML   = '';
+    document.getElementById('tableBody').innerHTML = '';
 
     lastSuccessSnapshot = null;
     const hint = document.getElementById('zeroResultHint');
@@ -271,7 +373,7 @@ function resetAll() {
 // Chatbot — 狀態
 // ═══════════════════════════════════════════════
 let chatHistory = [];
-let chatOpen    = false;
+let chatOpen = false;
 const CTX_PREVIEW_COUNT = 5;
 
 // ── Chatbot 開關 ──────────────────────────────
@@ -330,7 +432,7 @@ function renderContextBar(models, expanded) {
     const displayModels = expanded ? models : models.slice(0, CTX_PREVIEW_COUNT);
     displayModels.forEach(m => {
         const chip = document.createElement('span');
-        chip.className   = 'ctx-model-chip';
+        chip.className = 'ctx-model-chip';
         chip.textContent = m;
         chipLine.appendChild(chip);
     });
@@ -349,11 +451,11 @@ function sendQuick(text) {
 
 // ── 送出訊息 ──────────────────────────────────
 async function sendMessage() {
-    const input   = document.getElementById('chatInput');
+    const input = document.getElementById('chatInput');
     const message = input.value.trim();
     if (!message) return;
 
-    input.value        = '';
+    input.value = '';
     input.style.height = 'auto';
 
     appendMessage('user', message);
@@ -376,9 +478,9 @@ async function sendMessage() {
         };
 
         const resp = await fetch(`${API_BASE}/api/chat`, {
-            method:  'POST',
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify(payload),
+            body: JSON.stringify(payload),
         });
 
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -398,11 +500,11 @@ async function sendMessage() {
 
 // ── 渲染訊息泡泡 ──────────────────────────────
 function appendMessage(role, text, isLoading = false, responseData = null) {
-    const msgs    = document.getElementById('chatMessages');
+    const msgs = document.getElementById('chatMessages');
     const wrapper = document.createElement('div');
-    wrapper.style.display       = 'flex';
+    wrapper.style.display = 'flex';
     wrapper.style.flexDirection = 'column';
-    wrapper.style.alignItems    = role === 'user' ? 'flex-end' : 'flex-start';
+    wrapper.style.alignItems = role === 'user' ? 'flex-end' : 'flex-start';
 
     const bubble = document.createElement('div');
     bubble.className = `msg-bubble ${role}${isLoading ? ' loading' : ''}`;
@@ -416,14 +518,14 @@ function appendMessage(role, text, isLoading = false, responseData = null) {
 
     // 參考型號（可收合）
     if (responseData?.referenced_models?.length > 0) {
-        const models  = responseData.referenced_models;
+        const models = responseData.referenced_models;
         const detailsEl = document.createElement('details');
         detailsEl.style.cssText = 'font-size:0.74rem;color:var(--text-muted);margin-top:6px;';
         const summaryEl = document.createElement('summary');
         summaryEl.style.cssText = 'cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;user-select:none;';
         summaryEl.innerHTML =
             '<span style="color:var(--adv-teal);">\u{1F4C4}</span>' +
-            '<span>\u53c3\u8003\u578b\u865f <strong style="color:var(--adv-blue);">('+models.length+' \u6b3e)</strong></span>' +
+            '<span>\u53c3\u8003\u578b\u865f <strong style="color:var(--adv-blue);">(' + models.length + ' \u6b3e)</strong></span>' +
             '<span class="ref-arrow" style="font-size:0.65rem;color:var(--adv-accent);margin-left:2px;">\u25bc \u5c55\u958b</span>';
         detailsEl.addEventListener('toggle', () => {
             const arrow = summaryEl.querySelector('.ref-arrow');
@@ -447,16 +549,16 @@ function appendMessage(role, text, isLoading = false, responseData = null) {
         const detailsEl = document.createElement('details');
         detailsEl.style.cssText = 'font-size:0.75rem;color:#777;margin-top:8px;border-top:1px dashed #ccc;padding-top:4px;';
         const summaryEl = document.createElement('summary');
-        summaryEl.style.cursor   = 'pointer';
-        summaryEl.textContent    = '🔍 查看 AI 參考的原廠規格片段';
+        summaryEl.style.cursor = 'pointer';
+        summaryEl.textContent = '🔍 查看 AI 參考的原廠規格片段';
         detailsEl.appendChild(summaryEl);
 
         const contentDiv = document.createElement('div');
         contentDiv.style.cssText = 'margin-top:6px;padding:6px;background:rgba(0,0,0,0.04);border-radius:4px;max-height:150px;overflow-y:auto;';
         responseData.sources.forEach((src, idx) => {
-            const p         = document.createElement('div');
+            const p = document.createElement('div');
             p.style.marginBottom = '6px';
-            const similarity     = (1 - src.distance).toFixed(2);
+            const similarity = (1 - src.distance).toFixed(2);
             p.innerHTML = `<strong>[${idx + 1}] ${src.model}</strong> (相似度: ${similarity})<br>${src.content.replace(/\\n/g, ' ')}`;
             contentDiv.appendChild(p);
         });
@@ -478,3 +580,203 @@ document.getElementById('chatInput').addEventListener('keydown', function (e) {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 100) + 'px';
 });
+
+// ═══════════════════════════════════════════════
+// 場景模板功能
+// ═══════════════════════════════════════════════
+
+// ── 初始化場景按鈕 ────────────────────────────
+function initSceneGrid() {
+    const grid = document.getElementById('sceneGrid');
+    if (!grid || typeof SCENE_TEMPLATES === 'undefined') return;
+    grid.innerHTML = SCENE_TEMPLATES.map(s => `
+        <button class="scene-btn" id="scene-btn-${s.id}" onclick="selectScene('${s.id}')">
+            <span class="scene-btn-icon">${s.icon}</span>
+            <span class="scene-btn-name">${s.label}</span>
+            <span class="scene-btn-desc">${s.description}</span>
+        </button>
+    `).join('');
+}
+
+// ── 選擇場景 ─────────────────────────────────
+function selectScene(id) {
+    if (activeScene === id) { clearScene(); return; } // 再點一次取消
+    if (activeScene) clearScene(true);                // 切換場景時先靜默清除
+
+    const scene = SCENE_TEMPLATES.find(s => s.id === id);
+    if (!scene) return;
+
+    activeScene = id;
+    removedSugKeys = new Set();
+    sceneOwnedItemKeys = new Set();
+
+    // 高亮按鈕
+    document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`scene-btn-${id}`).classList.add('active');
+    document.getElementById('sceneClearBtn').style.display = 'block';
+
+    // 套用各條件
+    scene.conditions.forEach(cond => {
+        if (UNSUPPORTED_CONDITION_KEYS.includes(cond.key)) return; // 認證：僅顯示
+
+        const cls = cond.priority === 'required' ? 'scene-prefilled' : 'scene-prefilled-sug';
+        switch (cond.key) {
+            case 'mgmtType': {
+                const el = document.getElementById('mgmtType');
+                el.value = cond.value;
+                el.className = cls;
+                break;
+            }
+            case 'numPorts': {
+                const el = document.getElementById('numInput');
+                el.value = String(cond.value);
+                el.className = cls;
+                break;
+            }
+            case 'poe':
+                if (cond.value === true) {
+                    selectedItemsMap['has_poe'] = 'Has PoE';
+                    sceneOwnedItemKeys.add('has_poe');
+                }
+                break;
+            case 'tempGrade':
+                if (cond.value === 'wide') {
+                    selectedItemsMap['temp_wide'] = 'Wide Temp (−40°C)';
+                    sceneOwnedItemKeys.add('temp_wide');
+                }
+                break;
+        }
+    });
+
+    renderFilterTags();
+    renderSelected();
+}
+
+// ── 清除場景 ─────────────────────────────────
+function clearScene(silent = false) {
+    if (!activeScene) return;
+
+    const scene = SCENE_TEMPLATES.find(s => s.id === activeScene);
+    if (scene) {
+        scene.conditions.forEach(cond => {
+            if (UNSUPPORTED_CONDITION_KEYS.includes(cond.key)) return;
+            switch (cond.key) {
+                case 'mgmtType': {
+                    const el = document.getElementById('mgmtType');
+                    if (el.classList.contains('scene-prefilled') || el.classList.contains('scene-prefilled-sug')) {
+                        el.value = ''; el.className = '';
+                    }
+                    break;
+                }
+                case 'numPorts': {
+                    const el = document.getElementById('numInput');
+                    if (el.classList.contains('scene-prefilled') || el.classList.contains('scene-prefilled-sug')) {
+                        el.value = ''; el.className = '';
+                    }
+                    break;
+                }
+            }
+        });
+    }
+
+    // 移除場景帶入的 selectedItemsMap 項目
+    sceneOwnedItemKeys.forEach(key => delete selectedItemsMap[key]);
+
+    // 重置狀態
+    activeScene = null;
+    removedSugKeys = new Set();
+    sceneOwnedItemKeys = new Set();
+
+    document.querySelectorAll('.scene-btn').forEach(b => {
+        b.classList.remove('active');
+        b.classList.remove('scene-modified');
+    });
+    const clearBtn = document.getElementById('sceneClearBtn');
+    if (clearBtn) clearBtn.style.display = 'none';
+    const restoreBtn = document.getElementById('sceneRestoreBtn');
+    if (restoreBtn) restoreBtn.style.display = 'none';
+
+    if (!silent) {
+        renderFilterTags();
+        renderSelected();
+    }
+}
+
+// ── 移除建議條件 ──────────────────────────────
+function removeSuggestedCondition(key) {
+    removedSugKeys.add(key);
+    switch (key) {
+        case 'mgmtType': {
+            const el = document.getElementById('mgmtType');
+            el.value = ''; el.className = '';
+            break;
+        }
+        case 'numPorts': {
+            const el = document.getElementById('numInput');
+            el.value = ''; el.className = '';
+            break;
+        }
+        case 'poe':
+            delete selectedItemsMap['has_poe'];
+            sceneOwnedItemKeys.delete('has_poe');
+            break;
+        case 'tempGrade':
+            delete selectedItemsMap['temp_wide'];
+            sceneOwnedItemKeys.delete('temp_wide');
+            break;
+    }
+    renderFilterTags();
+    renderSelected();
+}
+
+// ── 頁面載入後初始化場景按鈕 ─────────────────
+initSceneGrid();
+
+// ══════════════════════════════════════════════
+// 場景已修改狀態偵測
+// ══════════════════════════════════════════════
+
+// 偵測目前場景條件是否與模板預設不同，並更新 UI 狀態
+function checkSceneModified() {
+    if (!activeScene) return false;
+    const scene = SCENE_TEMPLATES.find(s => s.id === activeScene);
+    if (!scene) return false;
+
+    let isModified = false;
+
+    // 建議條件被移除 → 已修改
+    if (removedSugKeys.size > 0) isModified = true;
+
+    // 比對 DOM 欄位值與場景預設值
+    if (!isModified) {
+        scene.conditions.forEach(cond => {
+            if (UNSUPPORTED_CONDITION_KEYS.includes(cond.key)) return;
+            if (cond.key === 'mgmtType') {
+                if (document.getElementById('mgmtType').value !== cond.value) isModified = true;
+            } else if (cond.key === 'numPorts') {
+                if (document.getElementById('numInput').value !== String(cond.value)) isModified = true;
+            }
+        });
+    }
+
+    // 更新場景按鈕外觀（藍 = 正常，橘 = 已修改）
+    const btn = document.getElementById(`scene-btn-${activeScene}`);
+    if (btn) {
+        btn.classList.toggle('scene-modified', isModified);
+        btn.classList.toggle('active', !isModified);
+    }
+
+    // 顯示 / 隱藏「恢復預設」按鈕
+    const restoreBtn = document.getElementById('sceneRestoreBtn');
+    if (restoreBtn) restoreBtn.style.display = isModified ? 'block' : 'none';
+
+    return isModified;
+}
+
+// 恢復場景至預設條件（重新套用原始模板）
+function restoreSceneDefaults() {
+    if (!activeScene) return;
+    const id = activeScene;
+    clearScene(true);   // 靜默清除目前狀態
+    selectScene(id);    // 重新套用原始場景條件
+}

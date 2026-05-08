@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, HTTPException
 from typing import List, Dict
 from app.database import Database
@@ -13,25 +14,25 @@ router = APIRouter()
 # =========================================================================
 base_hardware_mappings = {
 
-    "has_poe": lambda: {"$or": [
+    "Has_PoE": lambda: {"$or": [
         {"hardware.PoE RJ-45 100M": {"$regex": "^[1-9]"}},
         {"hardware.PoE RJ-45 GbE": {"$regex": "^[1-9]"}},
         {"hardware.PoE (D-code)": {"$regex": "^[1-9]"}},
         {"hardware.PoE (X-code)": {"$regex": "^[1-9]"}}
     ]},
-    "has_fiber": lambda: {"$or": [
+    "Has_Fiber": lambda: {"$or": [
         {"hardware.Fiber 100M": {"$regex": "^[1-9]"}},
         {"hardware.Fiber Gigabit": {"$regex": "^[1-9]"}},
         {"hardware.Fiber GE Combo": {"$regex": "^[1-9]"}},
         {"hardware.Fiber 10G": {"$regex": "^[1-9]"}}
     ]},
-    "has_rj45": lambda: {"$or": [
+    "Has_RJ-45": lambda: {"$or": [
         {"hardware.RJ-45 10/100M": {"$regex": "^[1-9]"}},
         {"hardware.RJ-45 Gigabit": {"$regex": "^[1-9]"}},
         {"hardware.RJ-45 Combo": {"$regex": "^[1-9]"}},
         {"hardware.RJ-45 10GbE": {"$regex": "^[1-9]"}}
     ]},
-    "temp_wide": lambda: {"hardware.Temp Grade": {"$in": ["Wide", "wide", "T", "Wide Temp"]}}
+    "Temp_Wide": lambda: {"hardware.Temp Grade": {"$in": ["Wide", "wide", "T", "Wide Temp"]}}
 }
 
 # 三態值中合法的「有支援」值
@@ -97,7 +98,7 @@ def load_dynamic_mappings_if_needed():
     # 載入手動定義的硬體進階條件
     for hd_key in base_hardware_mappings.keys():
         SEARCHABLE_ITEMS.append(SearchFeatureItem(
-            label=hd_key.replace("_", " ").title(),
+            label=hd_key.replace("_", " "),
             key=hd_key,
             category="Hardware Feature"
         ))
@@ -173,7 +174,17 @@ def submit_product_selection(req: SubmitProdRequest):
     ]
 
     if req.type != "ALL":
-        and_conditions.append({"hardware.Function": req.type})
+        type_lower = req.type.lower()
+        if type_lower == "unmanaged":
+            # Function 中含有 "unmanage"（不區分大小寫）即視為 Unmanaged
+            and_conditions.append({"hardware.Function": {"$regex": "unmanage", "$options": "i"}})
+        elif type_lower == "managed":
+            # Function 中含有 "manage" 且不含 "unmanage"（不區分大小寫）即視為 Managed
+            and_conditions.append({"hardware.Function": {"$regex": "manage", "$options": "i"}})
+            and_conditions.append({"hardware.Function": {"$not": re.compile("unmanage", re.IGNORECASE)}})
+        else:
+            # 其他將來新增的類型維持精確比對
+            and_conditions.append({"hardware.Function": req.type})
 
     if req.portnum != -1:
         # Port Numbers 在 DB 中以字串儲存，使用 $expr + $toInt 做 >= 比較

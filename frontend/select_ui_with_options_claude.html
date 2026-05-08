@@ -44,6 +44,16 @@
             <div class="left-part card">
                 <h3>Device Configuration</h3>
 
+                <!-- Quick Start 場景模板 -->
+                <div class="section scene-section">
+                    <label>⚡ Quick Start — 應用場景</label>
+                    <div class="scene-grid" id="sceneGrid">
+                        <!-- 由 initSceneGrid() 動態產生 -->
+                    </div>
+                    <button class="scene-clear-link" id="sceneClearBtn" onclick="clearScene()" style="display:none">✕ 清除場景</button>
+                    <button class="scene-restore-btn" id="sceneRestoreBtn" onclick="restoreSceneDefaults()" style="display:none">↺ 恢復預設</button>
+                </div>
+
                 <div class="section">
                     <label><span class="step-badge">1</span> Management Type</label>
                     <select id="mgmtType">
@@ -172,6 +182,7 @@
     </div>
 
     <!-- Main Application Script（放在 body 底部確保 DOM 已載入） -->
+    <script src="/frontend/js/scenes.js"></script>
     <script src="/frontend/js/app.js"></script>
 
 </body>

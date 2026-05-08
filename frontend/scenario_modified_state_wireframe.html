@@ -1,0 +1,268 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.layout{display:grid;grid-template-columns:224px 1fr;gap:10px;font-size:13px}
+.left{display:flex;flex-direction:column;gap:0;background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.block-head{padding:9px 14px;border-bottom:.5px solid var(--color-border-tertiary);font-size:11px;font-weight:500;color:var(--color-text-secondary);letter-spacing:.03em;display:flex;align-items:center;justify-content:space-between}
+.clear-all{font-size:11px;color:var(--color-text-tertiary);cursor:pointer;border:.5px solid var(--color-border-tertiary);padding:1px 7px;border-radius:3px;background:none}
+.clear-all:hover{background:var(--color-background-secondary)}
+.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:8px}
+.sc-chip{border:.5px solid var(--color-border-tertiary);border-radius:6px;padding:7px 9px;cursor:pointer;display:flex;align-items:flex-start;gap:7px}
+.sc-chip:hover{border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.sc-chip.active{border-color:#378ADD;border-width:1.5px;background:#E6F1FB}
+.sc-chip.modified{border-color:#BA7517;border-width:1.5px;background:#FAEEDA}
+.sc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.sc-name{font-size:11px;font-weight:500;color:var(--color-text-primary);line-height:1.3}
+.sc-chip.active .sc-name{color:#0C447C}
+.sc-chip.modified .sc-name{color:#633806}
+.sc-cnt{font-size:10px;color:var(--color-text-tertiary)}
+.block-head2{padding:9px 14px;border-bottom:.5px solid var(--color-border-tertiary);font-size:11px;font-weight:500;color:var(--color-text-secondary);letter-spacing:.03em}
+.filter-section{border-top:.5px solid var(--color-border-tertiary)}
+.fs-head{padding:7px 14px;display:flex;align-items:center;justify-content:space-between}
+.fs-label{font-size:11px;font-weight:500;color:var(--color-text-secondary);letter-spacing:.03em}
+.fs-body{padding:4px 14px 10px}
+.opt{display:flex;align-items:center;gap:7px;padding:3px 0;cursor:pointer}
+.cb{width:13px;height:13px;border:.5px solid var(--color-border-secondary);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--color-background-primary)}
+.cb.on{background:#378ADD;border-color:#378ADD}
+.cb.on::after{content:'';width:7px;height:5px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg) translate(1px,-1px);display:block}
+.cb.dim{opacity:.3;pointer-events:none}
+.cb.modified-off{border-color:#BA7517}
+.rb{width:13px;height:13px;border:.5px solid var(--color-border-secondary);border-radius:50%;flex-shrink:0;background:var(--color-background-primary)}
+.rb.on{border-color:#378ADD;border-width:4px}
+.ol{font-size:12px;color:var(--color-text-secondary);flex:1}
+.oc{font-size:11px;color:var(--color-text-tertiary)}
+.sc-badge{font-size:10px;padding:0px 5px;border-radius:3px;background:#E6F1FB;color:#0C447C;margin-left:3px}
+.sc-badge-warn{font-size:10px;padding:0px 5px;border-radius:3px;background:#FAEEDA;color:#633806;margin-left:3px}
+.strikethrough{text-decoration:line-through;opacity:.5}
+.slider-wrap{padding:2px 0 4px}
+.slider-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--color-text-tertiary);margin-bottom:3px}
+input[type=range]{width:100%;accent-color:#378ADD}
+.adv-row{padding:7px 14px;font-size:11px;color:#378ADD;cursor:pointer;display:flex;align-items:center;gap:4px;border-top:.5px solid var(--color-border-tertiary)}
+.adv-row:hover{background:var(--color-background-secondary)}
+.find-btn{width:calc(100% - 28px);margin:8px 14px;padding:8px;font-size:12px;font-weight:500;color:#fff;background:#1A3A6B;border:none;border-radius:var(--border-radius-md);cursor:pointer}
+.find-btn:hover{background:#12285A}
+.right{display:flex;flex-direction:column;gap:10px}
+
+/* 情境摘要卡 */
+.summary-card{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.summary-head{padding:9px 14px;border-bottom:.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.summary-title{display:flex;align-items:center;gap:7px}
+.sc-pill{font-size:11px;font-weight:500;padding:2px 10px;border-radius:4px}
+.sc-pill-normal{background:#E6F1FB;color:#0C447C}
+.sc-pill-modified{background:#FAEEDA;color:#633806}
+.modified-label{font-size:11px;color:#BA7517;font-weight:500}
+.restore-btn{font-size:11px;color:#378ADD;border:.5px solid #B5D4F4;padding:2px 9px;border-radius:4px;cursor:pointer;background:none;white-space:nowrap}
+.restore-btn:hover{background:#E6F1FB}
+.summary-body{padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px}
+.cond-item{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:4px}
+.cond-normal{background:#E1F5EE;color:#085041;border:.5px solid #9FE1CB}
+.cond-modified{background:#FAEEDA;color:#633806;border:.5px solid #FAC775}
+.cond-removed{background:var(--color-background-secondary);color:var(--color-text-tertiary);border:.5px solid var(--color-border-tertiary);text-decoration:line-through;opacity:.6}
+.cond-added{background:#E6F1FB;color:#0C447C;border:.5px solid #B5D4F4}
+.cond-icon{font-size:11px;flex-shrink:0}
+
+/* tag bar */
+.tag-panel{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:8px 12px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;min-height:36px}
+.tag{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:4px}
+.tag-blue{background:#E6F1FB;color:#0C447C;border:.5px solid #B5D4F4}
+.tag-green{background:#E1F5EE;color:#085041;border:.5px solid #9FE1CB}
+.tag-amber{background:#FAEEDA;color:#633806;border:.5px solid #FAC775}
+.tag-x{cursor:pointer;opacity:.5;font-size:12px}
+.tag-x:hover{opacity:1}
+
+/* 結果 */
+.result-panel{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.rh{padding:9px 14px;border-bottom:.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between}
+.rh-count{font-size:12px;color:var(--color-text-primary)}
+.prod-list{padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.pc{border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:9px 11px;display:flex;align-items:center;gap:9px;cursor:pointer}
+.pc:hover{background:var(--color-background-secondary)}
+.pt{width:32px;height:24px;border-radius:3px;background:var(--color-background-secondary);border:.5px solid var(--color-border-tertiary);flex-shrink:0}
+.pn{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+.ps{font-size:11px;color:var(--color-text-secondary)}
+.pbs{display:flex;gap:3px;margin-top:3px;flex-wrap:wrap}
+.pb{font-size:10px;padding:1px 5px;border-radius:3px;background:var(--color-background-secondary);color:var(--color-text-secondary);border:.5px solid var(--color-border-tertiary)}
+.pb.m{background:#E1F5EE;color:#085041;border-color:#9FE1CB}
+.cmp{font-size:11px;color:var(--color-text-tertiary);border:.5px solid var(--color-border-tertiary);padding:3px 8px;border-radius:4px;cursor:pointer;background:none;white-space:nowrap;flex-shrink:0}
+.cmp:hover{background:var(--color-background-secondary)}
+</style>
+
+<h2 class="sr-only">情境已修改狀態線稿，情境卡片變為橘色已修改狀態，摘要卡顯示哪些條件被變更，並提供恢復預設按鈕</h2>
+
+<div class="layout">
+
+  <!-- 左側 -->
+  <div class="left">
+    <div class="block-head">應用情境<span class="clear-all" onclick="restoreAll()">全部清除</span></div>
+    <div class="sc-grid">
+      <div class="sc-chip" id="sc-factory" onclick="pickSc('factory')">
+        <div class="sc-dot" style="background:#378ADD"></div>
+        <div><div class="sc-name">產線自動化</div><div class="sc-cnt">23 款</div></div>
+      </div>
+      <div class="sc-chip modified" id="sc-rail" onclick="pickSc('rail')">
+        <div class="sc-dot" style="background:#BA7517"></div>
+        <div><div class="sc-name">軌道交通</div><div class="sc-cnt" id="rail-cnt">已修改</div></div>
+      </div>
+      <div class="sc-chip" id="sc-port" onclick="pickSc('port')">
+        <div class="sc-dot" style="background:#BA7517"></div>
+        <div><div class="sc-name">港口 / 船舶</div><div class="sc-cnt">7 款</div></div>
+      </div>
+      <div class="sc-chip" id="sc-power" onclick="pickSc('power')">
+        <div class="sc-dot" style="background:#7F77DD"></div>
+        <div><div class="sc-name">電力 / 能源</div><div class="sc-cnt">8 款</div></div>
+      </div>
+      <div class="sc-chip" id="sc-petro" onclick="pickSc('petro')">
+        <div class="sc-dot" style="background:#E24B4A"></div>
+        <div><div class="sc-name">石化 / 危險區</div><div class="sc-cnt">4 款</div></div>
+      </div>
+      <div class="sc-chip" id="sc-traffic" onclick="pickSc('traffic')">
+        <div class="sc-dot" style="background:#639922"></div>
+        <div><div class="sc-name">智慧交通</div><div class="sc-cnt">11 款</div></div>
+      </div>
+    </div>
+
+    <div class="block-head2">篩選條件</div>
+
+    <div class="filter-section">
+      <div class="fs-head"><span class="fs-label">管理類型</span></div>
+      <div class="fs-body">
+        <div class="opt" onclick="pickRb('managed')"><div class="rb" id="rb-managed"></div><span class="ol">Managed</span><span class="oc">23</span></div>
+        <div class="opt" onclick="pickRb('unmanaged')"><div class="rb on" id="rb-unmanaged"></div><span class="ol">Unmanaged</span><span class="oc">18</span></div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="fs-head"><span class="fs-label">埠數</span></div>
+      <div class="fs-body">
+        <div class="slider-wrap">
+          <div class="slider-lbl"><span>4</span><span id="port-v">20</span><span>52</span></div>
+          <input type="range" min="4" max="52" step="4" value="20" oninput="document.getElementById('port-v').textContent=this.value">
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="fs-head"><span class="fs-label">工作溫度下限 <span class="sc-badge-warn">情境（已改）</span></span></div>
+      <div class="fs-body">
+        <div class="slider-wrap">
+          <div class="slider-lbl"><span>-40°C</span><span id="temp-v">-20°C</span><span>0°C</span></div>
+          <input type="range" min="-40" max="0" step="5" value="-20" id="temp-sl" oninput="updTemp(this.value)">
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="fs-head"><span class="fs-label">認證 <span class="sc-badge">情境</span></span></div>
+      <div class="fs-body">
+        <div class="opt" onclick="togCb('ce')"><div class="cb" id="cb-ce"></div><span class="ol">CE</span><span class="oc">38</span></div>
+        <div class="opt" onclick="togCb('en50155')"><div class="cb on" id="cb-en50155"></div><span class="ol">EN 50155 <span class="sc-badge">情境</span></span><span class="oc">9</span></div>
+        <div class="opt" onclick="togCb('iec')"><div class="cb" id="cb-iec"></div><span class="ol">IEC 61850</span><span class="oc">8</span></div>
+        <div class="opt" onclick="togCb('ul')"><div class="cb" id="cb-ul"></div><span class="ol">UL</span><span class="oc">29</span></div>
+        <div class="opt" onclick="togCb('atex')"><div class="cb dim"></div><span class="ol" style="opacity:.35">ATEX</span><span class="oc">0</span></div>
+      </div>
+    </div>
+
+    <div class="adv-row">› 進階篩選（協定、IP 等級）</div>
+    <button class="find-btn">顯示符合產品</button>
+  </div>
+
+  <!-- 右側 -->
+  <div class="right">
+
+    <!-- 情境摘要卡（已修改狀態） -->
+    <div class="summary-card">
+      <div class="summary-head">
+        <div class="summary-title">
+          <span class="sc-pill sc-pill-modified">軌道交通（已修改）</span>
+          <span class="modified-label">1 項條件與預設不同</span>
+        </div>
+        <button class="restore-btn" onclick="restoreScenario()">恢復預設值</button>
+      </div>
+      <div class="summary-body" id="summary-body">
+        <!-- 正常條件 -->
+        <span class="cond-item cond-normal">EN 50155</span>
+        <span class="cond-item cond-normal">EN 50121</span>
+        <span class="cond-item cond-normal">IEEE 1588 PTP</span>
+        <span class="cond-item cond-normal">防震</span>
+        <!-- 被修改的條件（橘色） -->
+        <span class="cond-item cond-modified" id="temp-cond">溫度 -40°C → -20°C</span>
+      </div>
+    </div>
+
+    <!-- tag 列 -->
+    <div class="tag-panel">
+      <span class="tag tag-amber">情境：軌道交通（已修改）</span>
+      <span class="tag tag-amber">溫度：-20°C <span class="tag-x">×</span></span>
+      <span class="tag tag-green">EN 50155 <span class="tag-x">×</span></span>
+      <span class="tag tag-green">IEEE 1588 <span class="tag-x">×</span></span>
+      <span class="tag tag-green">防震 <span class="tag-x">×</span></span>
+    </div>
+
+    <!-- 結果 -->
+    <div class="result-panel">
+      <div class="rh">
+        <span class="rh-count">符合 <b id="rnum">14</b> 款產品</span>
+        <span style="font-size:11px;color:var(--color-text-tertiary)">排序：相關度</span>
+      </div>
+      <div class="prod-list">
+        <div class="pc">
+          <div class="pt"></div>
+          <div style="flex:1">
+            <div class="pn">EKI-2748EPI</div>
+            <div class="ps">8GE + 2SFP｜-40 ～ +70°C</div>
+            <div class="pbs"><span class="pb m">EN 50155</span><span class="pb m">IEEE 1588</span><span class="pb">Gigabit</span></div>
+          </div>
+          <button class="cmp">+ 比較</button>
+        </div>
+        <div class="pc">
+          <div class="pt"></div>
+          <div style="flex:1">
+            <div class="pn">EKI-2526MI</div>
+            <div class="ps">24GE + 4SFP｜-20 ～ +75°C</div>
+            <div class="pbs"><span class="pb m">EN 50155</span><span class="pb">Managed</span></div>
+          </div>
+          <button class="cmp">+ 比較</button>
+        </div>
+        <div class="pc">
+          <div class="pt"></div>
+          <div style="flex:1">
+            <div class="pn">EKI-2728GI</div>
+            <div class="ps">6GE + 2SFP｜-20 ～ +70°C</div>
+            <div class="pbs"><span class="pb m">EN 50155</span><span class="pb">Gigabit</span></div>
+          </div>
+          <button class="cmp">+ 比較</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function togCb(id){
+  var el=document.getElementById('cb-'+id);
+  if(!el||el.classList.contains('dim'))return;
+  el.classList.toggle('on');
+}
+function pickRb(val){
+  document.getElementById('rb-managed').className='rb'+(val==='managed'?' on':'');
+  document.getElementById('rb-unmanaged').className='rb'+(val==='unmanaged'?' on':'');
+}
+function updTemp(v){
+  document.getElementById('temp-v').textContent=v+'°C';
+  var cond=document.getElementById('temp-cond');
+  if(v==='-40'||v===-40){
+    cond.className='cond-item cond-normal';
+    cond.textContent='溫度 -40°C';
+  } else {
+    cond.className='cond-item cond-modified';
+    cond.textContent='溫度 -40°C → '+v+'°C';
+  }
+}
+function restoreScenario(){
+  document.getElementById('temp-sl').value=-40;
+  updTemp('-40');
+  document.getElementById('temp-v').textContent='-40°C';
+}
+function restoreAll(){}
+function pickSc(id){}
+</script>

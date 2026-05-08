@@ -1,0 +1,356 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.mock-shell{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:16px;font-family:var(--font-sans)}
+.page-header{background:#1a3a5c;border-radius:8px 8px 0 0;padding:10px 16px;display:flex;align-items:center;gap:10px;margin-bottom:0}
+.logo-sq{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:16px;height:16px;flex-shrink:0}
+.logo-sq span{background:rgba(255,255,255,0.85);border-radius:1px}
+.logo-sq span:nth-child(2),.logo-sq span:nth-child(3){opacity:0.4}
+.ph-title{color:#fff;font-size:13px;font-weight:500}
+.ph-sub{color:rgba(255,255,255,0.55);font-size:11px}
+.main-body{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px}
+.card-title{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:12px}
+.section{margin-bottom:12px}
+.sec-label{font-size:10px;color:var(--color-text-tertiary);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.step-badge{width:15px;height:15px;border-radius:50%;background:var(--color-background-info);color:var(--color-text-info);font-size:9px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+
+.scene-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:2px}
+.scene-btn{border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:6px 8px;font-size:11px;color:var(--color-text-secondary);background:var(--color-background-primary);cursor:pointer;text-align:left;transition:all .12s;line-height:1.3}
+.scene-btn:hover{border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.scene-btn.active{border-color:#185FA5;background:#E6F1FB;color:#0C447C}
+.scene-btn .sb-name{font-weight:500;font-size:11px}
+.scene-btn .sb-sub{font-size:10px;opacity:0.7;margin-top:1px}
+.scene-clear{font-size:10px;color:var(--color-text-tertiary);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;display:block;margin-top:4px}
+
+.mock-select{width:100%;border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--color-text-secondary);background:var(--color-background-primary);appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+.mock-select.prefilled{border-color:#185FA5;background-color:#E6F1FB;color:#0C447C}
+.mock-select.prefilled-sug{border-color:#BA7517;background-color:#FAEEDA;color:#633806}
+.mock-input{width:100%;border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--color-text-tertiary);background:var(--color-background-primary)}
+
+.tag-area{display:flex;flex-wrap:wrap;gap:4px;min-height:20px}
+.ftag{font-size:10px;padding:2px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:3px}
+.ftag-scene{background:#E6F1FB;color:#0C447C;font-weight:500}
+.ftag-req{background:#E6F1FB;color:#185FA5}
+.ftag-sug{background:#FAEEDA;color:#854F0B}
+.ftag-x{font-size:10px;opacity:0.6;cursor:pointer;line-height:1}
+
+.legend-row{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--color-text-tertiary)}
+.legend-dot{width:8px;height:8px;border-radius:2px}
+.ld-req{background:#E6F1FB;border:0.5px solid #185FA5}
+.ld-sug{background:#FAEEDA;border:0.5px solid #BA7517}
+.ld-scene{background:#E6F1FB;border:0.5px solid #0C447C}
+
+.chosen-area{min-height:36px;border:0.5px dashed var(--color-border-tertiary);border-radius:6px;padding:6px 8px;font-size:10px;color:var(--color-text-tertiary)}
+.btn-row{display:flex;gap:6px;margin-top:10px}
+.mock-btn{font-size:11px;padding:5px 10px;border-radius:6px;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;flex:1;text-align:center}
+.mock-btn.primary{background:#1a3a5c;color:#fff;border-color:#1a3a5c}
+
+.lower-card{margin-top:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px}
+.table-mock{width:100%;border-collapse:collapse;font-size:10px}
+.table-mock th{text-align:left;padding:4px 6px;color:var(--color-text-tertiary);font-weight:500;border-bottom:0.5px solid var(--color-border-tertiary);white-space:nowrap}
+.table-mock td{padding:4px 6px;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary)}
+.table-mock tr:last-child td{border-bottom:none}
+.model-name{color:var(--color-text-primary);font-weight:500}
+
+.state-note{font-size:10px;color:var(--color-text-tertiary);margin-top:6px;padding:5px 8px;background:var(--color-background-secondary);border-radius:4px;border-left:2px solid var(--color-border-secondary)}
+
+.tab-row{display:flex;gap:0;margin-bottom:12px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.tab-btn{font-size:11px;padding:5px 12px;border:none;background:none;color:var(--color-text-tertiary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px}
+.tab-btn.active{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary);font-weight:500}
+</style>
+
+<div class="mock-shell">
+
+<div class="page-header">
+  <div class="logo-sq"><span></span><span></span><span></span><span></span></div>
+  <div>
+    <div class="ph-title">Advantech Industrial Switch</div>
+    <div class="ph-sub">Selection Tool · v1.0</div>
+  </div>
+</div>
+
+<div class="tab-row" style="margin-top:10px;margin-bottom:0">
+  <button class="tab-btn active" id="tab-scene" onclick="switchTab('scene')">場景模板模式</button>
+  <button class="tab-btn" id="tab-manual" onclick="switchTab('manual')">手動篩選模式</button>
+</div>
+
+<div id="view-scene">
+<div class="main-body">
+  <div class="card">
+    <div class="card-title">Device Configuration</div>
+
+    <div class="section">
+      <div class="sec-label"><span class="step-badge">1</span> Quick Start — 應用場景</div>
+      <div class="scene-grid">
+        <button class="scene-btn" id="sc-railway" onclick="selectScene('railway')">
+          <div class="sb-name">鐵路車載</div>
+          <div class="sb-sub">EN 50155 · −40°C</div>
+        </button>
+        <button class="scene-btn" id="sc-power" onclick="selectScene('power')">
+          <div class="sb-name">電力系統</div>
+          <div class="sb-sub">IEC 61850 · Ring</div>
+        </button>
+        <button class="scene-btn" id="sc-factory" onclick="selectScene('factory')">
+          <div class="sb-name">智慧工廠</div>
+          <div class="sb-sub">PoE · ≥16 Port</div>
+        </button>
+        <button class="scene-btn" id="sc-maritime" onclick="selectScene('maritime')">
+          <div class="sb-name">港口海事</div>
+          <div class="sb-sub">IEC 60945 · 防腐</div>
+        </button>
+      </div>
+      <button class="scene-clear" id="scene-clear-btn" onclick="clearScene()" style="display:none">清除場景</button>
+    </div>
+
+    <div class="section">
+      <div class="sec-label"><span class="step-badge">2</span> Management Type</div>
+      <select class="mock-select" id="mock-mgmt">
+        <option value="">請選擇...</option>
+        <option value="managed">Managed</option>
+        <option value="unmanaged">Unmanaged</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <div class="sec-label"><span class="step-badge">3</span> Port Number</div>
+      <select class="mock-select" id="mock-port">
+        <option value="">請選擇...</option>
+        <option value="4">4</option>
+        <option value="8">8</option>
+        <option value="16">16</option>
+        <option value="24">24</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <div class="sec-label"><span class="step-badge">4</span> Search Inventory</div>
+      <input class="mock-input" placeholder="Search product items…" id="mock-search">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Selection Summary</div>
+
+    <div class="section">
+      <div class="sec-label">Filter Conditions</div>
+      <div class="tag-area" id="tag-area">
+        <span style="font-size:10px;color:var(--color-text-tertiary)">尚未選擇任何條件</span>
+      </div>
+      <div class="legend-row" id="legend-row" style="display:none">
+        <div class="legend-item"><div class="legend-dot ld-scene"></div>場景來源</div>
+        <div class="legend-item"><div class="legend-dot ld-req"></div>必選條件</div>
+        <div class="legend-item"><div class="legend-dot ld-sug"></div>建議條件（可取消）</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Chosen Items</div>
+      <div class="chosen-area">尚未選擇型號</div>
+    </div>
+
+    <div class="state-note" id="state-note" style="display:none"></div>
+
+    <div class="btn-row">
+      <button class="mock-btn primary">🔍 Find Matching Products</button>
+      <button class="mock-btn" onclick="clearScene()">↺ Reset</button>
+    </div>
+  </div>
+</div>
+
+<div class="lower-card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div style="font-size:12px;font-weight:500;color:var(--color-text-primary)">Acquired Product Information</div>
+    <div style="font-size:10px;color:var(--color-text-tertiary)" id="result-count">Total: 0</div>
+  </div>
+  <div style="overflow-x:auto">
+  <table class="table-mock">
+    <thead>
+      <tr>
+        <th>No.</th><th>Model Name</th><th>Type</th><th>Total Port</th><th>RJ-45 GbE</th><th>Fiber</th><th>Temp.</th>
+      </tr>
+    </thead>
+    <tbody id="mock-table">
+      <tr><td colspan="7" style="text-align:center;color:var(--color-text-tertiary);padding:12px">選擇場景或條件後顯示結果</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+</div>
+
+<div id="view-manual" style="display:none">
+<div class="main-body">
+  <div class="card">
+    <div class="card-title">Device Configuration</div>
+    <div class="section">
+      <div class="sec-label"><span class="step-badge">1</span> Management Type</div>
+      <select class="mock-select"><option>請選擇...</option><option>Managed</option><option>Unmanaged</option></select>
+    </div>
+    <div class="section">
+      <div class="sec-label"><span class="step-badge">2</span> Port Number</div>
+      <select class="mock-select"><option>請選擇...</option><option>4</option><option>8</option><option>16</option></select>
+    </div>
+    <div class="section">
+      <div class="sec-label"><span class="step-badge">3</span> Search Inventory</div>
+      <input class="mock-input" placeholder="Search product items…">
+    </div>
+    <div style="font-size:10px;color:var(--color-text-tertiary);margin-top:4px">目前為原有手動篩選模式，無場景模板介入</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Selection Summary</div>
+    <div class="section"><div class="sec-label">Filter Conditions</div><div class="tag-area"><span style="font-size:10px;color:var(--color-text-tertiary)">尚未選擇任何條件</span></div></div>
+    <div class="section"><div class="sec-label">Chosen Items</div><div class="chosen-area">尚未選擇型號</div></div>
+    <div class="btn-row"><button class="mock-btn primary">🔍 Find Matching Products</button><button class="mock-btn">↺ Reset</button></div>
+  </div>
+</div>
+<div class="lower-card">
+  <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px">Acquired Product Information</div>
+  <table class="table-mock"><thead><tr><th>No.</th><th>Model Name</th><th>Type</th><th>Total Port</th><th>RJ-45 GbE</th><th>Fiber</th></tr></thead><tbody><tr><td colspan="6" style="text-align:center;color:var(--color-text-tertiary);padding:12px">手動設定篩選條件後顯示結果</td></tr></tbody></table>
+</div>
+</div>
+
+</div>
+
+<script>
+const SCENES={
+  railway:{
+    label:'鐵路車載',
+    mgmt:'managed', mgmtLabel:'Managed',
+    port:'8', portLabel:'8 Port',
+    note:'套用 EN 50155 場景：Management Type 與 Port 數已必選帶入，溫度範圍（−40°C）為建議條件，可手動調整。',
+    tags:[
+      {text:'鐵路車載 模板',type:'scene'},
+      {text:'Managed',type:'req',key:'mgmt'},
+      {text:'8 Port（建議）',type:'sug',key:'port'},
+      {text:'−40°C 溫度（建議）',type:'sug',key:'temp'},
+      {text:'EN 50155（必選）',type:'req',key:'cert'},
+    ],
+    results:[
+      {no:1,model:'EKI-7528I',type:'Managed',port:8,rj45:6,fiber:2,temp:'-40~75°C'},
+      {no:2,model:'EKI-7526MI',type:'Managed',port:8,rj45:6,fiber:2,temp:'-40~75°C'},
+    ]
+  },
+  power:{
+    label:'電力系統',
+    mgmt:'managed', mgmtLabel:'Managed',
+    port:'8', portLabel:'8 Port',
+    note:'套用 IEC 61850 場景：Management Type 必選帶入，Port 數與溫度為建議條件，認證為必選。',
+    tags:[
+      {text:'電力系統 模板',type:'scene'},
+      {text:'Managed',type:'req',key:'mgmt'},
+      {text:'8 Port（建議）',type:'sug',key:'port'},
+      {text:'IEC 61850（必選）',type:'req',key:'cert'},
+      {text:'Ring 拓撲（建議）',type:'sug',key:'ring'},
+    ],
+    results:[
+      {no:1,model:'EKI-7559MI',type:'Managed',port:10,rj45:8,fiber:2,temp:'-40~85°C'},
+      {no:2,model:'EKI-7629C',type:'Managed',port:8,rj45:8,fiber:0,temp:'-40~75°C'},
+    ]
+  },
+  factory:{
+    label:'智慧工廠',
+    mgmt:'managed', mgmtLabel:'Managed',
+    port:'16', portLabel:'16 Port',
+    note:'套用智慧工廠場景：PoE 為必選，Port 數 ≥16 為建議條件，Management Type 建議 Managed。',
+    tags:[
+      {text:'智慧工廠 模板',type:'scene'},
+      {text:'PoE 支援（必選）',type:'req',key:'poe'},
+      {text:'Managed（建議）',type:'sug',key:'mgmt'},
+      {text:'≥16 Port（建議）',type:'sug',key:'port'},
+    ],
+    results:[
+      {no:1,model:'EKI-7720G-4FI',type:'Managed',port:20,rj45:16,fiber:4,temp:'0~60°C'},
+      {no:2,model:'EKI-7716E-4F',type:'Managed',port:20,rj45:16,fiber:4,temp:'0~60°C'},
+    ]
+  },
+  maritime:{
+    label:'港口海事',
+    mgmt:'managed', mgmtLabel:'Managed',
+    port:'8', portLabel:'8 Port',
+    note:'套用港口海事場景：IEC 60945 認證為必選，防腐蝕規格為必選，溫度 −25°C 為建議條件。',
+    tags:[
+      {text:'港口海事 模板',type:'scene'},
+      {text:'Managed',type:'req',key:'mgmt'},
+      {text:'IEC 60945（必選）',type:'req',key:'cert'},
+      {text:'防腐蝕等級（必選）',type:'req',key:'corr'},
+      {text:'−25°C 溫度（建議）',type:'sug',key:'temp'},
+    ],
+    results:[
+      {no:1,model:'EKI-7528S',type:'Managed',port:8,rj45:6,fiber:2,temp:'-25~70°C'},
+    ]
+  }
+};
+
+let activeScene=null;
+
+function selectScene(id){
+  if(activeScene===id){clearScene();return;}
+  activeScene=id;
+  const s=SCENES[id];
+  document.querySelectorAll('.scene-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sc-'+id).classList.add('active');
+  const mgmt=document.getElementById('mock-mgmt');
+  mgmt.value=s.mgmt; mgmt.className='mock-select prefilled';
+  const port=document.getElementById('mock-port');
+  port.value=s.port; port.className='mock-select prefilled-sug';
+  document.getElementById('scene-clear-btn').style.display='block';
+  renderTags(s.tags);
+  document.getElementById('legend-row').style.display='flex';
+  const note=document.getElementById('state-note');
+  note.textContent=s.note; note.style.display='block';
+  renderResults(s.results);
+  document.getElementById('result-count').textContent='Total: '+s.results.length;
+}
+
+function clearScene(){
+  activeScene=null;
+  document.querySelectorAll('.scene-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('mock-mgmt').value=''; document.getElementById('mock-mgmt').className='mock-select';
+  document.getElementById('mock-port').value=''; document.getElementById('mock-port').className='mock-select';
+  document.getElementById('scene-clear-btn').style.display='none';
+  document.getElementById('tag-area').innerHTML='<span style="font-size:10px;color:var(--color-text-tertiary)">尚未選擇任何條件</span>';
+  document.getElementById('legend-row').style.display='none';
+  document.getElementById('state-note').style.display='none';
+  document.getElementById('mock-table').innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--color-text-tertiary);padding:12px">選擇場景或條件後顯示結果</td></tr>';
+  document.getElementById('result-count').textContent='Total: 0';
+}
+
+function removeSugTag(key){
+  if(!activeScene)return;
+  const area=document.getElementById('tag-area');
+  const tag=area.querySelector('[data-key="'+key+'"]');
+  if(tag)tag.remove();
+  if(key==='port'){document.getElementById('mock-port').value='';document.getElementById('mock-port').className='mock-select';}
+}
+
+function renderTags(tags){
+  const area=document.getElementById('tag-area');
+  area.innerHTML=tags.map(t=>{
+    if(t.type==='scene') return `<span class="ftag ftag-scene">${t.text}</span>`;
+    if(t.type==='req') return `<span class="ftag ftag-req" data-key="${t.key}">${t.text}</span>`;
+    return `<span class="ftag ftag-sug" data-key="${t.key}">${t.text} <span class="ftag-x" onclick="removeSugTag('${t.key}')">×</span></span>`;
+  }).join('');
+}
+
+function renderResults(rows){
+  document.getElementById('mock-table').innerHTML=rows.map(r=>`
+    <tr>
+      <td>${r.no}</td>
+      <td class="model-name">${r.model}</td>
+      <td>${r.type}</td>
+      <td>${r.port}</td>
+      <td>${r.rj45}</td>
+      <td>${r.fiber}</td>
+      <td>${r.temp}</td>
+    </tr>
+  `).join('');
+}
+
+function switchTab(t){
+  document.getElementById('view-scene').style.display=t==='scene'?'block':'none';
+  document.getElementById('view-manual').style.display=t==='manual'?'block':'none';
+  document.getElementById('tab-scene').className='tab-btn'+(t==='scene'?' active':'');
+  document.getElementById('tab-manual').className='tab-btn'+(t==='manual'?' active':'');
+}
+</script>
