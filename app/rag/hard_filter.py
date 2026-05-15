@@ -58,15 +58,15 @@ def build_mongo_filter(
 
     # PoE 篩選（複用 base_hardware_mappings）
     if f.has_poe is True:
-        and_conditions.append(base_hardware_mappings["has_poe"]())
+        and_conditions.append(base_hardware_mappings["Has_PoE"]())
     elif f.has_poe is False:
         # 明確不需要 PoE → 排除所有有 PoE 的型號
-        poe_cond = base_hardware_mappings["has_poe"]()
+        poe_cond = base_hardware_mappings["Has_PoE"]()
         and_conditions.append({"$nor": [poe_cond]})
 
     # 溫度等級
     if f.temp_grade == "Wide":
-        and_conditions.append(base_hardware_mappings["temp_wide"]())
+        and_conditions.append(base_hardware_mappings["Temp_Wide"]())
     elif f.temp_grade == "Normal":
         and_conditions.append(
             {"hardware.Temp Grade": {"$nin": ["Wide", "wide", "T", "Wide Temp"]}}

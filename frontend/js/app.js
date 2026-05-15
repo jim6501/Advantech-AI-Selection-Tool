@@ -117,10 +117,18 @@ function renderFilterTags(culprits = {}) {
         const scene = SCENE_TEMPLATES.find(s => s.id === activeScene);
         if (!scene) return;
 
-        // 場景來源 tag（深藍）
+        // 場景來源 tag（深藍）— 有條件被刪除或值被修改時加上 (已修改) 標記
+        const isSceneModified = removedSugKeys.size > 0 || scene.conditions.some(cond => {
+            if (cond.key === 'mgmtType') return document.getElementById('mgmtType').value !== cond.value;
+            if (cond.key === 'numPorts') return document.getElementById('numInput').value !== String(cond.value);
+            return false;
+        });
         const sceneTag = document.createElement('span');
         sceneTag.className = 'filter-tag-scene';
-        sceneTag.textContent = `${scene.icon} ${scene.label} 模板`;
+        const modifiedBadge = isSceneModified
+            ? ' <span style="font-size:0.68rem;font-weight:400;opacity:0.85;">(已修改)</span>'
+            : '';
+        sceneTag.innerHTML = `<span class="filter-icon">${scene.icon}</span> ${scene.label} 模板${modifiedBadge}`;
         filterDiv.appendChild(sceneTag);
 
         // 各條件 tag
@@ -147,16 +155,9 @@ function renderFilterTags(culprits = {}) {
 
             const label = getConditionDisplayLabel(effectiveCond);
             const tag = document.createElement('span');
-            if (isValueModified) {
-                tag.className = 'filter-tag-modified';
-                tag.textContent = `⚠ ${label}（已改）`;
-            } else if (cond.priority === 'required') {
-                tag.className = 'filter-tag-req';
-                tag.textContent = `🔒 ${label}`;
-            } else {
-                tag.className = 'filter-tag-sug';
-                tag.innerHTML = `${label} <span class="tag-remove" onclick="removeSuggestedCondition('${cond.key}')">×</span>`;
-            }
+            const displayText = isValueModified ? `${label} (已改)` : label;
+            tag.className = isValueModified ? 'filter-tag-modified' : 'filter-tag-sug';
+            tag.innerHTML = `${displayText} <span class="tag-remove" onclick="removeSuggestedCondition('${cond.key}')">×</span>`;
             filterDiv.appendChild(tag);
         });
 
@@ -169,7 +170,7 @@ function renderFilterTags(culprits = {}) {
             const lbl = mgmtManual === 'managed' ? 'Managed' : 'Unmanaged';
             const t = document.createElement('span');
             t.className = 'filter-tag';
-            t.textContent = `⚙ Type: ${lbl}`;
+            t.textContent = `Type: ${lbl}`;
             filterDiv.appendChild(t);
         }
 
@@ -177,7 +178,7 @@ function renderFilterTags(culprits = {}) {
         if (portManual && !scenePortActive) {
             const t = document.createElement('span');
             t.className = 'filter-tag';
-            t.textContent = `🔌 Port: ≥${portManual}`;
+            t.textContent = `Port: ≥${portManual}`;
             filterDiv.appendChild(t);
         }
 
@@ -189,11 +190,10 @@ function renderFilterTags(culprits = {}) {
             note.className = 'scene-state-note';
             filterDiv.parentElement.appendChild(note);
         }
-        const reqCount = scene.conditions.filter(c => c.priority === 'required' && !removedSugKeys.has(c.key)).length;
-        const sugCount = scene.conditions.filter(c => c.priority === 'suggested' && !removedSugKeys.has(c.key)).length;
+        const activeCount = scene.conditions.filter(c => !removedSugKeys.has(c.key)).length;
         const certNote = scene.conditions.some(c => c.key === 'certifications')
             ? '認證條件目前為顯示用，DB 欄位確認後將納入查詢。' : '';
-        note.textContent = `套用「${scene.label}」模板：${reqCount} 項必選、${sugCount} 項建議條件。${certNote}`;
+        note.textContent = `套用「${scene.label}」模板：包含 ${activeCount} 項預設條件。${certNote}`;
 
         // 偵測場景是否已被使用者修改
         checkSceneModified();
@@ -207,13 +207,13 @@ function renderFilterTags(culprits = {}) {
             const label = mgmtVal === 'managed' ? 'Managed' : 'Unmanaged';
             const tag = document.createElement('span');
             tag.className = 'filter-tag' + (culprits.mgmt ? ' culprit' : '');
-            tag.innerHTML = `<span class="filter-icon">⚙</span> Type: ${label}`;
+            tag.innerHTML = `Type: ${label}`;
             filterDiv.appendChild(tag);
         }
         if (portVal) {
             const tag = document.createElement('span');
             tag.className = 'filter-tag' + (culprits.port ? ' culprit' : '');
-            tag.innerHTML = `<span class="filter-icon">🔌</span> Port: ≥${portVal}`;
+            tag.innerHTML = `Port: ≥${portVal}`;
             filterDiv.appendChild(tag);
         }
         if (!mgmtVal && !portVal) {
@@ -357,6 +357,9 @@ function resetAll() {
     selectedItemsMap = {};
     renderSelected();
 
+    // 同步清除 Feature Selector 的選取狀態
+    fsReset();
+
     acquiredModels = [];
     document.getElementById('itemCount').textContent = '0';
     document.getElementById('tableBody').innerHTML = '';
@@ -490,6 +493,12 @@ async function sendMessage() {
         appendMessage('assistant', data.answer, false, data);
         chatHistory.push({ role: 'assistant', content: data.answer });
 
+        // 🌟 關鍵邏輯：延續篩選狀態
+        // 如果這次對話有篩選出特定的型號，就把範圍縮小到這些型號中。
+        // 這樣下一個問題就會基於這次的結果繼續篩選（And 邏輯）。
+        if (data.referenced_models && data.referenced_models.length > 0) {
+            acquiredModels = [...data.referenced_models];
+        }
     } catch (err) {
         loadingEl.remove();
         appendMessage('assistant', `⚠️ 發生錯誤：${err.message}`);
@@ -635,14 +644,14 @@ function selectScene(id) {
             }
             case 'poe':
                 if (cond.value === true) {
-                    selectedItemsMap['has_poe'] = 'Has PoE';
-                    sceneOwnedItemKeys.add('has_poe');
+                    selectedItemsMap['Has_PoE'] = 'Has PoE';
+                    sceneOwnedItemKeys.add('Has_PoE');
                 }
                 break;
             case 'tempGrade':
                 if (cond.value === 'wide') {
-                    selectedItemsMap['temp_wide'] = 'Wide Temp (−40°C)';
-                    sceneOwnedItemKeys.add('temp_wide');
+                    selectedItemsMap['Temp_Wide'] = 'Wide Temp (−40°C)';
+                    sceneOwnedItemKeys.add('Temp_Wide');
                 }
                 break;
         }
@@ -717,12 +726,12 @@ function removeSuggestedCondition(key) {
             break;
         }
         case 'poe':
-            delete selectedItemsMap['has_poe'];
-            sceneOwnedItemKeys.delete('has_poe');
+            delete selectedItemsMap['Has_PoE'];
+            sceneOwnedItemKeys.delete('Has_PoE');
             break;
         case 'tempGrade':
-            delete selectedItemsMap['temp_wide'];
-            sceneOwnedItemKeys.delete('temp_wide');
+            delete selectedItemsMap['Temp_Wide'];
+            sceneOwnedItemKeys.delete('Temp_Wide');
             break;
     }
     renderFilterTags();
@@ -779,4 +788,40 @@ function restoreSceneDefaults() {
     const id = activeScene;
     clearScene(true);   // 靜默清除目前狀態
     selectScene(id);    // 重新套用原始場景條件
+}
+
+// ═══════════════════════════════════════════════
+// Feature Selector — 事件綁定與橋接
+// ═══════════════════════════════════════════════
+
+// ── Modal 開關事件 ────────────────────────────
+document.getElementById('advancedFilterBtn')
+    .addEventListener('click', openFeatureSelector);
+document.getElementById('fs-modal-close')
+    .addEventListener('click', closeFeatureSelector);
+document.getElementById('fs-cancel-btn')
+    .addEventListener('click', closeFeatureSelector);
+document.getElementById('fs-apply-btn')
+    .addEventListener('click', applyFeatureSelector);
+
+// 點遮罩關閉 Modal
+document.getElementById('fs-modal-overlay')
+    .addEventListener('click', function (e) {
+        if (e.target === this) closeFeatureSelector();
+    });
+
+// ── Feature Selector 內部搜尋事件 ────────────
+document.getElementById('fs-search')
+    .addEventListener('input', function () { fsOnSearchInput(this.value); });
+document.getElementById('fs-s-clear')
+    .addEventListener('click', fsOnSearchClear);
+
+// ── 橋接函數：將 Feature Selector 結果注入 selectedItemsMap ──
+function applyFeatureSelector() {
+    const selected = fsGetSelected();
+    selected.forEach(({ key, label }) => {
+        selectedItemsMap[key] = label;
+    });
+    renderSelected();
+    closeFeatureSelector();
 }

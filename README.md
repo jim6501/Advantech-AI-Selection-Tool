@@ -34,8 +34,8 @@
 │   ├── llm_gateway.py # LLM 統一呼叫層與用量控管
 │   └── main.py        # FastAPI 進入點
 ├── frontend/
-│   ├── css/           # 獨立樣式表 (style.css)
-│   ├── js/            # 獨立邏輯腳本 (app.js)
+│   ├── css/           # 獨立樣式表 (style.css, feature-selector.css)
+│   ├── js/            # 獨立邏輯腳本 (app.js, scenes.js, feature-selector.js)
 │   └── select_ui_with_options_claude.html  # 主選型介面
 ├── configs/           # 環境變數與金鑰目錄 (.env, credentials.json)
 ├── logs/              # 系統日誌 (如 llm_usage.log)
@@ -132,6 +132,12 @@ uv run scripts/sync_specs_to_mongo.py
   - 修正非同步事件迴圈阻塞問題，確保 Chatbot 思考時介面不卡頓。
   - 優化 Chatbot 介面「📄 參考型號」的收納互動與 Chip 視覺。
   - 升級至最新 `google-genai` SDK，配置 `gemini-2.5-flash` 模型。
+- [x] **完成進階功能選擇器 (Feature Selector) 建置**（2026-05-15）：
+  - 設計「Modal 嵌入式」互動模式，使用者無需離開主頁即可瀏覽所有功能分類。
+  - 採用混合式架構：10 個大分類卡片（人工維護），子功能清單由 DB 自動同步。
+  - 支援大分類卡片展開、前端即時搜尋過濾（零 API 請求）、已選功能 Chip 列。
+  - 新增 `FS_HIDDEN_FEATURES` 設定，讓 PM 可一行設定隱藏不常用的子項目。
+  - 實作 `fsReset()` 與 `applyFeatureSelector()` 橋接函數，與主頁 Reset All 完整整合。
 
 ---
 © 2026 Advantech | AI Selection Tool Project

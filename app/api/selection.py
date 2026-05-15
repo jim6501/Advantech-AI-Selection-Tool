@@ -147,6 +147,10 @@ def search_product_features(q: str = ""):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB mapping init error: {str(e)}")
 
+    # 空白查詢：回傳全部（Feature Selector 初始化用，一次載入後前端自行過濾）
+    if not q:
+        return SEARCHABLE_ITEMS
+
     query_lower = q.lower()
     results = [
         item for item in SEARCHABLE_ITEMS

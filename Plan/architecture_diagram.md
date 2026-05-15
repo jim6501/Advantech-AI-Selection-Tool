@@ -41,7 +41,7 @@ graph TB
     subgraph Data ["💾 資料層 (Data Layer)"]
         MDB[(MongoDB - Product Specs)]
         GS[Google Sheets - 原始維護表]
-        VDB["📦 Vector DB - 產品手冊 (Planned)"]
+        VDB["📦 MongoDB Atlas Vector Search (Planned)"]
         
         style VDB stroke-dasharray: 5 5, fill:#fff4e6, stroke:#d4a017
     end
@@ -129,6 +129,6 @@ flowchart TD
 - **LLM Gateway**：具備自動重試與 API 日誌紀錄功能的 Gemini 核心介面。
 
 ### 2. 未來計畫 (Sprint 2+)
-- **Vector DB 整合**：導入向量資料庫處理 PDF 使用手冊，實現完整的 RAG 檢索增強生成。
+- **向量檢索整合**：導入 MongoDB Atlas Vector Search 處理 PDF 使用手冊，實現完整的 RAG 檢索增強生成。
 - **自動化報告輸出**：將 AI 建議直接轉換為 Word 或 PDF 格式供業務下載。
 - **橫向比較功能**：實作 UI 面板讓使用者能橫向對比多台設備細節。

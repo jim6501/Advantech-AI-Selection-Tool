@@ -19,3 +19,5 @@ validation_report.json
 # Logs & temporary data
 logs/
 data/*.json
+data/DS_md/
+frontend/temp/

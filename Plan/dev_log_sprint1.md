@@ -66,6 +66,76 @@
 
 ---
 
+---
+
+## 📅 2026-05-15：進階功能選擇器 (Feature Selector) 建置
+
+### 🎯 設計決策
+
+**痛點**：原有的 Search Inventory 搜尋框雖支援模糊搜尋，但使用者需要知道確切的功能名稱才能搜尋，對不熟悉規格的使用者（如業務、PM）造成認知負擔。
+
+**決策：混合式架構（人工大分類 + 動態子功能）**
+- 大分類（Group 卡片）：由 PM/RD 在 `FS_GROUPS` 中人工維護，提供語意清晰的分類結構。
+- 子功能清單：由後端 DB 自動掃描產生，新增功能無需改程式碼。
+- 若 DB 出現未被歸類的 category，自動歸入「其他（未分類）」，不會崩潰，但會提示 PM 更新設定。
+
+**Modal 整合而非獨立頁面**：嵌入主頁的 Modal 模式，保留使用者已選的其他篩選條件，不需頁面切換。
+
+---
+
+### 🗂️ 新增檔案
+
+| 檔案 | 說明 |
+|------|------|
+| `frontend/css/feature-selector.css` | Modal 外框、分類卡片、子功能列表、Chip 列等所有樣式，使用主頁 CSS 變數保持設計一致 |
+| `frontend/js/feature-selector.js` | 完整選擇器邏輯（詳見下方），不含任何 DOM 直接操作在 HTML 中 |
+
+---
+
+### ⚙️ 後端修改：`app/api/selection.py`
+
+- **`searchProdType` 空白查詢支援**：查詢字串為空時，直接回傳完整的 `SEARCHABLE_ITEMS` 列表（不限制 20 筆），供 Feature Selector 一次性初始化，之後完全由前端過濾，不再觸發 API。
+
+---
+
+### 🎨 前端架構：`frontend/js/feature-selector.js`
+
+**三層可維護設計**（由上往下，修改頻率遞減）：
+
+1. **`FS_GROUPS`（人工維護區）**：定義 10 個大分類卡片，每個包含 `id / label / icon / color / dbCategories`。`dbCategories` 字串需與 DB 的 category 欄位**完全一致**（可透過 `GET /api/searchProdType?q=` 查詢）。
+
+2. **`FS_HIDDEN_FEATURES`（隱藏功能設定）**：`Set<string>`，放入 DB key（格式：`category|||feat_key`）即可讓該功能不出現在 UI，但仍可透過 Search Inventory 找到。隱藏只影響前端，不影響資料庫與查詢結果。
+
+3. **邏輯函數區（一般不需修改）**：`_fsDistributeItems`（分配資料到各 Group）、`fsRender / fsRenderGrid / fsRenderSub / fsRenderChips / fsRenderSearch`（渲染函數）、`fsToggleItem / fsToggleCat / fsToggleCard`（互動函數）。
+
+**與主頁橋接（`app.js`）**：
+- `openFeatureSelector()` / `closeFeatureSelector()` / `fsReset()`：Modal 控制。
+- `applyFeatureSelector()`：呼叫 `fsGetSelected()` 取得選取結果，注入 `selectedItemsMap`，並呼叫 `renderSelected()` 更新主頁 UI。
+
+---
+
+### 🐛 Bug 修正
+
+| # | 問題描述 | 根因 | 修正方式 |
+|---|----------|------|---------|
+| 1 | 89 項功能歸入「其他（未分類）」 | `FS_GROUPS.dbCategories` 字串與 DB 實際 category 名稱不符（如 `'ACL'` vs `'Access Control List (ACL)'`、`'ERPS'` vs `'ERPS(G.8032)'`） | 執行 `python -c "...SEARCHABLE_ITEMS"` 取得精確 category 名稱，逐一修正 8 個錯誤，補入 15 個遺漏 category |
+| 2 | Reset All 不清除 Feature Selector 選取 | `resetAll()` 只清除 `selectedItemsMap`，未呼叫 Feature Selector 的狀態重置 | 在 `feature-selector.js` 新增 `fsReset()`，並在 `app.js` 的 `resetAll()` 中加入呼叫 |
+| 3 | 刪除 Chip 後 checkbox 仍顯示勾選 | `fsRemoveCatChip()` 只呼叫 `fsRenderChips()`，未重渲染子功能面板 | 改呼叫 `fsRender()`（完整重渲染） |
+
+---
+
+### 📋 維護手冊（快速參考）
+
+```
+新增子功能        → 不需改任何程式碼（DB 自動同步）
+新增 DB 大分類    → FS_GROUPS[x].dbCategories 加一行（需完全符合 DB category 字串）
+新增 Group 卡片   → FS_GROUPS 陣列加一個 object
+隱藏特定子功能    → FS_HIDDEN_FEATURES Set 加一行 'category|||feat_key'
+恢復隱藏的功能    → FS_HIDDEN_FEATURES Set 刪除對應行
+```
+
+---
+
 ## 📈 下一階段計畫 (Sprint 2)
 - [ ] 實作真正的 RAG (Retrieval-Augmented Generation) 流程。
 - [ ] 整合向量資料庫（Vector DB）處理 PDF 規格書文本。

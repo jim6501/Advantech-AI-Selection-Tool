@@ -12,6 +12,7 @@
 
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="/frontend/css/style.css">
+    <link rel="stylesheet" href="/frontend/css/feature-selector.css">
 
     <!-- marked.js：Markdown 渲染（Chatbot 回覆美化） -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -86,6 +87,7 @@
                     <label><span class="step-badge">3</span> Search Inventory</label>
                     <input type="text" id="searchInput" placeholder="Search product items…">
                     <div id="searchResults"></div>
+                    <button id="advancedFilterBtn" type="button">⊞ 進階功能瀏覽</button>
                 </div>
             </div>
 
@@ -181,7 +183,37 @@
         </div>
     </div>
 
+    <!-- ═══════════════ FEATURE SELECTOR MODAL ═══════════════ -->
+    <div id="fs-modal-overlay">
+        <div id="fs-modal-container">
+            <div id="fs-modal-header">
+                <span>⊞ 進階功能篩選</span>
+                <button id="fs-modal-close">✕</button>
+            </div>
+            <div id="fs-modal-body">
+                <!-- 已選功能 Chip 列 -->
+                <div id="fs-chip-bar">
+                    <span id="fs-chip-hint">尚未選取任何功能</span>
+                </div>
+                <!-- 搜尋框 -->
+                <div class="fs-search-wrap">
+                    <input type="text" id="fs-search" placeholder="搜尋功能… (例：VLAN、PoE、STP、TSN)">
+                    <span id="fs-s-clear">×</span>
+                </div>
+                <!-- 大分類卡片格（由 feature-selector.js 動態產生） -->
+                <div id="fs-cat-grid"></div>
+                <!-- 子功能展開區域（由 feature-selector.js 動態產生） -->
+                <div id="fs-sub-area"></div>
+            </div>
+            <div id="fs-modal-footer">
+                <button id="fs-cancel-btn">取消</button>
+                <button id="fs-apply-btn">套用篩選條件</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Application Script（放在 body 底部確保 DOM 已載入） -->
+    <script src="/frontend/js/feature-selector.js"></script>
     <script src="/frontend/js/scenes.js"></script>
     <script src="/frontend/js/app.js"></script>
 
