@@ -16,6 +16,8 @@
 
     <!-- marked.js：Markdown 渲染（Chatbot 回覆美化） -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 </head>
 
 <body>
@@ -58,8 +60,9 @@
                 <div class="section">
                     <label><span class="step-badge">1</span> Management Type</label>
                     <select id="mgmtType">
-                        <option value="" disabled selected hidden>Please select Managed or Unmanaged ...</option>
-                        <option value="managed">Managed</option>
+                        <option value="" disabled selected hidden>Please select Management Type ...</option>
+                        <option value="l2_managed">L2 Managed</option>
+                        <option value="l3_managed">L3 Managed</option>
                         <option value="unmanaged">Unmanaged</option>
                     </select>
                 </div>
@@ -112,7 +115,7 @@
 
         </div>
 
-        <!-- 下方：結果表格 -->
+        <!-- 下方：結果卡片列表 -->
         <div class="lower-part card">
             <div class="results-header">
                 <h3>Acquired Product Information</h3>
@@ -121,24 +124,7 @@
                     Total: <span id="itemCount">0</span>
                 </div>
             </div>
-            <table class="data-display">
-                <thead>
-                    <tr>
-                        <th>No.</th>
-                        <th>Model Name</th>
-                        <th>Type</th>
-                        <th>Total Port</th>
-                        <th>RJ-45<br>(10/100)</th>
-                        <th>RJ-45<br>(Gigabit)</th>
-                        <th>RJ-45<br>(Combo)</th>
-                        <th>Fiber<br>(10/100)</th>
-                        <th>Fiber<br>(Gigabit)</th>
-                        <th>Fiber<br>(Combo)</th>
-                        <th>Features<br>(Wide/Normal)</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
+            <div class="prod-list" id="prodList"></div>
         </div>
 
     </div><!-- /.main-container -->
@@ -213,9 +199,9 @@
     </div>
 
     <!-- Main Application Script（放在 body 底部確保 DOM 已載入） -->
-    <script src="/frontend/js/feature-selector.js"></script>
-    <script src="/frontend/js/scenes.js"></script>
-    <script src="/frontend/js/app.js"></script>
+    <script src="/frontend/js/feature-selector.js?v=2"></script>
+    <script src="/frontend/js/scenes.js?v=2"></script>
+    <script src="/frontend/js/app.js?v=2"></script>
 
 </body>
 

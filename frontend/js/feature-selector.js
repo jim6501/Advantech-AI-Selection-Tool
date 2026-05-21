@@ -23,7 +23,7 @@
 // ================================================================
 const FS_GROUPS = [
     {
-        id: 'net2', label: '二層交換', icon: '⬡', color: '#4a9eff',
+        id: 'net2', label: 'Layer 2 Switching', icon: '⬡', color: '#4a9eff',
         dbCategories: [
             'VLAN(IEEE 802.1Q)',
             'Spanning Tree',
@@ -37,7 +37,7 @@ const FS_GROUPS = [
         ]
     },
     {
-        id: 'net3', label: '三層路由', icon: '⇄', color: '#3ec99a',
+        id: 'net3', label: 'Layer 3 Routing', icon: '⇄', color: '#3ec99a',
         dbCategories: [
             'Routing Protocol',
             'IGMP Snooping v1/v2/v3',
@@ -322,6 +322,12 @@ function _fsUpdateSelAllBtn(gid, cat) {
         btn.textContent = allSel ? '取消全選' : '全選此分類';
         btn.classList.toggle('on', allSel);
     });
+}
+
+/** 供外部取得 DB Category 對應的 Group Label */
+function fsGetCategoryGroupLabel(dbCat) {
+    const g = FS_GROUPS.find(group => group.dbCategories.includes(dbCat));
+    return g ? g.label : '其他';
 }
 
 // ── 輸出函數（供 app.js 橋接） ──────────────────────────────────

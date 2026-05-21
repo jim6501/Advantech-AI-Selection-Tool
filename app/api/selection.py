@@ -174,7 +174,7 @@ def submit_product_selection(req: SubmitProdRequest):
 
     # Step 1：組裝基本硬體條件（直接對應資料庫原始欄位）
     and_conditions = [
-        {"hardware.PLM Lifecycle": {"$nin": ["EOL", "Phase Out"]}}
+        {"hardware.PLM Lifecycle": {"$not": {"$regex": "(eol|phase out|inactivate)", "$options": "i"}}}
     ]
 
     if req.type != "ALL":
@@ -182,8 +182,18 @@ def submit_product_selection(req: SubmitProdRequest):
         if type_lower == "unmanaged":
             # Function 中含有 "unmanage"（不區分大小寫）即視為 Unmanaged
             and_conditions.append({"hardware.Function": {"$regex": "unmanage", "$options": "i"}})
+        elif type_lower == "l3_managed" or type_lower == "l3 managed":
+            # 含有 L3 且含有 manage，但不含 unmanage
+            and_conditions.append({"hardware.Function": {"$regex": "manage", "$options": "i"}})
+            and_conditions.append({"hardware.Function": {"$regex": "l3", "$options": "i"}})
+            and_conditions.append({"hardware.Function": {"$not": re.compile("unmanage", re.IGNORECASE)}})
+        elif type_lower == "l2_managed" or type_lower == "l2 managed":
+            # 含有 manage，但不含 unmanage，且不含 L3 (只寫 Managed 或 L2 Managed 都歸類為 L2)
+            and_conditions.append({"hardware.Function": {"$regex": "manage", "$options": "i"}})
+            and_conditions.append({"hardware.Function": {"$not": re.compile("unmanage", re.IGNORECASE)}})
+            and_conditions.append({"hardware.Function": {"$not": re.compile("l3", re.IGNORECASE)}})
         elif type_lower == "managed":
-            # Function 中含有 "manage" 且不含 "unmanage"（不區分大小寫）即視為 Managed
+            # 相容原本的 "managed" 查詢，不區分 L2/L3，全都要
             and_conditions.append({"hardware.Function": {"$regex": "manage", "$options": "i"}})
             and_conditions.append({"hardware.Function": {"$not": re.compile("unmanage", re.IGNORECASE)}})
         else:
@@ -253,7 +263,18 @@ def submit_product_selection(req: SubmitProdRequest):
             prod_fiber_100=safe_int(hw.get("Fiber 100M")),
             prod_fiber_giga=safe_int(hw.get("Fiber Gigabit")),
             prod_fiber_ge_combo=safe_int(hw.get("Fiber GE Combo")),
-            prod_w_n=hw.get("Temp Grade", "Normal")
+            prod_w_n=hw.get("Temp Grade", "Normal"),
+            prod_poe_rj_100=safe_int(hw.get("PoE RJ-45 100M")),
+            prod_poe_rj_giga=safe_int(hw.get("PoE RJ-45 GbE")),
+            prod_m12_100=safe_int(hw.get("Eth 10/100M (D-code)")),
+            prod_m12_giga=safe_int(hw.get("Eth Gigabit (X-code)")),
+            prod_m12_multi_giga=safe_int(hw.get("Eth Multi-Giga (X-code)")),
+            prod_poe_m12_100=safe_int(hw.get("PoE (D-code)")),
+            prod_poe_m12_giga=safe_int(hw.get("PoE (X-code)")),
+            prod_bypass_m12_100=safe_int(hw.get("LAN Bypass 10/100M (D-code)")),
+            prod_bypass_m12_giga=safe_int(hw.get("LAN Bypass Gigabit (X-code)")),
+            prod_power_input=str(hw.get("Input Voltage") or "—").strip(),
+            prod_temp_range=str(hw.get("Op Temp Range") or hw.get("Temp Grade") or "—").strip()
         ))
 
     return SubmitProdResponse(products=response_items)

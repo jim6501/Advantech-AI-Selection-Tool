@@ -1,7 +1,7 @@
 {
   "industrial_sw": [
     {
-      "Application": "",
+      "Application": "車載系統, 軌道沿線, 智慧工廠",
       "Function": "Unmanaged",
       "Model Name": "ADAM-6520",
       "Product PN": "ADAM-6520-BE",
@@ -29,11 +29,11 @@
       "Input Voltage": "10 - 30 VDC",
       "Temp Grade": "Normal",
       "Op Temp Range": "",
-      "Certifications": "",
+      "Certifications": "UL61010, LVD62368",
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "軌道沿線",
       "Function": "Unmanaged",
       "Model Name": "ADAM-6520I",
       "Product PN": "ADAM-6520I-AE",
@@ -59,13 +59,13 @@
       "Power Budget (W)": "",
       "PoE 驗證": "✅",
       "Input Voltage": "10 - 30 VDC",
-      "Temp Grade": "Y",
+      "Temp Grade": "Wide",
       "Op Temp Range": "",
-      "Certifications": "",
+      "Certifications": "UL62368",
       "Note": "Continue supply"
     },
     {
-      "Application": "",
+      "Application": "智慧工廠",
       "Function": "Unmanaged",
       "Model Name": "ADAM-6521",
       "Product PN": "ADAM-6521-BE",
@@ -93,11 +93,11 @@
       "Input Voltage": "10 - 30 VDC",
       "Temp Grade": "Normal",
       "Op Temp Range": "",
-      "Certifications": "",
+      "Certifications": "LVD62368",
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "ADAM-6521S",
       "Product PN": "ADAM-6521S-AE",
@@ -125,11 +125,11 @@
       "Input Voltage": "10 - 30 VDC",
       "Temp Grade": "Normal",
       "Op Temp Range": "",
-      "Certifications": "",
+      "Certifications": "VL508",
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "ADAM-6521-ST",
       "Product PN": "ADAM-6521/ST-AE",
@@ -157,11 +157,11 @@
       "Input Voltage": "10 - 30 VDC",
       "Temp Grade": "Normal",
       "Op Temp Range": "",
-      "Certifications": "",
+      "Certifications": "IEC61850",
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "ADAM-6520L",
       "Product PN": "ADAM-6520L-AE",
@@ -189,11 +189,11 @@
       "Input Voltage": "10 - 30 VDC",
       "Temp Grade": "",
       "Op Temp Range": "",
-      "Certifications": "",
+      "Certifications": "NEMA",
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2428G-4CA",
       "Product PN": "EKI-2428G-4CA-AE",
@@ -225,7 +225,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2428G-4CAI",
       "Product PN": "EKI-2428G-4CAI-AE",
@@ -257,7 +257,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2428G-4CI",
       "Product PN": "EKI-2428G-4CI-BE",
@@ -289,7 +289,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2525",
       "Product PN": "EKI-2525-BE",
@@ -321,7 +321,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2525I",
       "Product PN": "EKI-2525I-BE",
@@ -353,7 +353,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2525LI",
       "Product PN": "EKI-2525LI-AE",
@@ -385,7 +385,7 @@
       "Note": "height 8cm"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2525M",
       "Product PN": "EKI-2525M-BE",
@@ -417,7 +417,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2525MI",
       "Product PN": "EKI-2525MI-BE",
@@ -449,7 +449,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2525MI-ST",
       "Product PN": "EKI-2525MI-ST-BE",
@@ -481,7 +481,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2525S",
       "Product PN": "EKI-2525S-AE",
@@ -513,7 +513,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2525SI",
       "Product PN": "EKI-2525SI-AE",
@@ -545,7 +545,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2525SI-ST",
       "Product PN": "EKI-2525SI-ST-AE",
@@ -577,7 +577,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2526M",
       "Product PN": "EKI-2526M-AE",
@@ -609,7 +609,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2526M-ST",
       "Product PN": "EKI-2526M-ST-AE",
@@ -641,7 +641,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2526S",
       "Product PN": "EKI-2526S-AE",
@@ -673,7 +673,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2528",
       "Product PN": "EKI-2528-BE",
@@ -705,7 +705,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2528I",
       "Product PN": "EKI-2528I-BE",
@@ -737,7 +737,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2528DI",
       "Product PN": "EKI-2528DI-AE",
@@ -769,7 +769,7 @@
       "Note": "Continue supply"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2528I-M12-AE",
       "Product PN": "EKI-2528I-M12-AE",
@@ -801,7 +801,7 @@
       "Note": "NEW M12 IP67"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2525I-LA",
       "Product PN": "EKI-2525I-LA-AE",
@@ -833,7 +833,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2528I-LA",
       "Product PN": "EKI-2528I-LA-AE",
@@ -865,7 +865,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2705E-1GPI",
       "Product PN": "EKI-2705E-1GPI-A/\nEKI-2705E-1GPI-AU",
@@ -897,7 +897,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2705G-1GPI",
       "Product PN": "EKI-2705G-1GPI-A/\nEKI-2705G-1GPI-AU",
@@ -929,7 +929,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2706E-1GFPI",
       "Product PN": "EKI-2706E-1GPI-BE/\nEKI-2705E-1GPI-BU",
@@ -961,7 +961,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2706G-1GFPI",
       "Product PN": "EKI-2706G-1GFPI-BE/\nEKI-2706G-1GFPI-BU",
@@ -993,7 +993,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2706G-2FPI",
       "Product PN": "EKI-2706G-2FPI-A",
@@ -1025,7 +1025,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2706G-2GPI",
       "Product PN": "EKI-2706G-2GPI-A",
@@ -1057,7 +1057,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2708G-PI",
       "Product PN": "EKI-2708G-PI-A",
@@ -1089,7 +1089,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2710G-2FPI",
       "Product PN": "EKI-2710G-2FPI-A",
@@ -1121,7 +1121,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2712G-4FPI",
       "Product PN": "EKI-2712G-4FPI-AE",
@@ -1153,7 +1153,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2720G-4F",
       "Product PN": "EKI-2720G-4F-AE",
@@ -1185,7 +1185,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2720G-4FI",
       "Product PN": "EKI-2720G-4FI-AE",
@@ -1217,7 +1217,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2725",
       "Product PN": "EKI-2725-CE",
@@ -1249,7 +1249,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2725F-AE",
       "Product PN": "EKI-2725F-AE",
@@ -1281,7 +1281,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2725FI-AE",
       "Product PN": "EKI-2725FI-AE",
@@ -1313,7 +1313,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2725I",
       "Product PN": "EKI-2725I-CE",
@@ -1345,7 +1345,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2728",
       "Product PN": "EKI-2728-D",
@@ -1377,7 +1377,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2728I",
       "Product PN": "EKI-2728I-D",
@@ -1409,7 +1409,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2728M",
       "Product PN": "EKI-2728M-BE",
@@ -1441,7 +1441,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2728MI",
       "Product PN": "EKI-2728MI-BE",
@@ -1473,7 +1473,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2728MI-ST",
       "Product PN": "EKI-2728MI-ST-BE",
@@ -1505,7 +1505,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2728S",
       "Product PN": "EKI-2728S-AE",
@@ -1537,7 +1537,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2728SI",
       "Product PN": "EKI-2728SI-AE",
@@ -1569,7 +1569,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2728SI-ST",
       "Product PN": "EKI-2728SI-ST-AE",
@@ -1601,7 +1601,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2710E-2CI",
       "Product PN": "EKI-2710E-2CI-A",
@@ -1633,10 +1633,10 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2718E-2CI",
-      "Product PN": "EKI-2716EI-A",
+      "Product PN": "EKI-2718E-2CI-A",
       "Software Series": "",
       "Firmware Version": "",
       "PLM Lifecycle": "NEW, MP",
@@ -1665,7 +1665,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2716EI",
       "Product PN": "EKI-2716EI-A",
@@ -1697,7 +1697,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2716GI",
       "Product PN": "EKI-2716GI-A",
@@ -1729,7 +1729,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged",
       "Model Name": "EKI-2716GI-R",
       "Product PN": "EKI-2716GI-R-A",
@@ -1761,7 +1761,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5524MMI",
       "Product PN": "EKI-5524MMI-AE",
@@ -1793,7 +1793,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5524MMI-ST",
       "Product PN": "EKI-5524MMI-ST-AE",
@@ -1825,7 +1825,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5524SSI",
       "Product PN": "EKI-5524SSI-AE",
@@ -1857,7 +1857,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5524SSI-ST",
       "Product PN": "EKI-5524SSI-ST-AE",
@@ -1889,7 +1889,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5525I",
       "Product PN": "EKI-5525I-AE",
@@ -1921,7 +1921,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5525MI",
       "Product PN": "EKI-5525MI-AE",
@@ -1953,7 +1953,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5525MI-ST",
       "Product PN": "EKI-5525MI-ST-AE",
@@ -1985,7 +1985,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5525SI",
       "Product PN": "EKI-5525SI-AE",
@@ -2017,7 +2017,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5525SI-ST",
       "Product PN": "EKI-5525SI-ST-AE",
@@ -2049,7 +2049,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5526I",
       "Product PN": "EKI-5526I-AE",
@@ -2081,7 +2081,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5526I-EI",
       "Product PN": "EKI-5526I-EI-AE",
@@ -2113,7 +2113,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5526I-MB",
       "Product PN": "EKI-5526I-MB-AE",
@@ -2145,7 +2145,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5526I-PN",
       "Product PN": "EKI-5526I-PN-AE",
@@ -2177,7 +2177,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5528I",
       "Product PN": "EKI-5528I-AE",
@@ -2209,7 +2209,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5528I-EI",
       "Product PN": "EKI-5528I-EI-AE",
@@ -2241,7 +2241,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5528I-MB",
       "Product PN": "EKI-5528I-MB-AE",
@@ -2273,7 +2273,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5528I-PN",
       "Product PN": "EKI-5528I-PN-AE",
@@ -2305,7 +2305,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5528-PNMA",
       "Product PN": "EKI-5528-PNMA-AE",
@@ -2337,7 +2337,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5626CI",
       "Product PN": "EKI-5626CI-AE",
@@ -2363,13 +2363,13 @@
       "Power Budget (W)": "",
       "PoE 驗證": "✅",
       "Input Voltage": "12-48VDC",
-      "Temp Grade": "Y",
+      "Temp Grade": "Wide",
       "Op Temp Range": "",
       "Certifications": "",
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5626CI-EI",
       "Product PN": "EKI-5626CI-EI-BE",
@@ -2401,7 +2401,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5626CI-MB",
       "Product PN": "EKI-5626CI-MB-BE",
@@ -2433,7 +2433,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5626CI-PN",
       "Product PN": "EKI-5626CI-PN-BE",
@@ -2465,7 +2465,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5629CI",
       "Product PN": "EKI-5629CI-AE",
@@ -2497,7 +2497,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5629CI-EI",
       "Product PN": "EKI-5629CI-EI-BE",
@@ -2529,7 +2529,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5629CI-MB",
       "Product PN": "EKI-5629CI-MB-BE",
@@ -2561,7 +2561,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5629CI-PN",
       "Product PN": "EKI-5629CI-PN-BE",
@@ -2593,7 +2593,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5726I-MB",
       "Product PN": "EKI-5726I-MB-AE",
@@ -2625,7 +2625,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5726FI-MB",
       "Product PN": "EKI-5726FI-MB-AE",
@@ -2657,7 +2657,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5728I-MB",
       "Product PN": "EKI-5728I-MB-AE",
@@ -2689,7 +2689,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Entry Level Managed Switch",
       "Model Name": "EKI-5729FI-MB",
       "Product PN": "EKI-5729FI-MB-AE",
@@ -2721,7 +2721,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5725I",
       "Product PN": "EKI-5725I-AE",
@@ -2753,7 +2753,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5726FI",
       "Product PN": "EKI-5726FI-AE",
@@ -2785,7 +2785,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5726I",
       "Product PN": "EKI-5726I-AE",
@@ -2817,7 +2817,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5728I",
       "Product PN": "EKI-5728I-AE",
@@ -2849,7 +2849,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5729FI",
       "Product PN": "EKI-5729FI-AE",
@@ -2881,7 +2881,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Unmanaged / Proview",
       "Model Name": "EKI-5729PI",
       "Product PN": "EKI-5729PI-AE",
@@ -2913,7 +2913,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-5708E",
       "Product PN": "EKI-5708E-A",
@@ -2945,7 +2945,7 @@
       "Note": "2024/9 launch"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-5708E-2FI",
       "Product PN": "EKI-5708E-2FI-A",
@@ -2977,7 +2977,7 @@
       "Note": "2024/9 launch"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-5710E",
       "Product PN": "EKI-5710E-A",
@@ -3009,7 +3009,7 @@
       "Note": "2024/9 launch"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-5710E-2FI",
       "Product PN": "EKI-5710E-2FI-A",
@@ -3041,7 +3041,7 @@
       "Note": "2024/9 launch"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7412G-4XP",
       "Product PN": "EKI-7412G-4XP-AE",
@@ -3073,7 +3073,7 @@
       "Note": "Temp: 0 ~ 60C"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7428G-4CA",
       "Product PN": "EKI-7428G-4CA-AE",
@@ -3105,7 +3105,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7428G-4CI",
       "Product PN": "EKI-7428G-4CI-AE",
@@ -3137,7 +3137,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7428G-4CI",
       "Product PN": "EKI-7428G-4CI-BE",
@@ -3169,7 +3169,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7428G-4CPI-AE",
       "Product PN": "EKI-7428G-4CPI-AE",
@@ -3201,7 +3201,7 @@
       "Note": "LTB 2023/12/31"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7428G-4CPI-BE",
       "Product PN": "EKI-7428G-4CPI-BE",
@@ -3210,9 +3210,9 @@
       "PLM Lifecycle": "MP",
       "Description": "24G+4G Combo port L2 Managed PoE+ Switch",
       "Type": "Rack",
-      "Port Numbers": "4",
+      "Port Numbers": "28",
       "RJ-45 10/100M": "",
-      "RJ-45 Gigabit": "",
+      "RJ-45 Gigabit": "24",
       "RJ-45 Combo": "4",
       "RJ-45 10GbE": "",
       "Fiber 100M": "",
@@ -3225,7 +3225,7 @@
       "PoE RJ-45 GbE": "24",
       "PoE Standard": "IEEE 802.3at/af",
       "Power Budget (W)": "685W",
-      "PoE 驗證": "⚠️ PoE超限",
+      "PoE 驗證": "✅",
       "Input Voltage": "48VDC",
       "Temp Grade": "Wide",
       "Op Temp Range": "",
@@ -3233,7 +3233,7 @@
       "Note": "Going to MP in 2022/3"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7428G-4X",
       "Product PN": "EKI-7428G-4X-AE",
@@ -3265,7 +3265,7 @@
       "Note": "Temp: 0 ~ 60C"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7428G-4XP-AE",
       "Product PN": "EKI-7428G-4XP-AE",
@@ -3297,7 +3297,7 @@
       "Note": "Temp: 0 ~ 60C"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7454G-6X",
       "Product PN": "EKI-7454G-6X-AE",
@@ -3329,7 +3329,7 @@
       "Note": "Temp: 0 ~ 60C"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7706E-2F",
       "Product PN": "EKI-7706E-2F-AE",
@@ -3361,7 +3361,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7706E-2FI",
       "Product PN": "EKI-7706E-2FI-AE",
@@ -3393,7 +3393,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7706G-2F",
       "Product PN": "EKI-7706G-2F-AE",
@@ -3425,7 +3425,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7706G-2FI",
       "Product PN": "EKI-7706G-2FI-AE",
@@ -3457,7 +3457,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708E-4F",
       "Product PN": "EKI-7708E-4F-AE",
@@ -3489,7 +3489,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708E-4FI",
       "Product PN": "EKI-7708E-4FI-AE",
@@ -3521,7 +3521,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708E-2MI",
       "Product PN": "EKI-7708E-2MI-AE",
@@ -3553,7 +3553,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708E-2SI",
       "Product PN": "EKI-7708E-2SI-AE",
@@ -3585,7 +3585,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708E-4FP",
       "Product PN": "EKI-7708E-4FP-AE",
@@ -3617,7 +3617,7 @@
       "Note": "Phase out, LTB 2023/12/E, Succossor EKI-7708G-4FPI-BE"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708E-4FPI",
       "Product PN": "EKI-7708E-4FPI-AE",
@@ -3649,7 +3649,7 @@
       "Note": "Phase out, LTB 2023/12/E, Succossor EKI-7708G-4FPI-BE"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708E-4FPI",
       "Product PN": "EKI-7708E-4FPI-BE",
@@ -3681,7 +3681,7 @@
       "Note": "Phase out, LTB 2023/12/E, Succossor EKI-7708G-4FPI-BE"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708G-2MI",
       "Product PN": "EKI-7708G-2MI-AE",
@@ -3713,7 +3713,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708G-2SI",
       "Product PN": "EKI-7708G-2SI-AE",
@@ -3745,7 +3745,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708G-4F",
       "Product PN": "EKI-7708G-4F-AE",
@@ -3777,7 +3777,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708G-4FI",
       "Product PN": "EKI-7708G-4FI-AE",
@@ -3809,7 +3809,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708G-4FI",
       "Product PN": "EKI-7708G-4FI-BE",
@@ -3841,7 +3841,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708G-4FP-AE",
       "Product PN": "EKI-7708G-4FP-AE",
@@ -3873,7 +3873,7 @@
       "Note": "Phase out, LTB 2023/12/E, Succossor EKI-7708G-4FPI-BE"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708G-4FPI-AE",
       "Product PN": "EKI-7708G-4FPI-AE",
@@ -3905,7 +3905,7 @@
       "Note": "Phase out, LTB 2023/12/E, Succossor EKI-7708G-4FPI-BE"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7708G-4FPI-AE",
       "Product PN": "EKI-7708G-4FPI-BE",
@@ -3937,7 +3937,7 @@
       "Note": "Phase out, LTB 2023/12/E, Succossor EKI-7708G-4FPI-BE"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7710E-2C",
       "Product PN": "EKI-7710E-2C-BE",
@@ -3969,7 +3969,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7710E-2CI",
       "Product PN": "EKI-7710E-2CI-BE",
@@ -4001,7 +4001,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7710E-2CPI",
       "Product PN": "EKI-7710E-2CPI-BE",
@@ -4033,7 +4033,7 @@
       "Note": "Phase out, LTB 2023/12/E, Successor EKI-7710G-2CPI-BE"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7710G-2C",
       "Product PN": "EKI-7710G-2C-BE",
@@ -4065,7 +4065,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7710G-2CI",
       "Product PN": "EKI-7710G-2CI-BE",
@@ -4097,7 +4097,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7710G-2CPI-BE",
       "Product PN": "EKI-7710G-2CPI-BE",
@@ -4129,7 +4129,7 @@
       "Note": "Replace AE version."
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712E-4F",
       "Product PN": "EKI-7712E-4F-AE",
@@ -4161,7 +4161,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712E-4FI",
       "Product PN": "EKI-7712E-4FI-AE",
@@ -4193,7 +4193,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712E-4FP",
       "Product PN": "EKI-7712E-4FP-AE",
@@ -4225,7 +4225,7 @@
       "Note": "Phase out, LTB 2023/12/E, Succerssor EKI-7712G-4FPI-BE"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712E-4FPI",
       "Product PN": "EKI-7712E-4FPI-AE",
@@ -4257,7 +4257,7 @@
       "Note": "Phase out, LTB 2023/12/E, Succerssor EKI-7712G-4FPI-BE"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712G-4F",
       "Product PN": "EKI-7712G-4F-AE",
@@ -4289,7 +4289,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712G-4FI",
       "Product PN": "EKI-7712G-4FI-AE",
@@ -4321,7 +4321,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712G-4FMPI",
       "Product PN": "EKI-7712G-4FMPI-AE",
@@ -4353,7 +4353,7 @@
       "Note": "PoE 802.3bt solution"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712G-4FP-AE",
       "Product PN": "EKI-7712G-4FP-AE",
@@ -4385,7 +4385,7 @@
       "Note": "Phase out, LTB 2023/12/E, Succerssor EKI-7712G-4FPI-BE"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712G-4FPI-AE",
       "Product PN": "EKI-7712G-4FPI-AE",
@@ -4417,7 +4417,7 @@
       "Note": "Phase out, LTB 2023/12/E, Succerssor EKI-7712G-4FPI-BE"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712E-4F",
       "Product PN": "EKI-7712E-4F-BE",
@@ -4449,7 +4449,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712E-4FI",
       "Product PN": "EKI-7712E-4FI-BE",
@@ -4481,7 +4481,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712E-4FPI",
       "Product PN": "EKI-7712E-4FPI-BE",
@@ -4513,7 +4513,7 @@
       "Note": "Phase out, LTB 2023/12/E, Succerssor EKI-7712G-4FPI-BE"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712G-4F",
       "Product PN": "EKI-7712G-4F-BE",
@@ -4545,7 +4545,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712G-4FI",
       "Product PN": "EKI-7712G-4FI-BE",
@@ -4577,7 +4577,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712G-4FPI-BE",
       "Product PN": "EKI-7712G-4FPI-BE",
@@ -4609,7 +4609,7 @@
       "Note": "Replace AE version."
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7712G-4FMPI",
       "Product PN": "EKI-7712G-4FMPI-BE",
@@ -4641,7 +4641,7 @@
       "Note": "PoE 802.3bt solution"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7716G-4F4CI",
       "Product PN": "EKI-7716G-4F4CI-AE",
@@ -4673,7 +4673,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7716G-4F4CI",
       "Product PN": "EKI-7716G-4F4CI-BE",
@@ -4705,7 +4705,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7720E-4F",
       "Product PN": "EKI-7720E-4F-BE",
@@ -4737,7 +4737,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7720E-4FI",
       "Product PN": "EKI-7720E-4FI-BE",
@@ -4769,7 +4769,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7720G-4F",
       "Product PN": "EKI-7720G-4F-BE",
@@ -4801,7 +4801,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7720G-4FI",
       "Product PN": "EKI-7720G-4FI-BE",
@@ -4833,7 +4833,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-7720G-4FPI",
       "Product PN": "EKI-7720G-4FPI-BE",
@@ -4865,7 +4865,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed-TSN",
       "Model Name": "EKI-8510G-2FI",
       "Product PN": "EKI-8510G-2FI-AE",
@@ -4897,7 +4897,7 @@
       "Note": "Temp: -40 ~ 66C"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-9226G-20FMI",
       "Product PN": "EKI-9226G-20FMI-AE",
@@ -4929,7 +4929,7 @@
       "Note": "IEC61850-3"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-9226G-20FOI",
       "Product PN": "EKI-9226G-20FOI-AE",
@@ -4961,7 +4961,7 @@
       "Note": "IEC61850-3"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-9228G-8CMI",
       "Product PN": "EKI-9228G-8CMI-AE",
@@ -4993,7 +4993,7 @@
       "Note": "Phase Out.LTB 2022/12"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-9228G-8COI",
       "Product PN": "EKI-9228G-8COI-AE",
@@ -5025,7 +5025,7 @@
       "Note": "Phase Out.LTB 2022/12"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-9612G-4FI",
       "Product PN": "EKI-9612G-4FI-AE",
@@ -5057,7 +5057,7 @@
       "Note": "Layer 3"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "Managed",
       "Model Name": "EKI-9628G-4CI",
       "Product PN": "EKI-9628G-4CI-AE",
@@ -5089,7 +5089,7 @@
       "Note": "Layer 3"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "L3 Managed",
       "Model Name": "EKI-8712G-4XFI",
       "Product PN": "EKI-8712G-4XFI-A",
@@ -5121,7 +5121,7 @@
       "Note": "Layer 3"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "L3 Managed",
       "Model Name": "EKI-8712G-4XFPI",
       "Product PN": "EKI-8712G-4XFPI-A",
@@ -5153,7 +5153,7 @@
       "Note": "Layer 3"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "L3 Managed",
       "Model Name": "EKI-8720G-4XFI",
       "Product PN": "EKI-8720G-4XFI-A",
@@ -5185,7 +5185,7 @@
       "Note": "Layer 3"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "L3 Managed",
       "Model Name": "EKI-8720G-4XFPI",
       "Product PN": "EKI-8720G-4XFPI-A",
@@ -5217,7 +5217,7 @@
       "Note": "Layer 3"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "L3 Managed",
       "Model Name": "EKI-9728G-4X8CI",
       "Product PN": "EKI-9728G-4X8CI-AE",
@@ -5249,7 +5249,7 @@
       "Note": "Phase Out.LTB 2022/12"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "L3 Managed Modular",
       "Model Name": "EKI-8528-4XF",
       "Product PN": "EKI-8528-4XF-A",
@@ -5281,7 +5281,7 @@
       "Note": "Modules need to be ordered seperately\nPlease refer to \"cables, modules, accessories\" worksheet"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "L2 Managed Modular",
       "Model Name": "EKI-8528-4XFL",
       "Product PN": "EKI-8528-4XFL-A",
@@ -5313,7 +5313,7 @@
       "Note": "Modules need to be ordered seperately\nPlease refer to \"cables, modules, accessories\" worksheet"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "L3 Managed Modular",
       "Model Name": "EKI-8528-4XFRC",
       "Product PN": "EKI-8528-4XFRC-A",
@@ -5345,7 +5345,7 @@
       "Note": "Ethernet Modules need to be ordered seperately\nPlease refer to \"cables, modules, accessories\" worksheet"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "L2 Managed Modular",
       "Model Name": "EKI-7528-4XF24T-A",
       "Product PN": "EKI-7528-4XF24T-A",
@@ -5377,7 +5377,7 @@
       "Note": ""
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "L2 Managed Modular",
       "Model Name": "EKI-7528-4XF24T-A",
       "Product PN": "EKI-7528-4XF24T-A",
@@ -5409,7 +5409,7 @@
       "Note": "Estimate to MP by 2026Q1"
     },
     {
-      "Application": "",
+      "Application": "電力系統",
       "Function": "L2 Managed Modular",
       "Model Name": "EKI-9212G-4XFOI",
       "Product PN": "EKI-9212G-4XFOI-A",
@@ -5448,6 +5448,7 @@
       "Model Name": "EKI-9508E-MPW",
       "Product PN": "EKI-9508E-MPW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -5475,6 +5476,7 @@
       "Model Name": "EKI-9508E-MW",
       "Product PN": "EKI-9508E-MW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code) , Managed switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -5502,6 +5504,7 @@
       "Model Name": "EKI-9508E-PW",
       "Product PN": "EKI-9508E-PW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code) , UnManaged switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -5529,6 +5532,7 @@
       "Model Name": "EKI-9508E-W",
       "Product PN": "EKI-9508E-W-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code) , UnManaged switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -5556,6 +5560,7 @@
       "Model Name": "EKI-9508G-MPW",
       "Product PN": "EKI-9508G-MPW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Gigabit Ethernet (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -5583,6 +5588,7 @@
       "Model Name": "EKI-9508G-MW",
       "Product PN": "EKI-9508G-MW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Gigabit Ethernet (X-code) , Managed switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -5610,6 +5616,7 @@
       "Model Name": "EKI-9508G-PW",
       "Product PN": "EKI-9508G-PW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Gigabit Ethernet (X-code) , UnManaged switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -5637,6 +5644,7 @@
       "Model Name": "EKI-9508G-W",
       "Product PN": "EKI-9508G-W-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Gigabit Ethernet (X-code) , UnManaged switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -5664,6 +5672,7 @@
       "Model Name": "EKI-9510E-MPW",
       "Product PN": "EKI-9510E-MPW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -5691,6 +5700,7 @@
       "Model Name": "EKI-9510E-MW",
       "Product PN": "EKI-9510E-MW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code), Managed switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -5718,6 +5728,7 @@
       "Model Name": "EKI-9510E-PW",
       "Product PN": "EKI-9510E-PW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code), UnManaged switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -5745,6 +5756,7 @@
       "Model Name": "EKI-9510E-W",
       "Product PN": "EKI-9510E-W-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code) , UnManaged switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -5772,6 +5784,7 @@
       "Model Name": "EKI-9510E-2GMPW",
       "Product PN": "EKI-9510E-2GMPW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code), Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -5799,6 +5812,7 @@
       "Model Name": "EKI-9510E-2GMW",
       "Product PN": "EKI-9510E-2GMW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code)+ 2 x Gigabit Ethernet (X-code), Managed switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -5826,6 +5840,7 @@
       "Model Name": "EKI-9510E-2GPW",
       "Product PN": "EKI-9510E-2GPW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code)+ 2 x Gigabit Ethernet (X-code), UnManaged switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -5853,6 +5868,7 @@
       "Model Name": "EKI-9510E-2GW",
       "Product PN": "EKI-9510E-2GW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code)+ 2 x Gigabit Ethernet (X-code) , UnManaged switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -5880,6 +5896,7 @@
       "Model Name": "EKI-9510G-MPW",
       "Product PN": "EKI-9510G-MPW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10  x Gigabit Ethernet (X-code), Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -5907,6 +5924,7 @@
       "Model Name": "EKI-9510G-MW",
       "Product PN": "EKI-9510G-MW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10  x Gigabit Ethernet (X-code), Managed switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -5934,6 +5952,7 @@
       "Model Name": "EKI-9510G-PW",
       "Product PN": "EKI-9510G-PW-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10  x Gigabit Ethernet (X-code), UnManaged switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -5961,6 +5980,7 @@
       "Model Name": "EKI-9510G-W",
       "Product PN": "EKI-9510G-W-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10  x Gigabit Ethernet (X-code), UnManaged switch , 24~110VDC Input",
       "Type": "",
@@ -5988,6 +6008,7 @@
       "Model Name": "EKI-9508E-MPS",
       "Product PN": "EKI-9508E-MPS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code) , Managed switch, PoE , 9~36VDC Input",
       "Type": "",
@@ -6015,6 +6036,7 @@
       "Model Name": "EKI-9508E-MS",
       "Product PN": "EKI-9508E-MS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code) , Managed switch, non-PoE ,  9~36VDC Input",
       "Type": "",
@@ -6042,6 +6064,7 @@
       "Model Name": "EKI-9508E-PS",
       "Product PN": "EKI-9508E-PS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code) , UnManaged switch, PoE ,  9~36VDC Input",
       "Type": "",
@@ -6069,6 +6092,7 @@
       "Model Name": "EKI-9508E-S",
       "Product PN": "EKI-9508E-S-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code) , UnManaged switch, non-PoE ,  9~36VDC Input",
       "Type": "",
@@ -6096,6 +6120,7 @@
       "Model Name": "EKI-9508G-MPS",
       "Product PN": "EKI-9508G-MPS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Gigabit Ethernet (X-code) , Managed switch, PoE , 9~36VDC Input",
       "Type": "",
@@ -6123,6 +6148,7 @@
       "Model Name": "EKI-9508G-MS",
       "Product PN": "EKI-9508G-MS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Gigabit Ethernet (X-code) , Managed switch, non-PoE , 9~36VDC Input",
       "Type": "",
@@ -6150,6 +6176,7 @@
       "Model Name": "EKI-9508G-PS",
       "Product PN": "EKI-9508G-PS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Gigabit Ethernet (X-code) , UnManaged switch, PoE ,  9~36VDC Input",
       "Type": "",
@@ -6177,6 +6204,7 @@
       "Model Name": "EKI-9508G-S",
       "Product PN": "EKI-9508G-S-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Gigabit Ethernet (X-code) , UnManaged switch, non-PoE ,  9~36VDC Input",
       "Type": "",
@@ -6204,6 +6232,7 @@
       "Model Name": "EKI-9510E-MPS",
       "Product PN": "EKI-9510E-MPS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code) , Managed switch, PoE , 9~36VDC Input",
       "Type": "",
@@ -6231,6 +6260,7 @@
       "Model Name": "EKI-9510E-MS",
       "Product PN": "EKI-9510E-MS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code), Managed switch, non-PoE , 9~36VDC Input",
       "Type": "",
@@ -6258,6 +6288,7 @@
       "Model Name": "EKI-9510E-PS",
       "Product PN": "EKI-9510E-PS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code), UnManaged switch, PoE , 9~36VDC Input",
       "Type": "",
@@ -6285,6 +6316,7 @@
       "Model Name": "EKI-9510E-S",
       "Product PN": "EKI-9510E-S-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code) , UnManaged switch, non-PoE , 9~36VDC Input",
       "Type": "",
@@ -6312,6 +6344,7 @@
       "Model Name": "EKI-9510E-2GMPS",
       "Product PN": "EKI-9510E-2GMPS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code), Managed switch, PoE ,  9~36VDC Input",
       "Type": "",
@@ -6339,6 +6372,7 @@
       "Model Name": "EKI-9510E-2GMS",
       "Product PN": "EKI-9510E-2GMS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code)+ 2 x Gigabit Ethernet (X-code), Managed switch, non-PoE ,  9~36VDC Input",
       "Type": "",
@@ -6366,6 +6400,7 @@
       "Model Name": "EKI-9510E-2GPS",
       "Product PN": "EKI-9510E-2GPS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code)+ 2 x Gigabit Ethernet (X-code), UnManaged switch, PoE ,  9~36VDC Input",
       "Type": "",
@@ -6393,6 +6428,7 @@
       "Model Name": "EKI-9510E-2GS",
       "Product PN": "EKI-9510E-2GS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code)+ 2 x Gigabit Ethernet (X-code) , UnManaged switch, non-PoE , 9~36VDC Input",
       "Type": "",
@@ -6420,6 +6456,7 @@
       "Model Name": "EKI-9510G-MPS",
       "Product PN": "EKI-9510G-MPS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10  x Gigabit Ethernet (X-code), Managed switch, PoE  9~36VDC Input",
       "Type": "",
@@ -6447,6 +6484,7 @@
       "Model Name": "EKI-9510G-MS",
       "Product PN": "EKI-9510G-MS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10  x Gigabit Ethernet (X-code), Managed switch, non-PoE ,  9~36VDC Input",
       "Type": "",
@@ -6474,6 +6512,7 @@
       "Model Name": "EKI-9510G-PS",
       "Product PN": "EKI-9510G-PS-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10  x Gigabit Ethernet (X-code), UnManaged switch, PoE ,  9~36VDC Input",
       "Type": "",
@@ -6501,6 +6540,7 @@
       "Model Name": "EKI-9510G-S",
       "Product PN": "EKI-9510G-S-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10  x Gigabit Ethernet (X-code), UnManaged switch , 9~36VDC Input",
       "Type": "",
@@ -6528,6 +6568,7 @@
       "Model Name": "EKI-9508E-MPST",
       "Product PN": "EKI-9508E-MPST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code) , Managed switch, PoE , 9~36VDC Input",
       "Type": "",
@@ -6555,6 +6596,7 @@
       "Model Name": "EKI-9508E-MST",
       "Product PN": "EKI-9508E-MST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code) , Managed switch, non-PoE ,  9~36VDC Input",
       "Type": "",
@@ -6582,6 +6624,7 @@
       "Model Name": "EKI-9508E-PST",
       "Product PN": "EKI-9508E-PST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code) , UnManaged switch, PoE ,  9~36VDC Input",
       "Type": "",
@@ -6609,6 +6652,7 @@
       "Model Name": "EKI-9508E-ST",
       "Product PN": "EKI-9508E-ST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code) , UnManaged switch, non-PoE ,  9~36VDC Input",
       "Type": "",
@@ -6636,6 +6680,7 @@
       "Model Name": "EKI-9508G-MPST",
       "Product PN": "EKI-9508G-MPST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Gigabit Ethernet (X-code) , Managed switch, PoE , 9~36VDC Input",
       "Type": "",
@@ -6663,6 +6708,7 @@
       "Model Name": "EKI-9508G-MST",
       "Product PN": "EKI-9508G-MST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Gigabit Ethernet (X-code) , Managed switch, non-PoE , 9~36VDC Input",
       "Type": "",
@@ -6690,6 +6736,7 @@
       "Model Name": "EKI-9508G-PST",
       "Product PN": "EKI-9508G-PST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Gigabit Ethernet (X-code) , UnManaged switch, PoE ,  9~36VDC Input",
       "Type": "",
@@ -6717,6 +6764,7 @@
       "Model Name": "EKI-9508G-ST",
       "Product PN": "EKI-9508G-ST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Gigabit Ethernet (X-code) , UnManaged switch, non-PoE ,  9~36VDC Input",
       "Type": "",
@@ -6744,6 +6792,7 @@
       "Model Name": "EKI-9510E-MPST",
       "Product PN": "EKI-9510E-MPST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code) , Managed switch, PoE , 9~36VDC Input",
       "Type": "",
@@ -6771,6 +6820,7 @@
       "Model Name": "EKI-9510E-MST",
       "Product PN": "EKI-9510E-MST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code), Managed switch, non-PoE , 9~36VDC Input",
       "Type": "",
@@ -6798,6 +6848,7 @@
       "Model Name": "EKI-9510E-PST",
       "Product PN": "EKI-9510E-PST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code), UnManaged switch, PoE , 9~36VDC Input",
       "Type": "",
@@ -6825,6 +6876,7 @@
       "Model Name": "EKI-9510E-ST",
       "Product PN": "EKI-9510E-ST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code) , UnManaged switch, non-PoE , 9~36VDC Input",
       "Type": "",
@@ -6852,6 +6904,7 @@
       "Model Name": "EKI-9510E-2GMPST",
       "Product PN": "EKI-9510E-2GMPST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10 x Fast Ethernet (D-code), Managed switch, PoE ,  9~36VDC Input",
       "Type": "",
@@ -6879,6 +6932,7 @@
       "Model Name": "EKI-9510E-2GMST",
       "Product PN": "EKI-9510E-2GMST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code)+ 2 x Gigabit Ethernet (X-code), Managed switch, non-PoE ,  9~36VDC Input",
       "Type": "",
@@ -6906,6 +6960,7 @@
       "Model Name": "EKI-9510E-2GPST",
       "Product PN": "EKI-9510E-2GPST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code)+ 2 x Gigabit Ethernet (X-code), UnManaged switch, PoE ,  9~36VDC Input",
       "Type": "",
@@ -6933,6 +6988,7 @@
       "Model Name": "EKI-9510E-2GST",
       "Product PN": "EKI-9510E-2GST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code)+ 2 x Gigabit Ethernet (X-code) , UnManaged switch, non-PoE , 9~36VDC Input",
       "Type": "",
@@ -6960,6 +7016,7 @@
       "Model Name": "EKI-9510G-MPST",
       "Product PN": "EKI-9510G-MPST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10  x Gigabit Ethernet (X-code), Managed switch, PoE  9~36VDC Input",
       "Type": "",
@@ -6987,6 +7044,7 @@
       "Model Name": "EKI-9510G-MST",
       "Product PN": "EKI-9510G-MST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10  x Gigabit Ethernet (X-code), Managed switch, non-PoE ,  9~36VDC Input",
       "Type": "",
@@ -7014,6 +7072,7 @@
       "Model Name": "EKI-9510G-PST",
       "Product PN": "EKI-9510G-PST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10  x Gigabit Ethernet (X-code), UnManaged switch, PoE ,  9~36VDC Input",
       "Type": "",
@@ -7041,6 +7100,7 @@
       "Model Name": "EKI-9510G-ST",
       "Product PN": "EKI-9510G-ST-B",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "10  x Gigabit Ethernet (X-code), UnManaged switch , 9~36VDC Input",
       "Type": "",
@@ -7068,6 +7128,7 @@
       "Model Name": "EKI-9512E-4GMPW",
       "Product PN": "EKI-9512E-4GMPW-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x FE PoE (D-code)+ 4 x GE bypass (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7095,6 +7156,7 @@
       "Model Name": "EKI-9512G-4GMPW",
       "Product PN": "EKI-9512G-4GMPW-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x GE PoE (X-code)+ 4 x GE bypass (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7122,6 +7184,7 @@
       "Model Name": "EKI-9512E-4GMW",
       "Product PN": "EKI-9512E-4GMW-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code)+ 4 x GE bypass (X-code) , Managed switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -7149,6 +7212,7 @@
       "Model Name": "EKI-9512G-4GMW",
       "Product PN": "EKI-9512G-4GMW-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "12 x Gigabit Ethernet with 4 bypass(X-code) , Managed switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -7176,6 +7240,7 @@
       "Model Name": "EKI-9512E-4GMPX",
       "Product PN": "EKI-9512E-4GMPX-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x FE PoE (D-code)+ 4 x GE (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7203,6 +7268,7 @@
       "Model Name": "EKI-9512G-4GMPX",
       "Product PN": "EKI-9512G-4GMPX-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x GE PoE (X-code)+ 4 x GE (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7230,6 +7296,7 @@
       "Model Name": "EKI-9512E-4GMX",
       "Product PN": "EKI-9512E-4GMX-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x Fast Ethernet (D-code)+ 4 x GE (X-code) , Managed switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -7257,6 +7324,7 @@
       "Model Name": "EKI-9512G-4GMX",
       "Product PN": "EKI-9512G-4GMX-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "12 x Gigabit Ethernet (X-code) , Managed switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -7284,6 +7352,7 @@
       "Model Name": "EKI-9516E-8GMPW",
       "Product PN": "EKI-9516E-8GMPW-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x FE PoE (D-code) + 4 x GE PoE + 4 x GE bypass (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7311,6 +7380,7 @@
       "Model Name": "EKI-9516E-4GMPW",
       "Product PN": "EKI-9516E-4GMPW-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "12 x FE PoE (D-code)+ 4 x GE bypass (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7338,6 +7408,7 @@
       "Model Name": "EKI-9516G-4GMPW",
       "Product PN": "EKI-9516G-4GMPW-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "12 x GE PoE (X-code)+ 4 x GE bypass (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7365,6 +7436,7 @@
       "Model Name": "EKI-9516E-4GMW",
       "Product PN": "EKI-9516E-4GMW-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "12 x Fast Ethernet (D-code)+ 4 x GE bypass (X-code) , Managed switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -7392,6 +7464,7 @@
       "Model Name": "EKI-9516G-4GMW",
       "Product PN": "EKI-9516G-4GMW-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "16 x Gigabit Ethernet with 4 bypass(X-code) , Managed switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -7419,6 +7492,7 @@
       "Model Name": "EKI-9516E-8GMPX",
       "Product PN": "EKI-9516E-8GMPX-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "8 x FE PoE (D-code) + 4 x GE PoE + 4 x (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7446,6 +7520,7 @@
       "Model Name": "EKI-9516E-4GMPX",
       "Product PN": "EKI-9516E-4GMPX-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "12 x FE PoE (D-code)+ 4 x GE (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7473,6 +7548,7 @@
       "Model Name": "EKI-9516G-4GMPX",
       "Product PN": "EKI-9516G-4GMPX-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "12 x GE PoE (X-code)+ 4 x GE (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7500,6 +7576,7 @@
       "Model Name": "EKI-9516E-4GMX",
       "Product PN": "EKI-9516E-4GMX-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "12 x Fast Ethernet (D-code)+ 4 x GE (X-code) , Managed switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -7527,6 +7604,7 @@
       "Model Name": "EKI-9516G-4GMX",
       "Product PN": "EKI-9516G-4GMX-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "16 x Gigabit Ethernet (X-code) , Managed switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -7554,6 +7632,7 @@
       "Model Name": "EKI-9516E-MX",
       "Product PN": "EKI-9516E-MX-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "16 x Fast Ethernet (D-code) , Managed switch, non-PoE , 24~110VDC Input",
       "Type": "",
@@ -7581,6 +7660,7 @@
       "Model Name": "EKI-9516E-MPX",
       "Product PN": "EKI-9516E-MPX-AE",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "16 x Fast Ethernet (D-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7608,6 +7688,7 @@
       "Model Name": "EKI-9512E-4GETB",
       "Product PN": "EKI-9512E-4GETB-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "12 x FE (D-code)+ 4 x GE bypass (X-code), 61375 NAT Router",
       "Type": "",
@@ -7635,6 +7716,7 @@
       "Model Name": "EKI-9512G-4GETB",
       "Product PN": "EKI-9512G-4GETB-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "12 x GE with 4 bypass (X-code), 61375 NAT Router",
       "Type": "",
@@ -7662,6 +7744,7 @@
       "Model Name": "EKI-9528E-12GMPW",
       "Product PN": "EKI-9528E-12GMPW-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "16 x FE PoE (D-code) + 8GE PoE + 4 x GE bypass (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7689,6 +7772,7 @@
       "Model Name": "EKI-9528E-8GMPW",
       "Product PN": "EKI-9528E-8GMPW-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "20 x FE PoE (D-code) + 4GE PoE + 4 x GE bypass (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7716,6 +7800,7 @@
       "Model Name": "EKI-9528G-4GMPW",
       "Product PN": "EKI-9528G-4GMPW-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "24 x GE PoE (X-code) + 4 x GE bypass (X-code), Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7743,6 +7828,7 @@
       "Model Name": "EKI-9528E-12GMW",
       "Product PN": "EKI-9528E-12GMW-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "16 x FE  (D-code) + 8GE  + 4 x GE bypass (X-code) , Managed switch,  , 24~110VDC Input",
       "Type": "",
@@ -7770,6 +7856,7 @@
       "Model Name": "EKI-9528E-8GMW",
       "Product PN": "EKI-9528E-8GMW-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "20 x FE  (D-code) + 4GE  + 4 x GE bypass (X-code) , Managed switch,  , 24~110VDC Input",
       "Type": "",
@@ -7797,6 +7884,7 @@
       "Model Name": "EKI-9528G-4GMW",
       "Product PN": "EKI-9528G-4GMW-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "24 x GE  (X-code) + 4 x GE bypass (X-code), Managed switch,  , 24~110VDC Input",
       "Type": "",
@@ -7824,6 +7912,7 @@
       "Model Name": "EKI-9528E-12GMPX",
       "Product PN": "EKI-9528E-12GMPX-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "16 x FE PoE (D-code) + 8GE PoE + 4 x GE  (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7851,6 +7940,7 @@
       "Model Name": "EKI-9528E-8GMPX",
       "Product PN": "EKI-9528E-8GMPX-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "20 x FE PoE (D-code) + 4GE PoE + 4 x GE  (X-code) , Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7878,6 +7968,7 @@
       "Model Name": "EKI-9528G-4GMPX",
       "Product PN": "EKI-9528G-4GMPX-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "24 x GE PoE (X-code) + 4 x GE  (X-code), Managed switch, PoE , 24~110VDC Input",
       "Type": "",
@@ -7905,6 +7996,7 @@
       "Model Name": "EKI-9528E-12GMX",
       "Product PN": "EKI-9528E-12GMX-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "16 x FE  (D-code) + 12 x GE  (X-code) , Managed switch,  , 24~110VDC Input",
       "Type": "",
@@ -7932,6 +8024,7 @@
       "Model Name": "EKI-9528E-8GMX",
       "Product PN": "EKI-9528E-8GMX-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "20 x FE  (D-code) + 8 GE  (X-code) , Managed switch,  , 24~110VDC Input",
       "Type": "",
@@ -7959,6 +8052,7 @@
       "Model Name": "EKI-9528G-4GMX",
       "Product PN": "EKI-9528G-4GMX-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "28 x GE  (X-code), Managed switch,  , 24~110VDC Input",
       "Type": "",
@@ -7986,6 +8080,7 @@
       "Model Name": "EKI-9520H-6XPW",
       "Product PN": "EKI-9520H-6XPW-A",
       "Software Series": "",
+      "Firmware Version": "",
       "PLM Lifecycle": "",
       "Description": "Layer 2 management PoE switch with 6x10G port",
       "Type": "",

@@ -62,7 +62,8 @@ const SCENE_TEMPLATES = [
 function getConditionDisplayLabel(cond) {
     switch (cond.key) {
         case 'mgmtType':
-            return cond.value === 'managed' ? 'Managed SW' : 'Unmanaged SW';
+            const lblMap = { 'managed': 'Managed SW', 'l2_managed': 'L2 Managed SW', 'l3_managed': 'L3 Managed SW', 'unmanaged': 'Unmanaged SW' };
+            return lblMap[cond.value] || 'Unmanaged SW';
         case 'numPorts':
             return `≥${cond.value} Port`;
         case 'poe':

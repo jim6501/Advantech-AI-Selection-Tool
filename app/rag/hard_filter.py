@@ -39,7 +39,7 @@ def build_mongo_filter(
     4. 套用 intent.software_requirements 的軟體條件
     """
     and_conditions = [
-        {"hardware.PLM Lifecycle": {"$nin": ["EOL", "Phase Out"]}}
+        {"hardware.PLM Lifecycle": {"$not": {"$regex": "(eol|phase out|inactivate)", "$options": "i"}}}
     ]
 
     # 前端已鎖定的型號 → 限縮搜尋範圍

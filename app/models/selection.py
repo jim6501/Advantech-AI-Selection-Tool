@@ -56,6 +56,17 @@ class ProductItemResponse(BaseModel):
     prod_fiber_giga: int        # Fiber Gigabit 埠數
     prod_fiber_ge_combo: int    # Fiber GE Combo 埠數
     prod_w_n: str               # 溫度等級（Wide / Normal）
+    prod_poe_rj_100: int = 0    # PoE RJ-45 100M 埠數
+    prod_poe_rj_giga: int = 0   # PoE RJ-45 GbE 埠數
+    prod_m12_100: int = 0       # M12 D-code 埠數
+    prod_m12_giga: int = 0      # M12 X-code 埠數
+    prod_m12_multi_giga: int = 0 # Eth Multi-Giga (X-code) 埠數
+    prod_poe_m12_100: int = 0   # PoE (D-code) 埠數
+    prod_poe_m12_giga: int = 0  # PoE (X-code) 埠數
+    prod_bypass_m12_100: int = 0 # LAN Bypass 10/100M (D-code)
+    prod_bypass_m12_giga: int = 0 # LAN Bypass Gigabit (X-code)
+    prod_power_input: str = "—" # 電源輸入電壓範圍 (如 12-48VDC)
+    prod_temp_range: str = "—"  # 工作溫度範圍 (如 -40 ~ 75C)
 
 
 class SubmitProdResponse(BaseModel):
