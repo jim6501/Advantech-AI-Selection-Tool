@@ -2,7 +2,7 @@
   {
     "_id": "EKI-5500::5.00.XX",
     "software_series": "EKI-5500",
-    "raw_series_name": "EKI-5500 with micorchip",
+    "raw_series_name": "EKI-5500",
     "firmware_ver": "5.00.XX",
     "software": {
       "MAC Address Table": {
@@ -46,7 +46,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "no",
@@ -519,7 +519,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -991,7 +991,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -1463,7 +1463,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -1935,7 +1935,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -2407,7 +2407,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -2879,7 +2879,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -3351,7 +3351,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -3823,7 +3823,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -4295,7 +4295,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -4767,7 +4767,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -5239,7 +5239,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -5711,7 +5711,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -6183,7 +6183,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -6655,7 +6655,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -7127,7 +7127,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -7599,7 +7599,7 @@
         "MVRP": "in_development",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -8071,7 +8071,7 @@
         "MVRP": "in_development",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",
@@ -8543,7 +8543,7 @@
         "MVRP": "no",
         "MMRP": "no"
       },
-      "Spanning Tree (IEEE 802.1D STP)  Spanning Tree(IEEE 802.1w RSTP)  Spanning Tree(IEEE 802.1s MSTP)": {
+      "Spanning Tree": {
         "IEEE 802.1D STP": "full",
         "IEEE 802.1w RSTP": "full",
         "IEEE 802.1s MSTP": "full",

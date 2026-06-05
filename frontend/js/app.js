@@ -16,6 +16,10 @@ function detectApiBase() {
     if (protocol === 'file:' || hostname === 'localhost' || hostname === '127.0.0.1') {
         return `http://127.0.0.1:${LOCAL_PORT}`;
     }
+    // GitHub Pages 或其他外部主機 → 使用 config.js 設定的 Cloudflare Tunnel URL
+    if (typeof CLOUDFLARE_API_URL !== 'undefined' && CLOUDFLARE_API_URL) {
+        return CLOUDFLARE_API_URL;
+    }
     return window.location.origin;
 }
 
@@ -28,6 +32,7 @@ console.log(`[API] 後台連線位址: ${API_BASE}`);
 let selectedItemsMap = {};   // { key: label } 儲存已選取的特徵
 let acquiredModels = [];  // 後端回傳的型號清單（供 Chatbot context 使用）
 let lastSuccessSnapshot = null; // 上一次有結果的條件快照 { mgmt, port, items: Set }
+let currentDataList = []; // 目前搜尋結果的完整資料清單，供排序使用
 
 // ── 場景模板狀態 ──────────────────────────────
 let activeScene = null;       // 目前啟用的場景 id
@@ -79,6 +84,16 @@ function addItem(item) {
 
 function removeItem(itemKey) {
     delete selectedItemsMap[itemKey];
+
+    // 同步清除 Advanced Filter 中對應的勾選狀態
+    if (typeof fsSelected !== 'undefined' && fsSelected[itemKey]) {
+        delete fsSelected[itemKey];
+        // 若 Feature Selector 已初始化，刷新其 UI（chip bar + checkbox）
+        if (typeof fsRender === 'function' && typeof fsReady !== 'undefined' && fsReady) {
+            fsRender();
+        }
+    }
+
     renderSelected();
 }
 
@@ -136,9 +151,9 @@ function renderFilterTags(culprits = {}) {
         const sceneTag = document.createElement('span');
         sceneTag.className = 'filter-tag-scene';
         const modifiedBadge = isSceneModified
-            ? ' <span style="font-size:0.68rem;font-weight:400;opacity:0.85;">(已修改)</span>'
+            ? ' <span style="font-size:0.68rem;font-weight:400;opacity:0.85;">(Modified)</span>'
             : '';
-        sceneTag.innerHTML = `<span class="filter-icon">${scene.icon}</span> ${scene.label} 模板${modifiedBadge}`;
+        sceneTag.innerHTML = `<span class="filter-icon">${scene.icon}</span> ${scene.label} Template${modifiedBadge}`;
         filterDiv.appendChild(sceneTag);
 
         // 各條件 tag
@@ -165,7 +180,7 @@ function renderFilterTags(culprits = {}) {
 
             const label = getConditionDisplayLabel(effectiveCond);
             const tag = document.createElement('span');
-            const displayText = isValueModified ? `${label} (已改)` : label;
+            const displayText = isValueModified ? `${label} (Mod)` : label;
             tag.className = isValueModified ? 'filter-tag-modified' : 'filter-tag-sug';
             tag.innerHTML = `${displayText} <span class="tag-remove" onclick="removeSuggestedCondition('${cond.key}')">×</span>`;
             filterDiv.appendChild(tag);
@@ -177,7 +192,7 @@ function renderFilterTags(culprits = {}) {
 
         const mgmtManual = document.getElementById('mgmtType').value;
         if (mgmtManual && !sceneMgmtActive) {
-            const lblMap = { 'managed': 'Managed', 'l2_managed': 'L2 Managed', 'l3_managed': 'L3 Managed', 'unmanaged': 'Unmanaged' };
+            const lblMap = { 'managed': 'Managed (All)', 'l2_managed': 'L2 Managed', 'l3_managed': 'L3 Managed', 'unmanaged': 'Unmanaged' };
             const lbl = lblMap[mgmtManual] || 'Unmanaged';
             const t = document.createElement('span');
             t.className = 'filter-tag';
@@ -203,8 +218,8 @@ function renderFilterTags(culprits = {}) {
         }
         const activeCount = scene.conditions.filter(c => !removedSugKeys.has(c.key)).length;
         const certNote = scene.conditions.some(c => c.key === 'certifications')
-            ? '認證條件目前為顯示用，DB 欄位確認後將納入查詢。' : '';
-        note.textContent = `套用「${scene.label}」模板：包含 ${activeCount} 項預設條件。${certNote}`;
+            ? 'Certification conditions are currently for display only and will be queried once DB fields are confirmed.' : '';
+        note.textContent = `Applying "${scene.label}" template: contains ${activeCount} preset condition(s). ${certNote}`;
 
         // 偵測場景是否已被使用者修改
         checkSceneModified();
@@ -215,7 +230,7 @@ function renderFilterTags(culprits = {}) {
         const portVal = document.getElementById('numInput').value;
 
         if (mgmtVal) {
-            const labelMap = { 'managed': 'Managed', 'l2_managed': 'L2 Managed', 'l3_managed': 'L3 Managed', 'unmanaged': 'Unmanaged' };
+            const labelMap = { 'managed': 'Managed (All)', 'l2_managed': 'L2 Managed', 'l3_managed': 'L3 Managed', 'unmanaged': 'Unmanaged' };
             const label = labelMap[mgmtVal] || 'Unmanaged';
             const tag = document.createElement('span');
             tag.className = 'filter-tag' + (culprits.mgmt ? ' culprit' : '');
@@ -250,13 +265,13 @@ renderFilterTags();
 // ═══════════════════════════════════════════════
 const portLabels = {
     rj45_100: 'RJ-45 10/100', rj45_gbe: 'RJ-45 GbE', rj45_combo: 'RJ-45/SFP Combo',
-    fiber_100: 'Fiber 10/100', fiber_gbe: 'Fiber GbE',
+    fiber_100: 'Fiber 10/100', fiber_gbe: 'Fiber GbE', fiber_10g: 'Fiber 10G (SFP+)',
     m12_100: 'M12 D-code 10/100', m12_gbe: 'M12 X-code GbE', m12_multi: 'M12 X-code Multi-Giga (2.5/5/10G)',
     bypass_100: 'Bypass (D-code)', bypass_gbe: 'Bypass (X-code)'
 };
 const portColors = {
     rj45_100: 'pv-rj45', rj45_gbe: 'pv-rj45-gbe', rj45_combo: 'pv-combo',
-    fiber_100: 'pv-fiber', fiber_gbe: 'pv-fiber-gbe',
+    fiber_100: 'pv-fiber', fiber_gbe: 'pv-fiber-gbe', fiber_10g: 'pv-fiber-10g',
     m12_100: 'pv-m12', m12_gbe: 'pv-m12-gbe', m12_multi: 'pv-m12-multi',
     bypass_100: 'pv-bypass', bypass_gbe: 'pv-bypass-gbe'
 };
@@ -271,12 +286,13 @@ const poeLabelMap = {
 };
 // 規格欄位定義
 const specDef = [
-    { key: 'power', label: '電源輸入' },
-    { key: 'temp', label: '工作溫度' },
+    { key: 'power', label: 'Power Input' },
+    { key: 'temp', label: 'Operating Temp' },
 ];
 const tabsDef = [
     { id: 'port', icon: 'ti-plug-connected', label: 'Port' },
-    { id: 'spec', icon: 'ti-list-details', label: '規格' },
+    { id: 'spec', icon: 'ti-list-details', label: 'Specs' },
+    { id: 'sfp',  icon: 'ti-wave-sine',     label: 'SFP Guide' },
 ];
 
 // 解決部分型號資料庫中 RJ-45 欄位已包含 PoE 數量，而部分型號卻未包含的不一致問題
@@ -300,6 +316,7 @@ function apiToPortObj(item) {
         rj45_combo: item.prod_rj_100_combo || 0,
         fiber_100: item.prod_fiber_100 || 0,
         fiber_gbe: item.prod_fiber_giga || 0,
+        fiber_10g: item.prod_fiber_10g || 0,
         fiber_combo: item.prod_fiber_ge_combo || 0,
         m12_100: resolveTotal(item.prod_m12_100 || 0, poe_m12_100),
         m12_gbe: resolveTotal(item.prod_m12_giga || 0, poe_m12_gbe),
@@ -313,7 +330,7 @@ function apiToPortObj(item) {
 
 function totalPorts(ports) {
     // fiber_combo 與 rj45_combo 是同一實體埠，不重複計算
-    return ['rj45_100', 'rj45_gbe', 'rj45_combo', 'fiber_100', 'fiber_gbe', 'm12_100', 'm12_gbe', 'm12_multi', 'bypass_100', 'bypass_gbe']
+    return ['rj45_100', 'rj45_gbe', 'rj45_combo', 'fiber_100', 'fiber_gbe', 'fiber_10g', 'm12_100', 'm12_gbe', 'm12_multi', 'bypass_100', 'bypass_gbe']
         .reduce((s, k) => s + (ports[k] || 0), 0);
 }
 
@@ -370,8 +387,8 @@ function buildVis(ports) {
         if (!legSet.has(k)) legSet.set(k, { colorClass: portColors[k], label: portLabels[k] });
     });
 
-    // fiber_combo 是同一實體埠，不重複；只渲染 fiber_100 / fiber_gbe
-    ['fiber_100', 'fiber_gbe'].forEach(k => {
+    // fiber_combo 是同一實體埠，不重複；渲染 fiber_100 / fiber_gbe / fiber_10g
+    ['fiber_100', 'fiber_gbe', 'fiber_10g'].forEach(k => {
         const n = ports[k] || 0;
         if (n <= 0) return;
         for (let i = 0; i < n; i++) {
@@ -407,11 +424,12 @@ function buildVis(ports) {
 }
 
 function buildPortRows(ports) {
-    let rj = '', m12 = '', fb = '', bp = '';
+    let rj = '', combo = '', m12 = '', fb = '', bp = '';
     let left_poe_100 = ports.poe_100 || 0;
     let left_poe_gbe = ports.poe_gbe || 0;
 
-    ['rj45_100', 'rj45_gbe', 'rj45_combo'].forEach(k => {
+    // RJ-45 純銅埠（不含 Combo）
+    ['rj45_100', 'rj45_gbe'].forEach(k => {
         const n = ports[k] || 0;
         let poeN = 0;
         if (n > 0) {
@@ -426,6 +444,17 @@ function buildPortRows(ports) {
             rj += `<div class="port-row"><span class="port-type">${portLabels[k]}</span><span style="display:flex;align-items:center">${right}</span></div>`;
         }
     });
+
+    if ((ports.rj45_combo || 0) > 0) {
+        const n = ports.rj45_combo;
+        combo += `<div class="port-row">
+            <span class="port-type" style="display:flex;flex-direction:column;gap:1px">
+                <span>RJ-45/SFP</span>
+                <span style="font-size:9px;color:#94a3b8">Either RJ-45 or SFP</span>
+            </span>
+            <span class="port-val">${n}</span>
+        </div>`;
+    }
 
     ['m12_100', 'm12_gbe', 'm12_multi'].forEach(k => {
         const n = ports[k] || 0;
@@ -443,7 +472,7 @@ function buildPortRows(ports) {
         }
     });
 
-    ['fiber_100', 'fiber_gbe'].forEach(k => {
+    ['fiber_100', 'fiber_gbe', 'fiber_10g'].forEach(k => {
         const n = ports[k] || 0;
         if (n > 0) {
             fb += `<div class="port-row"><span class="port-type">${portLabels[k]}</span><span class="port-val">${n}</span></div>`;
@@ -457,7 +486,7 @@ function buildPortRows(ports) {
         }
     });
 
-    return { rj, m12, fb, bp };
+    return { rj, combo, m12, fb, bp };
 }
 
 function buildPortPane(item) {
@@ -474,16 +503,17 @@ function buildPortPane(item) {
 
     let colCount = 0;
     if (rows.rj) colCount++;
+    if (rows.combo) colCount++;
     if (rows.m12) colCount++;
     if (rows.fb) colCount++;
     if (rows.bp) colCount++;
-    colCount = colCount || 1; // fallback to 1 to avoid broken layout
-    // Port Map takes 1 column, so total columns is colCount + 1
+    colCount = colCount || 1;
     const gridStyle = `grid-template-columns: repeat(${colCount + 1}, minmax(0,1fr))`;
 
     return `<div class="port-total-row"><span class="port-total-num">${total}</span><span class="port-total-label">ports total</span>${poeInfo}</div>
         <div class="port-grid" style="${gridStyle}">
             ${rows.rj ? `<div class="port-group"><div class="port-group-label">RJ-45</div>${rows.rj}</div>` : ''}
+            ${rows.combo ? `<div class="port-group port-group-combo"><div class="port-group-label">Combo</div>${rows.combo}</div>` : ''}
             ${rows.m12 ? `<div class="port-group"><div class="port-group-label">M12</div>${rows.m12}</div>` : ''}
             ${rows.fb ? `<div class="port-group"><div class="port-group-label">Fiber</div>${rows.fb}</div>` : ''}
             ${rows.bp ? `<div class="port-group"><div class="port-group-label">Bypass</div>${rows.bp}</div>` : ''}
@@ -493,37 +523,76 @@ function buildPortPane(item) {
 
 function buildSpecPane(item) {
     const rows = [
-        { label: '電源輸入', val: item.prod_power_input || '—' },
-        { label: '工作溫度', val: item.prod_temp_range || '—' }
+        { label: 'Power Input', val: item.prod_power_input || '—' },
+        { label: 'Operating Temp', val: item.prod_temp_range || '—' }
     ].map(def =>
         `<div class="spec-row"><span class="spec-key">${def.label}</span><span class="spec-val">${def.val}</span></div>`
     ).join('');
-    return `<div class="spec-group"><div class="spec-group-label">基本規格</div>${rows}</div>`;
+    return `<div class="spec-group"><div class="spec-group-label">Basic Specs</div>${rows}</div>`;
 }
 
-function buildTabBar(pid, activeTab) {
-    return tabsDef.map(t =>
-        `<button class="tab-btn${t.id === activeTab ? ' active' : ''}" onclick="pcSwitchTab('${pid}','${t.id}')">
-            <i class="ti ${t.icon}" aria-hidden="true"></i>${t.label}</button>`
-    ).join('');
+function checkHasSfp(item) {
+    if (!item) return false;
+    if (item.prod_fiber_type) return true;
+    if (item.prod_fiber_giga > 0) return true;
+    if (item.prod_fiber_100 > 0) return true;
+    if (item.prod_fiber_ge_combo > 0) return true;
+    if (item.prod_rj_100_combo > 0) return true;
+    return false;
+}
+
+function buildTabBar(pid, activeTab, item) {
+    const hasFiber = checkHasSfp(item);
+    return tabsDef
+        .filter(t => t.id !== 'sfp' || hasFiber)  // SFP tab 僅在有光纖 port 時顯示
+        .map(t =>
+            `<button class="tab-btn${t.id === activeTab ? ' active' : ''}" onclick="pcSwitchTab('${pid}','${t.id}')">
+                <i class="ti ${t.icon}" aria-hidden="true"></i>${t.label}</button>`
+        ).join('');
 }
 
 function buildTabPanes(item, pid) {
-    return tabsDef.map(t => {
-        let content = '';
-        if (t.id === 'port') content = buildPortPane(item);
-        else if (t.id === 'spec') content = buildSpecPane(item);
-        else content = '<div style="padding:16px 0;font-size:11px;color:#aaa;font-style:italic">（尚未實作）</div>';
-        return `<div class="tab-pane${t.id === 'port' ? ' active' : ''}" id="pane-${pid}-${t.id}">${content}</div>`;
-    }).join('');
+    const hasFiber = checkHasSfp(item);
+    return tabsDef
+        .filter(t => t.id !== 'sfp' || hasFiber)
+        .map(t => {
+            let content = '';
+            if (t.id === 'port') content = buildPortPane(item);
+            else if (t.id === 'spec') content = buildSpecPane(item);
+            else if (t.id === 'sfp') content = `<div class="sfp-loading" id="sfp-content-${pid}"><span class="sfp-loading-dot"></span> Loading...</div>`;
+            return `<div class="tab-pane${t.id === 'port' ? ' active' : ''}" id="pane-${pid}-${t.id}">${content}</div>`;
+        }).join('');
 }
 
 function pcToggleDetail(pid) {
     const detail = document.getElementById(`detail-${pid}`);
     const btn = document.getElementById(`expand-btn-${pid}`);
+    const card = document.getElementById(pid);          // .pc 父容器
     const isOpen = detail.classList.contains('open');
+
+    // 關閉其他已展開的卡片，保持同一時間只有一張展開
+    document.querySelectorAll('.pc.is-expanded').forEach(c => {
+        if (c.id !== pid) {
+            c.classList.remove('is-expanded');
+            const otherDetail = document.getElementById(`detail-${c.id}`);
+            const otherBtn = document.getElementById(`expand-btn-${c.id}`);
+            if (otherDetail) otherDetail.classList.remove('open');
+            if (otherBtn) otherBtn.classList.remove('open');
+        }
+    });
+    // 切換設備時重置 SFP accordion 收合狀態
+    if (typeof sfpResetAllAccordions === 'function') sfpResetAllAccordions();
+
     detail.classList.toggle('open', !isOpen);
     btn.classList.toggle('open', !isOpen);
+    if (card) card.classList.toggle('is-expanded', !isOpen);
+
+    // 展開時，平滑捲動讓卡片頂部對齊視窗（留一點上邊距）
+    if (!isOpen && card) {
+        setTimeout(() => {
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 50);
+    }
 }
 
 function pcSwitchTab(pid, tabId) {
@@ -532,20 +601,49 @@ function pcSwitchTab(pid, tabId) {
         if (pane) pane.classList.toggle('active', t.id === tabId);
     });
     const bar = document.getElementById(`tabbar-${pid}`);
-    if (bar) bar.querySelectorAll('.tab-btn').forEach((btn, i) => {
-        btn.classList.toggle('active', tabsDef[i].id === tabId);
+    if (bar) bar.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.onclick?.toString().includes(`'${tabId}'`));
     });
+    // 切換到 SFP tab 時，非同步載入選型面板
+    if (tabId === 'sfp') {
+        const sfpContentId = `sfp-content-${pid}`;
+        // 取得對應 item（從快取中找）
+        const itemData = window._sfpItemCache && window._sfpItemCache[pid];
+        if (itemData && typeof buildSfpPaneAsync === 'function') {
+            buildSfpPaneAsync(itemData, sfpContentId);
+        }
+    }
 }
+
+// ── badge 捷徑：展開卡片 + 直接切換到 SFP 選型 tab ─────────
+function pcOpenSfpTab(pid) {
+    const detail = document.getElementById(`detail-${pid}`);
+    if (!detail) return;
+    // 若卡片尚未展開，先展開
+    if (!detail.classList.contains('open')) {
+        pcToggleDetail(pid);
+    }
+    // 切換到 SFP tab（略微延遲讓 DOM 展開後再切換）
+    setTimeout(() => pcSwitchTab(pid, 'sfp'), 80);
+}
+
 
 function renderProductCards(data_list) {
     const container = document.getElementById('prodList');
+
     if (!container) return;
     if (data_list.length === 0) {
-        container.innerHTML = '<div class="placeholder-text">未尋找到符合的產品</div>';
+        container.innerHTML = '<div class="placeholder-text">No matching products found</div>';
         return;
     }
+    // 建立 SFP item 快取，供 pcSwitchTab 非同步呼叫使用
+    window._sfpItemCache = {};
+
     container.innerHTML = data_list.map((item, idx) => {
         const pid = `pc-${idx}`;
+        // 快取 item 供 SFP tab 使用
+        window._sfpItemCache[pid] = item;
+
         const rawType = (item.prod_type || '');
         const prodTypeLower = rawType.toLowerCase();
         const isM = prodTypeLower.includes('manage') && !prodTypeLower.includes('unmanage');
@@ -571,34 +669,92 @@ function renderProductCards(data_list) {
             totalM12Multi > 0 ? `${totalM12Multi}Multi-Giga(2.5/5/10G)` : '',
             totalM12Giga > 0 ? `${totalM12Giga}GE(M12)` : '',
             totalM12100 > 0 ? `${totalM12100}FE(M12)` : '',
+            item.prod_fiber_10g > 0 ? `${item.prod_fiber_10g}SFP+(10G)` : '',
             item.prod_fiber_giga > 0 ? `${item.prod_fiber_giga}SFP(GbE)` : '',
             item.prod_fiber_100 > 0 ? `${item.prod_fiber_100}FX` : '',
             totalBypass > 0 ? `${totalBypass}Bypass` : ''
         ].filter(Boolean).join(' + ');
         const poeTotal = (item.prod_poe_rj_100 || 0) + (item.prod_poe_rj_giga || 0) + (item.prod_poe_m12_100 || 0) + (item.prod_poe_m12_giga || 0);
+
+        // SFP badge：依 Fiber Type 顯示對應標籤
+        const fiberType = (item.prod_fiber_type || '').trim();
+        const sfpBadge = (() => {
+            if (fiberType === 'SFP' || fiberType === 'SFP+' || (!fiberType && checkHasSfp(item))) {
+                const label = fiberType || 'SFP';
+                return `<span class="pb pb-sfp" title="Click to view SFP modules"
+                    onclick="event.stopPropagation();pcOpenSfpTab('${pid}')">${label} Guide</span>`;
+            }
+            if (fiberType && !fiberType.includes('SFP')) {
+                // fixed 接頭：Multi-mode / Single-mode / SC
+                const fiberConn = (item.prod_fiber_conn || '').trim();
+                const connPart = fiberConn ? ` ${fiberConn}` : '';
+                const modeShort = fiberType.includes('Multi') ? 'MM' : 'SM';
+                return `<span class="pb pb-fiber-fixed" title="Fixed ${fiberType} ${connPart}"
+                    onclick="event.stopPropagation();pcOpenSfpTab('${pid}')" style="cursor:pointer">${modeShort}${connPart}</span>`;
+            }
+            return '';
+        })();
+
+        // 場景驗證 badge
+        const sceneVerifiedBadge = (() => {
+            if (!activeScene) return '';
+            const scene = SCENE_TEMPLATES.find(s => s.id === activeScene);
+            if (!scene || !scene.appKeywords || !scene.appKeywords.length) return '';
+            const appStr = (item.prod_application || '').toLowerCase();
+            const matched = scene.appKeywords.some(kw => appStr.includes(kw.toLowerCase()));
+            if (!matched) return '';
+            return `<span class="pb pb-scene-verified" title="Product spec sheet indicates suitability for ${scene.label} applications">✓ Scene Verified</span>`;
+        })();
+
         const badgeHtml =
             `<span class="pb ${isM ? 'pb-type-m' : 'pb-type-u'}">${displayType}</span>` +
             (isW ? '<span class="pb pb-temp">Wide Temp</span>' : '') +
-            (poeTotal > 0 ? `<span class="pb" style="background:#FEF3C7;color:#92400E;border-color:#FCD34D">PoE x${poeTotal}</span>` : '');
+            (poeTotal > 0 ? `<span class="pb" style="background:#FEF3C7;color:#92400E;border-color:#FCD34D">PoE x${poeTotal}</span>` : '') +
+            sfpBadge +
+            sceneVerifiedBadge;
+
+        // 組合研華官網搜尋 URL（使用 prod_url 欄位，或自動組合）
+        const prodUrl = item.prod_url || `https://www.advantech.com/en/search?q=${encodeURIComponent(item.prod_model)}`;
+
         return `
         <div class="pc" id="${pid}">
             <div class="pc-main" onclick="pcToggleDetail('${pid}')">
                 <div class="pc-thumb" style="font-size:12px;font-weight:700;color:#9ca3af;width:24px;text-align:center;">${idx + 1}</div>
                 <div class="pc-info">
-                    <div class="pc-name">${item.prod_model}</div>
+                    <div class="pc-name">
+                        <a class="pc-name-link" href="${prodUrl}" target="_blank" rel="noopener noreferrer"
+                            onclick="event.stopPropagation()" title="View ${item.prod_model} on Advantech website">
+                            ${item.prod_model}
+                            <span class="ext-icon">&#8599;</span>
+                        </a>
+                    </div>
                     <div class="pc-sub">${sub}</div>
                     <div class="pc-badges">${badgeHtml}</div>
                 </div>
                 <div class="pc-right">
-                    <button class="expand-btn" id="expand-btn-${pid}" aria-label="展開詳情"
+                    <!-- 比較按鈕（用 button 避免 label+checkbox 雙重觸發問題） -->
+                    <button class="cmp-cb-wrap" id="cmp-cb-btn-${pid}"
+                            onclick="event.stopPropagation(); compareToggle('${pid}')"
+                            title="Add to Compare">
+                        <span class="cmp-cb-icon">✓</span>
+                        <span>Compare</span>
+                    </button>
+                    <button class="expand-btn" id="expand-btn-${pid}" aria-label="Expand Details"
                         onclick="event.stopPropagation();pcToggleDetail('${pid}')">
                         ⌄
                     </button>
                 </div>
             </div>
             <div class="prod-detail" id="detail-${pid}">
-                <div class="tab-bar" id="tabbar-${pid}">${buildTabBar(pid, 'port')}</div>
+                <div class="tab-bar" id="tabbar-${pid}">${buildTabBar(pid, 'port', item)}</div>
                 ${buildTabPanes(item, pid)}
+                <div class="pc-product-link-bar">
+                    <a class="pc-product-link" href="${prodUrl}" target="_blank" rel="noopener noreferrer"
+                        onclick="event.stopPropagation()">
+                        Go to Product Page
+                        <span class="link-arrow">→</span>
+                    </a>
+                </div>
             </div>
         </div>`;
     }).join('');
@@ -621,15 +777,26 @@ function submitItems() {
     const oldHint = document.getElementById('zeroResultHint');
     if (oldHint) oldHint.remove();
 
+    const requestBody = {
+        items: Object.keys(selectedItemsMap),
+        type: typeVal,
+        portnum: portVal,
+        application: 'ALL'
+    };
+
+    // 儲存目前的選型條件，供 PDF 報表使用
+    window.currentCriteria = {
+        ...requestBody,
+        // 將 items key 陣列補充友善標籤
+        itemLabels: Object.fromEntries(
+            Object.keys(selectedItemsMap).map(k => [k, selectedItemsMap[k]])
+        )
+    };
+
     fetch(`${API_BASE}/api/submitProdType`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            items: Object.keys(selectedItemsMap),
-            type: typeVal,
-            portnum: portVal,
-            application: 'ALL'
-        })
+        body: JSON.stringify(requestBody)
     })
         .then(res => res.json())
         .then(data => {
@@ -640,11 +807,12 @@ function submitItems() {
             if (!data.products) return;
 
             const data_list = data.products;
+            currentDataList = data_list;
             const prodList = document.getElementById('prodList');
             const itemCount = document.getElementById('itemCount');
             itemCount.textContent = data_list.length;
             if (prodList) prodList.innerHTML = '';
-            acquiredModels = data_list.map(item => item.prod_name || item.prod_model);
+            // acquiredModels 將在 applySort 中更新
 
             if (data_list.length === 0 && lastSuccessSnapshot) {
                 // 有歷史快照 → 找出哪些條件是新增的（標紅）
@@ -657,7 +825,7 @@ function submitItems() {
                 });
                 renderSelected(culpritItems);
                 renderFilterTags(culprits);
-                _appendZeroHint('⚠ 無符合產品。標示為紅色的條件是本次新增且可能導致無結果的篩選項。');
+                _appendZeroHint('⚠ No products found. The highlighted condition(s) are newly added and may be causing this.');
 
             } else if (data_list.length > 0) {
                 // 有結果 → 更新快照，清除警告，渲染表格
@@ -669,7 +837,10 @@ function submitItems() {
                 renderSelected();
                 renderFilterTags();
 
-                renderProductCards(data_list);
+                // 搜尋新結果，清除上一次的比較狀態（pid 失效）
+                if (typeof compareOnNewResults === 'function') compareOnNewResults();
+
+                applySort();
 
             } else {
                 // 第一次搜尋就無結果 → 全部條件標紅
@@ -677,15 +848,64 @@ function submitItems() {
                 const allCulpritItems = new Set(thisSnapshot.items);
                 renderSelected(allCulpritItems);
                 renderFilterTags(allCulprits);
-                _appendZeroHint('⚠ 無符合產品。標示為紅色的條件是可能導致無結果的篩選項，請嘗試放寬條件。');
+                _appendZeroHint('⚠ No products found. The highlighted condition(s) may be causing this. Please broaden your search criteria.');
             }
 
             updateContextBar();
         })
         .catch(err => {
             console.error(err);
-            alert('連線後端發生錯誤！');
+            alert('Error communicating with backend!');
         });
+}
+
+// ═══════════════════════════════════════════════
+// 排序邏輯
+// ═══════════════════════════════════════════════
+function applySort() {
+    const sortSelect = document.getElementById('sortSelect');
+    if (!sortSelect || currentDataList.length === 0) {
+        acquiredModels = currentDataList.map(item => item.prod_name || item.prod_model);
+        renderProductCards(currentDataList);
+        return;
+    }
+
+    const sortValue = sortSelect.value;
+    let sortedList = [...currentDataList];
+
+    // 網管功能權重 (基本 -> 進階)
+    const getMgmtWeight = (typeStr) => {
+        const lower = (typeStr || '').toLowerCase();
+        if (lower.includes('unmanage')) return 0;
+        if (lower.includes('smart') || lower.includes('web')) return 1;
+        if (lower.includes('l2')) return 2;
+        if (lower.includes('l3')) return 4;
+        if (lower.includes('manage')) return 3; // 一般 Managed 介於 L2/L3 之間或當作 L3 以下
+        return 0; 
+    };
+
+    sortedList.sort((a, b) => {
+        if (sortValue === 'port_asc') {
+            return (a.prod_portnum || 0) - (b.prod_portnum || 0);
+        } else if (sortValue === 'port_desc') {
+            return (b.prod_portnum || 0) - (a.prod_portnum || 0);
+        } else if (sortValue === 'model_asc') {
+            return (a.prod_model || '').localeCompare(b.prod_model || '');
+        } else if (sortValue === 'model_desc') {
+            return (b.prod_model || '').localeCompare(a.prod_model || '');
+        } else if (sortValue === 'mgmt_asc') {
+            return getMgmtWeight(a.prod_type) - getMgmtWeight(b.prod_type);
+        } else if (sortValue === 'mgmt_desc') {
+            return getMgmtWeight(b.prod_type) - getMgmtWeight(a.prod_type);
+        }
+        return 0; // default
+    });
+
+    // 更新 Chatbot context 使用的順序
+    acquiredModels = sortedList.map(item => item.prod_name || item.prod_model);
+    
+    // 渲染卡片
+    renderProductCards(sortedList);
 }
 
 function _appendZeroHint(text) {
@@ -712,6 +932,9 @@ function resetAll() {
 
     // 同步清除 Feature Selector 的選取狀態
     fsReset();
+
+    // 清除比較狀態
+    if (typeof compareReset === 'function') compareReset();
 
     acquiredModels = [];
     document.getElementById('itemCount').textContent = '0';

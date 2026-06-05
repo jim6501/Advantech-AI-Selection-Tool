@@ -55,6 +55,7 @@ class ProductItemResponse(BaseModel):
     prod_fiber_100: int         # Fiber 100M 埠數
     prod_fiber_giga: int        # Fiber Gigabit 埠數
     prod_fiber_ge_combo: int    # Fiber GE Combo 埠數
+    prod_fiber_10g: int = 0    # Fiber 10G 埠數
     prod_w_n: str               # 溫度等級（Wide / Normal）
     prod_poe_rj_100: int = 0    # PoE RJ-45 100M 埠數
     prod_poe_rj_giga: int = 0   # PoE RJ-45 GbE 埠數
@@ -67,6 +68,10 @@ class ProductItemResponse(BaseModel):
     prod_bypass_m12_giga: int = 0 # LAN Bypass Gigabit (X-code)
     prod_power_input: str = "—" # 電源輸入電壓範圍 (如 12-48VDC)
     prod_temp_range: str = "—"  # 工作溫度範圍 (如 -40 ~ 75C)
+    prod_application: str = ""  # 應用場景標記（來自 hardware.Application，輔助顯示用）
+    prod_fiber_type: str = ""   # 光纖接口類型（SFP / SFP+ / Multi-mode / Single-mode / SC / 空白）
+    prod_fiber_conn: str = ""   # 固定接頭規格（SC / ST / 空白）
+    prod_url: str = ""          # 產品頁 URL；空字串時前端自動組合官網搜尋連結
 
 
 class SubmitProdResponse(BaseModel):

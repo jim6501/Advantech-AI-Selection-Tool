@@ -13,9 +13,10 @@ const UNSUPPORTED_CONDITION_KEYS = ['certifications'];
 const SCENE_TEMPLATES = [
     {
         id: 'railway',
-        label: '鐵路車載',
+        label: 'Railway',
         icon: '🚆',
         description: 'EN 50155 · −40°C',
+        appKeywords: ['Train', 'Railway System', 'Railway Track'],   // 對應 DB hardware.Application 的關鍵字
         conditions: [
             { key: 'mgmtType', value: 'managed' },
             { key: 'certifications', value: ['EN50155'] },
@@ -24,9 +25,10 @@ const SCENE_TEMPLATES = [
     },
     {
         id: 'power',
-        label: '電力系統',
+        label: 'Power System',
         icon: '⚡',
         description: 'IEC 61850 · Ring',
+        appKeywords: ['Power System'],
         conditions: [
             { key: 'mgmtType', value: 'managed' },
             { key: 'certifications', value: ['IEC61850'] },
@@ -35,9 +37,10 @@ const SCENE_TEMPLATES = [
     },
     {
         id: 'factory',
-        label: '智慧工廠',
+        label: 'Smart Factory',
         icon: '🏭',
         description: 'PoE',
+        appKeywords: ['Smart Factory'],
         conditions: [
             { key: 'poe', value: true },
             { key: 'mgmtType', value: 'managed' }
@@ -45,9 +48,10 @@ const SCENE_TEMPLATES = [
     },
     {
         id: 'maritime',
-        label: '港口海事',
+        label: 'Maritime',
         icon: '⚓',
-        description: 'IEC 60945 · 防腐',
+        description: 'IEC 60945 · Anti-Corrosion',
+        appKeywords: [],    // DB 目前無對應標記，留空
         conditions: [
             { key: 'mgmtType', value: 'managed' },
             { key: 'certifications', value: ['IEC60945'] },
@@ -62,7 +66,7 @@ const SCENE_TEMPLATES = [
 function getConditionDisplayLabel(cond) {
     switch (cond.key) {
         case 'mgmtType':
-            const lblMap = { 'managed': 'Managed SW', 'l2_managed': 'L2 Managed SW', 'l3_managed': 'L3 Managed SW', 'unmanaged': 'Unmanaged SW' };
+            const lblMap = { 'managed': 'Managed (All) SW', 'l2_managed': 'L2 Managed SW', 'l3_managed': 'L3 Managed SW', 'unmanaged': 'Unmanaged SW' };
             return lblMap[cond.value] || 'Unmanaged SW';
         case 'numPorts':
             return `≥${cond.value} Port`;

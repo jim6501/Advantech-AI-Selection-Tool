@@ -1,13 +1,15 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pymongo.errors import PyMongoError
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.database import Database
 from app.api import selection
 from app.api import chat
+from app.api import report
 from app.llm_gateway import get_gateway
 
 
@@ -31,8 +33,6 @@ app = FastAPI(
 
 # =========================================================================
 # CORS 跨域設定
-# 允許前端（file:// 或其他網域）呼叫此 API。
-# 正式部署時請將 allow_origins=["*"] 改為明確網域清單。
 # =========================================================================
 app.add_middleware(
     CORSMiddleware,
@@ -41,6 +41,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# =========================================================================
+# 開發用：前端 JS / CSS 永遠不快取，確保修改立即生效
+# =========================================================================
+class NoCacheStaticMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        path = request.url.path
+        if path.startswith("/frontend/js/") or path.startswith("/frontend/css/"):
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
+
+app.add_middleware(NoCacheStaticMiddleware)
 
 # =========================================================================
 # 全域錯誤處理：統一攔截 MongoDB 相關錯誤，避免 500 直接洩漏堆疊資訊
@@ -58,6 +73,7 @@ async def pymongo_exception_handler(request: Request, exc: PyMongoError):
 # =========================================================================
 app.include_router(selection.router, prefix="/api", tags=["Selection"])
 app.include_router(chat.router,      prefix="/api", tags=["Chatbot"])
+app.include_router(report.router,    prefix="/api", tags=["Report"])
 
 
 @app.get("/")
@@ -67,3 +83,4 @@ def root():
 
 # 掛載整個 frontend 資料夾作為靜態檔案，允許存取 /frontend/xxx.html (例如開啟其他分頁)
 app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
+

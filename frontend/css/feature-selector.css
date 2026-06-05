@@ -236,7 +236,7 @@
     background: var(--adv-light-blue);
     box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.15);
 }
-.fs-cat-icon { font-size: 15px; margin-bottom: 6px; opacity: 0.8; display: block; }
+.fs-cat-icon { font-size: 18px; margin-bottom: 6px; display: block; line-height: 1.2; }
 .fs-cat-name {
     font-size: 0.8rem;
     font-weight: 600;
@@ -353,6 +353,12 @@
     letter-spacing: 0.02em;
     flex-shrink: 0;
     font-weight: 600;
+}
+/* APP badge：天藍色調，區別於 HW 的深藍 */
+.fs-app-badge {
+    background: #e0f2fe;
+    color: #0369a1;
+    border-color: #7dd3fc;
 }
 
 /* ── 搜尋結果分組標題 ────────────────────────────────────── */

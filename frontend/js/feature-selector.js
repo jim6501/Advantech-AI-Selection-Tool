@@ -50,7 +50,7 @@ const FS_GROUPS = [
         ]
     },
     {
-        id: 'security', label: '安全防護', icon: '⛨', color: '#f87171',
+        id: 'security', label: 'Security', icon: '⛨', color: '#f87171',
         dbCategories: [
             'Access Control List (ACL)',
             'DoS Attack Prevention',
@@ -69,7 +69,7 @@ const FS_GROUPS = [
         ]
     },
     {
-        id: 'qos', label: 'QoS / 流量控制', icon: '⇅', color: '#fbbf24',
+        id: 'qos', label: 'QoS / Flow Control', icon: '⇅', color: '#fbbf24',
         dbCategories: [
             'QoS IEEE 802.1p Based CoS  QoS IP TOS / Precedence  QoS DSCP based CoS',
             'Port Rate Limit',
@@ -80,7 +80,7 @@ const FS_GROUPS = [
         ]
     },
     {
-        id: 'redundancy', label: '備援 / 環型網路', icon: '↻', color: '#a78bfa',
+        id: 'redundancy', label: 'Redundancy / Ring', icon: '↻', color: '#a78bfa',
         dbCategories: [
             'ERPS(G.8032)',
             'X-Ring Elite',
@@ -88,7 +88,7 @@ const FS_GROUPS = [
         ]
     },
     {
-        id: 'tsn', label: '時間同步 / TSN', icon: '◷', color: '#34d399',
+        id: 'tsn', label: 'Time Sync / TSN', icon: '◷', color: '#34d399',
         dbCategories: [
             'IEEE 1588v2',
             'TSN',
@@ -97,7 +97,7 @@ const FS_GROUPS = [
         ]
     },
     {
-        id: 'mgmt', label: '管理 / 維運', icon: '⚙', color: '#94a3b8',
+        id: 'mgmt', label: 'Management', icon: '⚙', color: '#94a3b8',
         dbCategories: [
             'WEB GUI',
             'Command Line Interface',
@@ -121,7 +121,7 @@ const FS_GROUPS = [
         ]
     },
     {
-        id: 'oam', label: 'OAM / 診斷協定', icon: '◎', color: '#38bdf8',
+        id: 'oam', label: 'OAM / Diagnostics', icon: '◎', color: '#38bdf8',
         dbCategories: [
             'OAM - IEEE 802.1ag CFM',
             'OAM - IEEE 802.3ah',
@@ -133,7 +133,7 @@ const FS_GROUPS = [
         ]
     },
     {
-        id: 'industrial', label: '工業 / 軌道協定', icon: '⚡', color: '#f472b6',
+        id: 'industrial', label: 'Industrial / Railway', icon: '⚡', color: '#f472b6',
         dbCategories: [
             'Industrial Protocol - Modbus TCP',
             'Industrial Service Express',
@@ -143,9 +143,22 @@ const FS_GROUPS = [
         ]
     },
     {
-        id: 'hw', label: '硬體規格', icon: '□', color: '#a8a29e',
+        id: 'portspeed', label: 'Port Type / Speed', icon: '⚡', color: '#06b6d4',
         dbCategories: [
-            'Hardware Feature',  // Has_PoE, Has_Fiber, Has_RJ-45, Temp_Wide
+            'Port Feature',  // Has_PoE, Has_Fiber, Has_RJ-45（存在性：有無該接頭）
+            'Port Speed'     // Port_RJ45_GbE, Port_RJ45_100M, Port_Fiber_GbE, Port_Fiber_10G, Port_M12_Any, Port_M12_GbE, Port_MultiGiga, Port_Bypass
+        ]
+    },
+    {
+        id: 'hw', label: 'Hardware Specs', icon: '◈', color: '#64748b',
+        dbCategories: [
+            'Hardware Feature', // Temp_Wide（Has_PoE/Fiber/RJ-45 已移至 Port 類型卡片）
+            'Power Input'       // Pwr_DC, Pwr_AC, Pwr_12V, Pwr_24V, Pwr_High_Voltage
+        ]
+    },
+    {
+        id: 'application', label: 'Application', icon: '◉', color: '#0ea5e9',
+        dbCategories: [
             'Application'        // 應用場景（動態載入）
         ]
     }
@@ -154,64 +167,72 @@ const FS_GROUPS = [
 
 // ================================================================
 // FS_HIDDEN_FEATURES — 不在選擇器中顯示的功能（簡化 UI 用）
-//
-// 格式：DB key = 'category|||feat_key'
-//   → 在瀏覽器開啟 /api/searchProdType?q= 可查詢所有可用 key
-//
-// 維護方式：
-//   ‣ 新增要隱藏的功能 → 在 Set 中加一行字串
-//   ‣ 恢復顯示       → 從 Set 中刪除該行
-//
-// 注意：隱藏只影響前端顯示，功能仍存在於 DB。
-//       使用者仍可透過 Search Inventory 文字搜尋找到並選取。
 // ================================================================
-const FS_HIDDEN_FEATURES = new Set([
-    // 範例：
-    // 'Standard MIB|||MIB-II',
-    // 'NTP Client  NTP Server  SNTP Client|||Local Time',
-]);
+const FS_HIDDEN_FEATURES = new Set([]);
 
-// ================================================================
-// 以下為運作邏輯，一般維護不需修改
-// ================================================================
+// ── 運作邏輯 ────────────────────────────────────────────────────
 
-/** 從 API 載入的資料：{ gid: { dbCat: [{label, key}] } } */
 let fsData = {};
-
-/** 目前已勾選的項目：{ dbKey: { label, gid } } */
 let fsSelected = {};
-
-/** 目前展開的 Group id */
 let fsActiveGid = null;
-
-/** 搜尋關鍵字 */
 let fsSearchQ = '';
-
-/** 是否已初始化（避免重複呼叫 API） */
 let fsReady = false;
 
-// ── 初始化：呼叫一次 API，之後全前端處理 ───────────────────────
 async function fsInit() {
-    if (fsReady) { fsRender(); return; }
+    const needsReinit = FS_GROUPS.some(g => !(g.id in fsData));
+    if (fsReady && !needsReinit) { fsRender(); return; }
+    if (needsReinit) { fsReady = false; fsData = {}; }
 
     const loadingEl = document.getElementById('fs-cat-grid');
-    if (loadingEl) loadingEl.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:20px 0">載入功能清單中…</div>';
+    if (loadingEl) loadingEl.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:20px 0">Loading features...</div>';
 
     try {
-        // 空白查詢 = 回傳全部（由 selection.py 的修改支援）
         const items = await fetch(`${API_BASE}/api/searchProdType?q=`).then(r => r.json());
         _fsDistributeItems(items);
         fsReady = true;
         fsRender();
     } catch (e) {
-        if (loadingEl) loadingEl.innerHTML = '<div style="color:#b91c1c;font-size:0.85rem;padding:20px 0">⚠ 功能清單載入失敗，請重試</div>';
-        console.error('[FeatureSelector] init error:', e);
+        console.error("Fetch API error:", e);
+        if (loadingEl) loadingEl.innerHTML = '<div style="color:#b91c1c;font-size:0.85rem;padding:20px 0">⚠ Failed to load features, please try again</div>';
     }
 }
 
-/** 將 API 回傳的 items 分配到各 Group */
+const FS_LABEL_TRANSLATIONS = {
+    '具備 PoE 供電': 'Has PoE',
+    '具備光纖 Port (任一速度)': 'Has Fiber Port',
+    '具備 RJ-45 Port (任一速度)': 'Has RJ-45 Port',
+    '具備光纖 Port（任一速度）': 'Has Fiber Port',
+    '具備 RJ-45 Port（任一速度）': 'Has RJ-45 Port',
+    'RJ-45 GbE (含 Combo)': 'RJ-45 GbE (incl. Combo)',
+    'RJ-45 GbE（含 Combo）': 'RJ-45 GbE (incl. Combo)',
+    'RJ-45 100M (Fast Ethernet)': 'RJ-45 100M (Fast Ethernet)',
+    'RJ-45 100M（Fast Ethernet）': 'RJ-45 100M (Fast Ethernet)',
+    'Fiber GbE (SFP)': 'Fiber GbE (SFP)',
+    'Fiber GbE（SFP）': 'Fiber GbE (SFP)',
+    'Fiber 10G (SFP+)': 'Fiber 10G (SFP+)',
+    'Fiber 10G（SFP+）': 'Fiber 10G (SFP+)',
+    'M12 接頭': 'M12 Connector',
+    'M12 任一接頭': 'Any M12 Connector',
+    'M12 GbE (X-code)': 'M12 GbE (X-code)',
+    'M12 GbE（X-code）': 'M12 GbE (X-code)',
+    'Multi-Giga (2.5/5/10G M12)': 'Multi-Giga (2.5/5/10G M12)',
+    'Multi-Giga（2.5/5/10G M12）': 'Multi-Giga (2.5/5/10G M12)',
+    'LAN Bypass': 'LAN Bypass',
+    'DC 供電': 'DC Power Input',
+    'AC 供電': 'AC Power Input',
+    '支援 12V（最低 ≤12V）': '12V Support (Min ≤12V)',
+    '支援 24V（最低 ≤24V）': '24V Support (Min ≤24V)',
+    '高壓供電（≥48V）': 'High Voltage Power (≥48V)',
+    'Temp Wide': 'Wide Operating Temp.',
+    'Train': 'Train',
+    '智慧工廠': 'Smart Factory',
+    '車載系統, 軌道沿線, 智慧工廠': 'Vehicle System, Trackside, Smart Factory',
+    '軌道沿線': 'Trackside',
+    '電力系統': 'Power System',
+    '車載系統': 'Vehicle System'
+};
+
 function _fsDistributeItems(items) {
-    // 建立 dbCategory → groupId 的 lookup
     const catToGid = {};
     FS_GROUPS.forEach(g => {
         fsData[g.id] = {};
@@ -221,27 +242,26 @@ function _fsDistributeItems(items) {
         });
     });
 
-    // 未分類 Group（自動產生，不在 FS_GROUPS 中）
     fsData['other'] = {};
 
     items.forEach(item => {
-        // 略過隱藏功能（在 FS_HIDDEN_FEATURES 中的 key 不顯示）
         if (FS_HIDDEN_FEATURES.has(item.key)) return;
-
         const gid = catToGid[item.category];
+        
+        let displayLabel = item.label;
+        if (FS_LABEL_TRANSLATIONS[displayLabel]) {
+            displayLabel = FS_LABEL_TRANSLATIONS[displayLabel];
+        }
+
         if (gid) {
-            fsData[gid][item.category].push({ label: item.label, key: item.key });
+            fsData[gid][item.category].push({ label: displayLabel, key: item.key });
         } else {
-            // 未對應的 category → 歸入 'other'
             if (!fsData['other'][item.category]) fsData['other'][item.category] = [];
-            fsData['other'][item.category].push({ label: item.label, key: item.key });
+            fsData['other'][item.category].push({ label: displayLabel, key: item.key });
         }
     });
 }
 
-// ── 互動函數 ────────────────────────────────────────────────────
-
-/** 切換單一功能的勾選 */
 function fsToggleItem(key, label, gid, checked) {
     if (checked) {
         fsSelected[key] = { label, gid };
@@ -249,12 +269,10 @@ function fsToggleItem(key, label, gid, checked) {
         delete fsSelected[key];
     }
     fsRenderChips();
-    // 更新「全選」按鈕狀態
     const cat = _fsFindCatByKey(gid, key);
     if (cat) _fsUpdateSelAllBtn(gid, cat);
 }
 
-/** 切換整個 dbCategory 的全選/取消全選 */
 function fsToggleCat(gid, cat) {
     const items = (fsData[gid] || {})[cat] || [];
     const allSelected = items.every(i => fsSelected[i.key]);
@@ -268,7 +286,6 @@ function fsToggleCat(gid, cat) {
     fsRender();
 }
 
-/** 展開/收合大分類卡片 */
 function fsToggleCard(gid) {
     fsActiveGid = (fsActiveGid === gid) ? null : gid;
     fsSearchQ = '';
@@ -279,7 +296,6 @@ function fsToggleCard(gid) {
     fsRender();
 }
 
-/** 從 chip bar 移除整個 Group 的選取 */
 function fsRemoveGroupChip(gid) {
     Object.keys(fsSelected).forEach(key => {
         if (fsSelected[key].gid === gid) delete fsSelected[key];
@@ -287,14 +303,11 @@ function fsRemoveGroupChip(gid) {
     fsRender();
 }
 
-/** 從 chip bar 移除單一 category 的選取 */
 function fsRemoveCatChip(gid, cat) {
     const items = (fsData[gid] || {})[cat] || [];
     items.forEach(i => delete fsSelected[i.key]);
-    fsRender();  // 完整重渲染，確保 checkbox 視覺同步更新
+    fsRender();
 }
-
-// ── 輔助函數 ────────────────────────────────────────────────────
 
 function _fsGetGroup(gid) { return FS_GROUPS.find(g => g.id === gid); }
 
@@ -319,23 +332,16 @@ function _fsUpdateSelAllBtn(gid, cat) {
     const items = (fsData[gid] || {})[cat] || [];
     const allSel = items.length > 0 && items.every(i => fsSelected[i.key]);
     document.querySelectorAll(`.fs-sel-all-btn[data-gid="${gid}"][data-cat="${CSS.escape(cat)}"]`).forEach(btn => {
-        btn.textContent = allSel ? '取消全選' : '全選此分類';
+        btn.textContent = allSel ? 'Deselect All' : 'Select All';
         btn.classList.toggle('on', allSel);
     });
 }
 
-/** 供外部取得 DB Category 對應的 Group Label */
 function fsGetCategoryGroupLabel(dbCat) {
     const g = FS_GROUPS.find(group => group.dbCategories.includes(dbCat));
-    return g ? g.label : '其他';
+    return g ? g.label : 'Other';
 }
 
-// ── 輸出函數（供 app.js 橋接） ──────────────────────────────────
-
-/**
- * 回傳目前已選取的功能陣列，格式：[{ key, label }]
- * key 即為後端所需的 DB key（category|||feat_key 格式）
- */
 function fsGetSelected() {
     return Object.entries(fsSelected).map(([key, val]) => {
         const g = _fsGetGroup(val.gid);
@@ -343,8 +349,6 @@ function fsGetSelected() {
         return { key, label: displayLabel };
     });
 }
-
-// ── Modal 控制 ───────────────────────────────────────────────────
 
 function openFeatureSelector() {
     document.getElementById('fs-modal-overlay').classList.add('open');
@@ -355,7 +359,6 @@ function closeFeatureSelector() {
     document.getElementById('fs-modal-overlay').classList.remove('open');
 }
 
-/** 清除所有已選取的功能，供主頁 resetAll() 呼叫 */
 function fsReset() {
     fsSelected = {};
     fsActiveGid = null;
@@ -364,11 +367,8 @@ function fsReset() {
     if (searchEl) searchEl.value = '';
     const clearEl = document.getElementById('fs-s-clear');
     if (clearEl) clearEl.style.display = 'none';
-    // 若 Modal 已初始化，同步更新畫面
     if (fsReady) fsRender();
 }
-
-// ── 渲染主函數 ───────────────────────────────────────────────────
 
 function fsRender() {
     fsRenderChips();
@@ -381,19 +381,16 @@ function fsRender() {
     }
 }
 
-/** 渲染已選功能的 Chip 列 */
 function fsRenderChips() {
     const bar = document.getElementById('fs-chip-bar');
     const hint = document.getElementById('fs-chip-hint');
     if (!bar) return;
 
-    // 清除舊 chips
     bar.querySelectorAll('.fs-chip').forEach(c => c.remove());
 
-    // 按 category 分組產生 chips
     const catMap = {};
     Object.entries(fsSelected).forEach(([key, val]) => {
-        const cat = _fsFindCatByKey(val.gid, key) || '其他';
+        const cat = _fsFindCatByKey(val.gid, key) || 'Other';
         if (!catMap[`${val.gid}|||${cat}`]) catMap[`${val.gid}|||${cat}`] = [];
         catMap[`${val.gid}|||${cat}`].push({ key, label: val.label, gid: val.gid });
     });
@@ -413,15 +410,14 @@ function fsRenderChips() {
         chip.className = 'fs-chip';
         chip.style.borderLeftColor = color;
         chip.innerHTML =
-            `<span class="fs-chip-grp" style="color:${color}">${g ? g.label : '其他'}</span>` +
+            `<span class="fs-chip-grp" style="color:${color}">${g ? g.label : 'Other'}</span>` +
             `<span>${catLabel}</span>` +
-            `<span class="fs-chip-x" title="移除此分類所有選取">×</span>`;
+            `<span class="fs-chip-x" title="Remove all from this category">×</span>`;
         chip.querySelector('.fs-chip-x').addEventListener('click', () => fsRemoveCatChip(gid, cat));
         bar.appendChild(chip);
     });
 }
 
-/** 渲染大分類卡片格 */
 function fsRenderGrid() {
     const el = document.getElementById('fs-cat-grid');
     if (!el) return;
@@ -435,7 +431,7 @@ function fsRenderGrid() {
         const total = _fsGrpTotal(g.id);
         const hasSel = selCount > 0;
         const isActive = fsActiveGid === g.id;
-        const cntTxt = hasSel ? `${selCount}/${total} 項` : `${total} 項`;
+        const cntTxt = hasSel ? `${selCount}/${total} items` : `${total} items`;
         const cntColor = hasSel ? `color:${g.color};font-weight:700` : '';
         const borderStyle = isActive
             ? `border-left-color:${g.color};border-color:${g.color};`
@@ -449,7 +445,6 @@ function fsRenderGrid() {
         </div>`;
     }).join('') + (hasOther ? _fsOtherCardHTML() : '');
 
-    // 綁定點擊事件
     el.querySelectorAll('.fs-cat-card').forEach(card => {
         card.addEventListener('click', () => fsToggleCard(card.dataset.gid));
     });
@@ -461,8 +456,8 @@ function _fsOtherCardHTML() {
     return `<div class="fs-cat-card uncategorized${isActive ? ' active' : ''}" data-gid="other"
                  style="border-left-color:#aab;">
         <span class="fs-cat-icon" style="color:#aab">⚠</span>
-        <div class="fs-cat-name">其他（未分類）</div>
-        <div class="fs-cat-cnt">${total} 項</div>
+        <div class="fs-cat-name">Other (Uncategorized)</div>
+        <div class="fs-cat-cnt">${total} items</div>
     </div>`;
 }
 
@@ -484,17 +479,17 @@ function fsRenderSub() {
     const groupData = fsData[fsActiveGid] || {};
     const total = Object.values(groupData).reduce((s, arr) => s + arr.length, 0);
     const color = g ? g.color : '#aab';
-    const label = g ? g.label : '其他（未分類）';
+    const label = g ? g.label : 'Other (Uncategorized)';
 
     let html = `<div class="fs-sub-grp-title" style="color:${color}">
         ${label}
-        <span class="fs-sub-grp-total">${total} 項功能</span>
+        <span class="fs-sub-grp-total">${total} items</span>
     </div>`;
 
     if (isOther) {
         html += `<div class="fs-uncategorized-notice">
-            ⚠ 以下功能尚未分配到分類。如需整理，請 PM 更新
-            <code>frontend/js/feature-selector.js</code> 的 <code>FS_GROUPS</code> 設定。
+            ⚠ The following features are uncategorized. Please update the configuration if needed.
+            <code>frontend/js/feature-selector.js</code> <code>FS_GROUPS</code>.
         </div>`;
     }
 
@@ -518,21 +513,25 @@ function _fsSubHTML(gid, groupData) {
             <span class="fs-sub-hdr-name" style="color:${color}">${cat}</span>
             <button class="fs-sel-all-btn${allSel ? ' on' : ''}"
                     data-gid="${gid}" data-cat="${cat.replace(/"/g, '&quot;')}">
-                ${allSel ? '取消全選' : '全選此分類'}
+                ${allSel ? 'Deselect All' : 'Select All'}
             </button>
         </div>`;
 
+        const gidBadge = {
+            hw:          { label: 'HW',  cls: 'fs-hw-badge' },
+            application: { label: 'APP', cls: 'fs-hw-badge fs-app-badge' }
+        };
         items.forEach(item => {
             const uid = 'fs_' + Math.random().toString(36).slice(2);
             const checked = !!fsSelected[item.key];
-            const isHw = gid === 'hw';
+            const badge = gidBadge[gid];
             html += `<div class="fs-feat-row">
                 <input type="checkbox" id="${uid}" ${checked ? 'checked' : ''}
                     data-gid="${gid}" data-key="${item.key}"
                     data-label="${item.label.replace(/"/g, '&quot;')}"
                     style="accent-color:${color}">
                 <label for="${uid}">${item.label}</label>
-                ${isHw ? `<span class="fs-hw-badge">HW</span>` : ''}
+                ${badge ? `<span class="${badge.cls}">${badge.label}</span>` : ''}
             </div>`;
         });
     });
@@ -564,7 +563,7 @@ function fsRenderSearch() {
 
     const searchTargets = [
         ...FS_GROUPS.map(g => ({ g, data: fsData[g.id] || {} })),
-        { g: { id: 'other', label: '其他（未分類）', color: '#aab', icon: '⚠' }, data: fsData['other'] || {} }
+        { g: { id: 'other', label: 'Other (Uncategorized)', color: '#aab', icon: '⚠' }, data: fsData['other'] || {} }
     ];
 
     searchTargets.forEach(({ g, data }) => {
@@ -586,7 +585,7 @@ function fsRenderSearch() {
         html += _fsSubHTML(g.id, matchedCats);
     });
 
-    sub.innerHTML = hasAny ? html : '<div class="fs-no-result">無符合結果</div>';
+    sub.innerHTML = hasAny ? html : '<div class="fs-no-result">No matching results</div>';
     if (hasAny) {
         _fsBindSubEvents(sub, null);
         // 搜尋結果中的事件需逐一綁定

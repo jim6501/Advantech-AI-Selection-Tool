@@ -15,6 +15,20 @@
 - **型號收納功能**：支援型號列出時的展開/收起功能，保持介面整潔。
 - **快速提問**：內建常用場景（電力、交通、PoE 規格等）快速入口。
 
+### 3. SFP 光纖模組選型面板 (SFP Selector)
+- **自動速度判定**：依產品規格動態推薦 100M/1G/10G 適用 SFP 模組清單，並標記 Combo 埠排他警告。
+- **固定接頭支援**：針對固定光纖埠（如 SC/ST 接頭、多模/單模光纖）顯示對應選線與跳線建議，無需手動查詢。
+- **捷徑快速跳轉**：卡片上新增 SFP 快捷 Badge，點擊即可直接切換至 SFP 選型頁籤。
+
+### 4. 場景驗證與引導
+- **✓ 場景驗證**：產品 Application 欄位若與套用的場景模板關鍵字匹配，卡片會動態亮起驗證徽章。
+- **應用場景分組**：Feature Selector 中新增獨立的「應用場景」分組，提供更直觀的場景引導。
+
+### 5. 官方產品與 SFP 連結導流
+- **雙路徑官網導流**：於結果頁的產品卡片型號旁新增 `↗` 連結圖示，並在卡片展開底部新增明顯的「前往研華產品頁 →」CTA 按鈕。
+- **SFP 模組即時跳轉**：SFP 選型面板內之推薦模組轉換為獨立點擊連結，一鍵開新分頁直達搜尋頁面。
+- **URL 自動建構與 Fallback 策略**：後端新增 `prod_url` 欄位；前端會優先讀取此欄位，若空白則會以產品型號自動組出研華官網搜尋 URL。
+
 ## 🛠️ 技術棧
 
 - **後端 (Backend)**: Python 3.10+, FastAPI, MongoDB
@@ -32,14 +46,15 @@
 │   ├── rag/           # RAG 三階段管線 (intent_parser, hard_filter, report_generator)
 │   ├── database.py    # MongoDB 連線封裝
 │   ├── llm_gateway.py # LLM 統一呼叫層與用量控管
-│   └── main.py        # FastAPI 進入點
+│   └── main.py        # FastAPI 進入點（含前端快取控制）
 ├── frontend/
 │   ├── css/           # 獨立樣式表 (style.css, feature-selector.css)
-│   ├── js/            # 獨立邏輯腳本 (app.js, scenes.js, feature-selector.js)
+│   ├── data/          # 靜態 JSON 資料 (sfp_modules.json)
+│   ├── js/            # 獨立邏輯腳本 (app.js, scenes.js, feature-selector.js, sfp-selector.js)
 │   └── select_ui_with_options_claude.html  # 主選型介面
 ├── configs/           # 環境變數與金鑰目錄 (.env, credentials.json)
-├── logs/              # 系統日誌 (如 llm_usage.log)
-├── scripts/           # 資料擷取與同步腳本
+├── logs/              # 系統與開發日誌 (llm_usage.log, dev_log_sprint1.md)
+├── scripts/           # 資料擷取與同步腳本 (sync_all.py 等)
 └── README.md
 ```
 
@@ -94,29 +109,29 @@ uv run uvicorn app.main:app --reload --host 0.0.0.0
 
 ## 📅 資料維護與同步步驟 (Google Sheets)
 
-當硬體規格或軟體版本有更新時，請依照下列步驟同步至資料庫：
+當硬體規格、軟體版本或 SFP 模組有更新時，請依以下步驟同步至資料庫：
 
 ### 1. 更新 Google Sheets 雲端資料
 - **硬體更新**：修改 `Ind. SW` 或 `Train SW` 分頁。
 - **軟體更新**：修改各系列對應的分頁（如 `EKI-7700`, `EKI-5500` 等）。
+- **SFP 模組更新**：修改 `SFP` 分頁。
 - 請確保 **Product PN** 與 **Software Series** 填寫正確，這是合併資料的關鍵。
 
-### 2. 執行資料擷取 (Fetch)
-這會將雲端資料轉為本地 JSON 檔案以便處理：
+### 2. 執行一鍵同步 (推薦)
+本專案提供一鍵同步腳本，自動完成「Sheets 登入 -> 擷取硬體 -> 擷取軟體 -> 擷取 SFP -> 合併寫入 MongoDB」的 5 階段自動化管線：
 ```bash
-# 擷取硬體規格
-uv run scripts/fetch_hardware_specs.py
-
-# 擷取軟體規格 (包含各系列功能)
-uv run scripts/fetch_sw_specs.py
+# 執行一鍵同步並生成驗證報告
+uv run python scripts/sync_all.py
 ```
 
-### 3. 發送至 MongoDB (Sync)
-執行最後的合併與寫入動作：
-```bash
-# 同步至資料庫並生成驗證報告 (data/validation_report.json)
-uv run scripts/sync_specs_to_mongo.py
-```
+---
+
+### 💡 備用：手動分步同步步驟
+若有需要，您也可以分步執行各個擷取與同步腳本：
+1. **擷取硬體規格**：`uv run scripts/fetch_hardware_specs.py` -> 存至 `data/hardware_specs_raw.json`
+2. **擷取軟體規格**：`uv run scripts/fetch_sw_specs.py` -> 存至 `data/software_specs_raw.json`
+3. **擷取 SFP 規格**：`uv run scripts/fetch_sfp_modules.py` -> 存至 `frontend/data/sfp_modules.json`
+4. **合併並寫入 MongoDB**：`uv run scripts/sync_specs_to_mongo.py` -> 同步至資料庫並生成 `data/validation_report.json`
 
 > [!NOTE]
 > 同步過程會自動根據 Product PN 推導軟體系列，若無法配對，預設會回退至最新版的軟體規格。您可以查看 `data/validation_report.json` 確認哪些型號配對失敗。
@@ -132,12 +147,22 @@ uv run scripts/sync_specs_to_mongo.py
   - 修正非同步事件迴圈阻塞問題，確保 Chatbot 思考時介面不卡頓。
   - 優化 Chatbot 介面「📄 參考型號」的收納互動與 Chip 視覺。
   - 升級至最新 `google-genai` SDK，配置 `gemini-2.5-flash` 模型。
-- [x] **完成進階功能選擇器 (Feature Selector) 建置**（2026-05-15）：
+- [x] **完成進階功能選擇器 (Feature Selector) 建置與分類重構**（2026-05-15 / 2026-06-02）：
   - 設計「Modal 嵌入式」互動模式，使用者無需離開主頁即可瀏覽所有功能分類。
   - 採用混合式架構：10 個大分類卡片（人工維護），子功能清單由 DB 自動同步。
+  - 將「應用場景 (Application)」獨立為獨立分類卡片（採用 `◉` 圖示與天藍色設計），與「硬體規格」區隔。
   - 支援大分類卡片展開、前端即時搜尋過濾（零 API 請求）、已選功能 Chip 列。
   - 新增 `FS_HIDDEN_FEATURES` 設定，讓 PM 可一行設定隱藏不常用的子項目。
   - 實作 `fsReset()` 與 `applyFeatureSelector()` 橋接函數，與主頁 Reset All 完整整合。
+- [x] **完成 SFP 光纖模組選型面板與一鍵同步管線**（2026-06-02）：
+  - 實作前端非同步 SFP 選型面板 ([sfp-selector.js](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/frontend/js/sfp-selector.js))，依產品光纖/Combo 埠自動推薦 100M/1G/10G 模組，並提供固定接頭之選線建議。
+  - 新增 SFP 快捷徽章直接跳轉與場景驗證徽章 (`✓ 場景驗證`)。
+  - 整合開發 [sync_all.py](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/scripts/sync_all.py) 實現一鍵完成 5 階段自動化同步與驗證報告生成。
+  - 後端新增 `NoCacheStaticMiddleware` 禁用前端 JS/CSS 瀏覽器快取，避免開發更新延遲。
+- [x] **新增官網產品與 SFP 選型外部連結功能**（2026-06-03）：
+  - 於產品卡片型號旁、展開卡片底部 CTA、以及 SFP 推薦晶片上，全面新增連往研華官網的外部連結（支援自動 fallback 為官網型號搜尋 URL）。
+  - 後端 [ProductItemResponse](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/app/models/selection.py) 新增 `prod_url` 欄位。
+  - 設計精緻 hover 微動畫，滑過外部連結圖示 `↗` 時自動變藍並往右上微幅位移，提升互動感。
 
 ---
 © 2026 Advantech | AI Selection Tool Project

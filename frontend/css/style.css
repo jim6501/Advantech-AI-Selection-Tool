@@ -375,6 +375,25 @@ input[type="text"]:focus {
     margin-bottom: 0;
 }
 
+.sort-select {
+    width: auto;
+    padding: 6px 32px 6px 14px;
+    font-size: 0.78rem;
+    border-radius: 20px;
+    background-color: var(--surface);
+    color: var(--adv-blue);
+    font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace;
+    border: 1px solid #b3cfea;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.sort-select:hover {
+    background-color: #f8fbff;
+}
+
 .count-badge {
     display: inline-flex;
     align-items: center;
@@ -411,10 +430,20 @@ input[type="text"]:focus {
 
 .pc {
     border-bottom: 1px solid var(--adv-border);
+    transition: background 0.2s, box-shadow 0.2s;
 }
 
 .pc:last-child {
     border-bottom: none;
+}
+
+/* ── EXPANDED CARD: 高亮整張卡 ── */
+.pc.is-expanded {
+    background: linear-gradient(180deg, #EFF6FF 0%, #F8FAFC 100%);
+    border-bottom: 1px solid #B3CFE8;
+    box-shadow: inset 3px 0 0 0 var(--adv-accent);
+    position: relative;
+    z-index: 1;
 }
 
 .pc-main {
@@ -428,7 +457,24 @@ input[type="text"]:focus {
 }
 
 .pc-main:hover {
-    background: var(--adv-gray);
+    background: var(--adv-light-blue);
+}
+
+/* 展開狀態的 header 列 */
+.pc.is-expanded .pc-main {
+    background: rgba(0, 98, 204, 0.07);
+    border-bottom: 1px solid #C9DCF2;
+}
+
+.pc.is-expanded .pc-name {
+    color: var(--adv-accent);
+}
+
+/* 展開狀態的序號圓形高亮 */
+.pc.is-expanded .pc-thumb {
+    background: var(--adv-accent);
+    border-color: var(--adv-accent);
+    color: #fff !important;
 }
 
 .pc-thumb {
@@ -498,6 +544,15 @@ input[type="text"]:focus {
     border-color: #FAC775;
 }
 
+/* 場景驗證 badge：產品 DB 標籤符合啟用場景時顯示 */
+.pb-scene-verified {
+    background: #D1FAE5;
+    color: #065F46;
+    border-color: #6EE7B7;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
 .pc-right {
     display: flex;
     align-items: center;
@@ -531,8 +586,14 @@ input[type="text"]:focus {
 /* ── PRODUCT DETAIL (Tab area) ───────────────── */
 .prod-detail {
     display: none;
-    border-top: 1px solid var(--adv-border);
-    background: var(--adv-gray);
+    border-top: 1px solid #C9DCF2;
+    background: #F5F9FF;
+    animation: detail-slide-in 0.18s ease;
+}
+
+@keyframes detail-slide-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .prod-detail.open {
@@ -612,6 +673,17 @@ input[type="text"]:focus {
     border: 1px solid var(--adv-border);
     border-radius: var(--radius-sm);
     padding: 8px 10px;
+}
+
+/* Combo 群組：雙色虛線邊框，暗示「RJ-45 或 SFP」二選一 */
+.port-group-combo {
+    background: linear-gradient(135deg, #f0f7ff 0%, #f0fdf8 100%);
+    border: 1.5px dashed #7cb9e8;
+    position: relative;
+}
+
+.port-group-combo .port-group-label {
+    color: #0062cc;
 }
 
 .port-group-label {
@@ -701,8 +773,9 @@ input[type="text"]:focus {
 .pv-m12      { background: #818CF8; }  /* Indigo 400 — M12 D-code  */
 .pv-m12-gbe  { background: #4F46E5; }  /* Indigo 600 — M12 X-code  */
 .pv-m12-multi{ background: #312E81; }  /* Indigo 900 — M12 Multi-Giga */
-.pv-fiber    { background: #34D399; }  /* Emerald 400 — Fiber 10/100 */
-.pv-fiber-gbe{ background: #059669; }  /* Emerald 600 — Fiber GbE   */
+.pv-fiber    { background: #34D399; }  /* Emerald 400 — Fiber 10/100  */
+.pv-fiber-gbe{ background: #059669; }  /* Emerald 600 — Fiber GbE     */
+.pv-fiber-10g{ background: #064E3B; }  /* Emerald 900 — Fiber 10G SFP+ */
 .pv-combo    { background: #94A3B8; }  /* Slate 400   — RJ-45/SFP Combo (neutral hybrid) */
 .pv-bypass   { background: #F43F5E; }  /* Rose 500 — Bypass 10/100 */
 .pv-bypass-gbe{background: #BE123C; }  /* Rose 700 — Bypass GbE */
@@ -1473,3 +1546,412 @@ select.scene-prefilled-sug {
 ::-webkit-scrollbar-thumb:hover {
     background: #9aabbc;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   SFP 選型面板
+   ═══════════════════════════════════════════════════════════ */
+
+/* SFP badge（產品卡片上）— 可點擊 */
+.pb-sfp {
+    background: #EDE9FE;
+    color: #5B21B6;
+    border-color: #C4B5FD;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.pb-sfp:hover {
+    background: #C4B5FD;
+    transform: translateY(-1px);
+}
+
+.pb-fiber-fixed {
+    background: #D1FAE5;
+    color: #065F46;
+    border-color: #6EE7B7;
+}
+
+/* ── 載入中 / 無 Fiber ──────────────────────── */
+.sfp-loading, .sfp-no-fiber {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 0;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.sfp-loading-dot {
+    width: 8px; height: 8px;
+    background: var(--adv-teal);
+    border-radius: 50%;
+    animation: sfp-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes sfp-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+.sfp-icon { font-size: 1.1rem; }
+
+/* ── 固定接頭說明 ────────────────────────────── */
+.sfp-fixed-info    { padding: 4px 0 8px; }
+
+.sfp-fixed-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 10px;
+}
+
+.sfp-fixed-rows {
+    background: var(--surface);
+    border: 1px solid var(--adv-border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    width: fit-content;
+    min-width: 240px;
+}
+
+.sfp-fixed-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--adv-border);
+    gap: 20px;
+}
+
+.sfp-fixed-row:last-child { border-bottom: none; }
+
+.sfp-fixed-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.sfp-fixed-val {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.sfp-fixed-tip .sfp-fixed-val {
+    color: var(--adv-teal);
+    font-weight: 400;
+    font-style: italic;
+}
+
+/* ── 速度分組外框 ─────────────────────────────── */
+.sfp-slots-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0;
+}
+
+.sfp-speed-group {
+    /* Removed boxed layout */
+    margin-bottom: 16px;
+}
+
+.sfp-speed-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.sfp-slot-count {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.sfp-combo-note {
+    font-size: 10px;
+    color: #92400E;
+    background: #FEF3C7;
+    border: 1px solid #FCD34D;
+    border-radius: 3px;
+    padding: 1px 6px;
+}
+
+/* 速度 badge */
+.sfp-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.sfp-badge-fixed   { background: #D1FAE5; color: #065F46; border-color: #6EE7B7; }
+.sfp-badge-100m    { background: #DBEAFE; color: #1E40AF; border-color: #93C5FD; }
+.sfp-badge-1g      { background: #EDE9FE; color: #5B21B6; border-color: #C4B5FD; }
+.sfp-badge-10g     { background: #FEE2E2; color: #991B1B; border-color: #FCA5A5; }
+.sfp-badge-sfpplus { background: #FFF7ED; color: #9A3412; border-color: #FDBA74; }
+
+/* ═══════════════════════════════════════════════
+   單欄橫向折疊 (Accordion) - Pill Layout
+   ═══════════════════════════════════════════════ */
+.sfp-acc-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sfp-acc-item {
+    width: 100%;
+}
+
+.sfp-acc-item.is-open {
+    /* No longer need width change since they are always 100% container */
+}
+
+.sfp-acc-hdr {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    cursor: pointer;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid var(--adv-border);
+    transition: background 0.15s, border-color 0.15s;
+    width: max-content;
+}
+
+.sfp-acc-hdr:hover {
+    background: #F8FAFC;
+    border-color: #cbd5e1;
+}
+
+.sfp-acc-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sfp-acc-tag {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+.sfp-acc-tag-mm { background: #E1F5EE; color: #085041; border: 1px solid #b2e2d1; }
+.sfp-acc-tag-sm { background: #E6F1FB; color: #0C447C; border: 1px solid #c0daf1; }
+.sfp-acc-tag-bidi { background: #FBEAF0; color: #72243E; border: 1px solid #f2c7d6; }
+.sfp-acc-tag-copper { background: #FAEEDA; color: #633806; border: 1px solid #f0d5a6; }
+
+.sfp-acc-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.sfp-acc-count {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: #ffffff;
+    border: 1px solid var(--adv-border);
+    padding: 1px 8px;
+    border-radius: 12px;
+}
+
+.sfp-acc-arrow {
+    font-size: 12px;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+    margin-left: 2px;
+}
+
+.sfp-acc-item.is-open .sfp-acc-arrow {
+    transform: rotate(180deg);
+}
+
+.sfp-acc-body {
+    display: none;
+    padding: 12px 0;
+}
+
+.sfp-acc-item.is-open .sfp-acc-body {
+    display: block;
+}
+
+/* ── Accordion 內部的模組卡片 Grid ── */
+.sfp-sgrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.sfp-scard {
+    width: 200px;
+    flex-shrink: 0;
+    background: #ffffff;
+    border: 1px solid var(--adv-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+}
+
+.sfp-spart {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--adv-blue);
+    margin-bottom: 5px;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.sfp-smeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.sfp-tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+}
+
+.sfp-tag-mm { background: #E1F5EE; color: #085041; }
+.sfp-tag-sm { background: #E6F1FB; color: #0C447C; }
+.sfp-tag-bidi { background: #EEEDFE; color: #3C3489; }
+.sfp-tag-cu { background: #FAEEDA; color: #633806; }
+.sfp-tag-neu { background: #fff; color: var(--text-muted); border: 1px solid var(--adv-border); }
+
+.sfp-sdet {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.sfp-spair {
+    font-size: 10px;
+    color: #5B21B6;
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px dashed var(--adv-border);
+}
+
+/* ═══════════════════════════════════════════════
+   產品連結樣式
+   ═══════════════════════════════════════════════ */
+
+/* 型號名稱旁的 ↗ 外部連結圖示 */
+.pc-name-link {
+    display: inline-flex;
+    align-items: center;
+    color: inherit;
+    text-decoration: none;
+    gap: 4px;
+}
+
+.pc-name-link .ext-icon {
+    font-size: 11px;
+    color: var(--text-muted);
+    transition: color 0.15s, transform 0.15s;
+    opacity: 0.6;
+    flex-shrink: 0;
+}
+
+.pc-name-link:hover .ext-icon {
+    color: var(--adv-accent);
+    opacity: 1;
+    transform: translate(1px, -1px);
+}
+
+/* 卡片底部 CTA —「前往研華產品頁 →」 */
+.pc-product-link-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 7px 14px 7px;
+    border-top: 1px solid #e2ebf5;
+    background: linear-gradient(90deg, transparent 0%, rgba(0, 98, 204, 0.03) 100%);
+}
+
+.pc-product-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--adv-accent);
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 98, 204, 0.2);
+    background: rgba(0, 98, 204, 0.05);
+    transition: all 0.18s;
+    font-family: 'IBM Plex Sans', sans-serif;
+    letter-spacing: 0.01em;
+}
+
+.pc-product-link:hover {
+    background: rgba(0, 98, 204, 0.12);
+    border-color: rgba(0, 98, 204, 0.4);
+    color: var(--adv-blue);
+    transform: translateX(2px);
+}
+
+.pc-product-link .link-arrow {
+    transition: transform 0.18s;
+}
+
+.pc-product-link:hover .link-arrow {
+    transform: translateX(3px);
+}
+
+/* ═══════════════════════════════════════════════
+   SFP chip 連結（pill 形狀，可點擊）
+   ═══════════════════════════════════════════════ */
+
+/* 模組 scard 改造為 chip */
+.sfp-scard {
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+    text-decoration: none;
+    display: block;
+}
+
+.sfp-scard:hover {
+    border-color: var(--adv-accent);
+    box-shadow: 0 2px 8px rgba(0, 98, 204, 0.15);
+    transform: translateY(-1px);
+}
+
+/* scard 內部外部連結圖示 */
+.sfp-spart-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.sfp-ext-icon {
+    font-size: 10px;
+    color: var(--text-muted);
+    opacity: 0.5;
+    transition: color 0.15s, opacity 0.15s;
+    flex-shrink: 0;
+}
+
+.sfp-scard:hover .sfp-ext-icon {
+    color: var(--adv-accent);
+    opacity: 1;
+}
+

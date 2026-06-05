@@ -11,13 +11,17 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="/frontend/css/style.css">
-    <link rel="stylesheet" href="/frontend/css/feature-selector.css">
+    <link rel="stylesheet" href="css/style.css?v=2">
+    <link rel="stylesheet" href="css/feature-selector.css">
+    <link rel="stylesheet" href="css/compare.css">
 
     <!-- marked.js：Markdown 渲染（Chatbot 回覆美化） -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- Tabler Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    
+    <!-- html2pdf.js：PDF 匯出 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 
 <body>
@@ -49,18 +53,19 @@
 
                 <!-- Quick Start 場景模板 -->
                 <div class="section scene-section">
-                    <label>⚡ Quick Start — 應用場景</label>
+                    <label>⚡ Quick Start — Applications</label>
                     <div class="scene-grid" id="sceneGrid">
                         <!-- 由 initSceneGrid() 動態產生 -->
                     </div>
-                    <button class="scene-clear-link" id="sceneClearBtn" onclick="clearScene()" style="display:none">✕ 清除場景</button>
-                    <button class="scene-restore-btn" id="sceneRestoreBtn" onclick="restoreSceneDefaults()" style="display:none">↺ 恢復預設</button>
+                    <button class="scene-clear-link" id="sceneClearBtn" onclick="clearScene()" style="display:none">✕ Clear Scene</button>
+                    <button class="scene-restore-btn" id="sceneRestoreBtn" onclick="restoreSceneDefaults()" style="display:none">↺ Restore Defaults</button>
                 </div>
 
                 <div class="section">
                     <label><span class="step-badge">1</span> Management Type</label>
                     <select id="mgmtType">
                         <option value="" disabled selected hidden>Please select Management Type ...</option>
+                        <option value="managed">Managed (All)</option>
                         <option value="l2_managed">L2 Managed</option>
                         <option value="l3_managed">L3 Managed</option>
                         <option value="unmanaged">Unmanaged</option>
@@ -90,7 +95,7 @@
                     <label><span class="step-badge">3</span> Search Inventory</label>
                     <input type="text" id="searchInput" placeholder="Search product items…">
                     <div id="searchResults"></div>
-                    <button id="advancedFilterBtn" type="button">⊞ 進階功能瀏覽</button>
+                    <button id="advancedFilterBtn" type="button">⊞ Advanced Filter</button>
                 </div>
             </div>
 
@@ -119,9 +124,20 @@
         <div class="lower-part card">
             <div class="results-header">
                 <h3>Acquired Product Information</h3>
-                <div class="count-badge">
-                    <span class="count-dot"></span>
-                    Total: <span id="itemCount">0</span>
+                <div style="display: flex; align-items: center;">
+                    <select id="sortSelect" onchange="applySort()" class="sort-select">
+                        <option value="default">Default Sorting</option>
+                        <option value="port_asc">Total Ports: Low to High</option>
+                        <option value="port_desc">Total Ports: High to Low</option>
+                        <option value="model_asc">Model Name: A to Z</option>
+                        <option value="model_desc">Model Name: Z to A</option>
+                        <option value="mgmt_asc">Management: Basic to Advanced</option>
+                        <option value="mgmt_desc">Management: Advanced to Basic</option>
+                    </select>
+                    <div class="count-badge">
+                        <span class="count-dot"></span>
+                        Total: <span id="itemCount">0</span>
+                    </div>
                 </div>
             </div>
             <div class="prod-list" id="prodList"></div>
@@ -132,39 +148,39 @@
 
     <!-- ═══════════════ CHATBOT PANEL ═══════════════ -->
 
-    <button id="chatFab" onclick="toggleChat()" title="AI 選型助手">💬</button>
+    <button id="chatFab" onclick="toggleChat()" title="AI Assistant">💬</button>
 
     <div id="chatPanel">
         <div id="chatHeader">
             <div class="chat-header-title">
                 <span class="ai-dot"></span>
-                <span>🤖 AI 選型助手</span>
+                <span>🤖 AI Assistant</span>
             </div>
             <div class="chat-header-actions">
-                <button id="chatClearBtn" onclick="clearChat()" title="清除對話紀錄">🗑️</button>
+                <button id="chatClearBtn" onclick="clearChat()" title="Clear Chat History">🗑️</button>
                 <button id="chatCloseBtn" onclick="toggleChat()">✕</button>
             </div>
         </div>
 
-        <div id="contextBar">尚未選擇任何型號</div>
+        <div id="contextBar">No models selected</div>
 
         <div id="chatMessages">
             <div class="msg-bubble assistant">
-                您好！我是 Advantech 工業交換機選型 AI 助手。<br>
-                請先在左側選擇型號後再詢問，或直接描述您的應用需求。
+                Hello! I am the Advantech Industrial Switch AI Assistant.<br>
+                Please select models on the left before asking, or describe your application needs directly.
             </div>
         </div>
 
         <div id="quickPrompts">
-            <button class="quick-btn" onclick="sendQuick('應用場景: 電力系統')">⚡ 應用場景: 電力系統</button>
-            <button class="quick-btn" onclick="sendQuick('應用場景: 車載系統')">🚆 應用場景: 車載系統</button>
-            <button class="quick-btn" onclick="sendQuick('這些設備的工作溫度範圍是？')">🌡️ 溫度規格</button>
-            <button class="quick-btn" onclick="sendQuick('哪款支援 PoE？功率是多少？')">⚡ PoE 功能</button>
-            <button class="quick-btn" onclick="sendQuick('比較這些型號的 Port 數量與類型')">🔌 Port 比較</button>
+            <button class="quick-btn" onclick="sendQuick('Application: Power System')">⚡ Power System</button>
+            <button class="quick-btn" onclick="sendQuick('Application: Railway System')">🚆 Railway System</button>
+            <button class="quick-btn" onclick="sendQuick('What is the operating temperature range?')">🌡️ Temp Spec</button>
+            <button class="quick-btn" onclick="sendQuick('Which model supports PoE? What is the power budget?')">⚡ PoE Feature</button>
+            <button class="quick-btn" onclick="sendQuick('Compare the port count and types of these models')">🔌 Port Compare</button>
         </div>
 
         <div id="chatInputBar">
-            <textarea id="chatInput" rows="1" placeholder="輸入問題…（Enter 送出）"></textarea>
+            <textarea id="chatInput" rows="1" placeholder="Type your question... (Enter to send)"></textarea>
             <button id="chatSendBtn" onclick="sendMessage()">➤</button>
         </div>
     </div>
@@ -173,17 +189,17 @@
     <div id="fs-modal-overlay">
         <div id="fs-modal-container">
             <div id="fs-modal-header">
-                <span>⊞ 進階功能篩選</span>
+                <span>⊞ Advanced Features Filter</span>
                 <button id="fs-modal-close">✕</button>
             </div>
             <div id="fs-modal-body">
                 <!-- 已選功能 Chip 列 -->
                 <div id="fs-chip-bar">
-                    <span id="fs-chip-hint">尚未選取任何功能</span>
+                    <span id="fs-chip-hint">No features selected</span>
                 </div>
                 <!-- 搜尋框 -->
                 <div class="fs-search-wrap">
-                    <input type="text" id="fs-search" placeholder="搜尋功能… (例：VLAN、PoE、STP、TSN)">
+                    <input type="text" id="fs-search" placeholder="Search features... (e.g. VLAN, PoE, STP, TSN)">
                     <span id="fs-s-clear">×</span>
                 </div>
                 <!-- 大分類卡片格（由 feature-selector.js 動態產生） -->
@@ -192,16 +208,25 @@
                 <div id="fs-sub-area"></div>
             </div>
             <div id="fs-modal-footer">
-                <button id="fs-cancel-btn">取消</button>
-                <button id="fs-apply-btn">套用篩選條件</button>
+                <button id="fs-cancel-btn">Cancel</button>
+                <button id="fs-apply-btn">Apply Filter</button>
             </div>
         </div>
     </div>
 
+    <!-- ═══════════════ COMPARE BAR（底部浮動列） ═══════════════ -->
+    <div id="cmp-bar"></div>
+
+    <!-- ═══════════════ COMPARE PANEL（右側拉出面板） ═══════════════ -->
+    <div id="cmp-panel"></div>
+
     <!-- Main Application Script（放在 body 底部確保 DOM 已載入） -->
-    <script src="/frontend/js/feature-selector.js?v=2"></script>
-    <script src="/frontend/js/scenes.js?v=2"></script>
-    <script src="/frontend/js/app.js?v=2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/feature-selector.js?v=3"></script>
+    <script src="js/scenes.js?v=3"></script>
+    <script src="js/sfp-selector.js?v=4"></script>
+    <script src="js/compare.js"></script>
+    <script src="js/app.js?v=3"></script>
 
 </body>
 

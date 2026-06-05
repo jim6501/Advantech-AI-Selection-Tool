@@ -44,7 +44,7 @@ def chat(req: ChatRequest) -> ChatResponse:
     # 若完全沒有候選型號，直接回傳找不到
     if not all_docs:
         return ChatResponse(
-            answer="找不到符合條件的型號，請嘗試放寬篩選條件或調整問題描述。",
+            answer="No matching models found. Please try relaxing your search criteria or adjusting your description.",
             referenced_models=[],
             sources=[],
         )

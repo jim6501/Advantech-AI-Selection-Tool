@@ -66,7 +66,7 @@ def _build_report_prompt(
     history_text = ""
     if history:
         history_text = "\n".join(
-            f"{'使用者' if h['role'] == 'user' else 'AI'}：{h['content']}"
+            f"{'User' if h['role'] == 'user' else 'AI'}: {h['content']}"
             for h in history[-6:]
         )
 
@@ -74,37 +74,27 @@ def _build_report_prompt(
     overflow_note = ""
     if total_count > len(top_docs):
         overflow_note = (
-            f"\n（注意：符合條件的型號共 {total_count} 款，"
-            f"以下僅分析前 {len(top_docs)} 款規格。完整清單請參考「參考型號」區塊。）"
+            f"\n(Note: There are a total of {total_count} matching models. "
+            f"The analysis below covers the top {len(top_docs)} models. "
+            f"For the full list, please refer to the 'Referenced Models' section.)"
         )
 
-    return f"""你是 Advantech 工業交換機選型 AI 助手。
-請根據以下**真實規格資料**回答使用者問題。{overflow_note}
+    return f"""You are the Advantech Industrial Switch Selection AI Assistant.
+Please answer the user's question based on the following **real specification data**.{overflow_note}
 
-回答規則：
-1. 只能引用以下規格資料中存在的資訊，**嚴禁推斷或捏造規格數值**
-2. 回答使用**繁體中文**，並使用標準 **Markdown** 格式排版
-3. 若需比較多個型號，請使用 Markdown 表格。
-   【表格嚴格規範】：
-   - 必須包含完整的表頭與分隔線，例如：
-     | 型號 | 數量 | 說明 |
-     |---|---|---|
-     | A | 1 | 測試 |
-   - **絕對不可以**在表格的儲存格內使用換行符號（換行）或條列式符號（如 `-` 或 `*`），這會導致表格破版！請將多個項目用逗號 `,` 隔開寫在同一行。
-4. 推薦型號時必須說明具體理由（對應哪個規格符合需求）
-5. 如果規格資料不足以回答問題，請明確說明「目前規格資料不足以回答此問題」
-6. 回答末尾附上被分析的型號清單
+Rules for answering:
+1. You may only reference the information provided in the specification data below. **Do not infer or invent specification values.**
+2. Please reply in English and use standard Markdown formatting.
+3. If the user's question is unrelated to industrial switches, politely guide them back to product selection.
 
----
-對話上下文（最近幾輪）：
-{history_text if history_text else "（無歷史對話）"}
-
----
-使用者問題：{user_query}
-
----
-候選型號規格資料（共 {len(top_docs)} 款）：
+=== Specification Data ===
 {specs_json}
+
+=== Conversation History ===
+{history_text}
+
+=== Current Question ===
+{user_query}
 """
 
 
@@ -127,7 +117,7 @@ def generate_report(
     ]
 
     if not top_docs:
-        return "找不到符合條件的型號，請嘗試放寬篩選條件。", []
+        return "No matching models found. Please try relaxing your search criteria.", []
 
     prompt = _build_report_prompt(user_query, history, top_docs, total_count)
 
@@ -136,6 +126,6 @@ def generate_report(
         answer = gateway.call("report", prompt)
     except RuntimeError as e:
         # LLM 限流或失敗 → 回傳友善錯誤訊息
-        answer = f"⚠️ AI 服務暫時無法回應：{e}"
+        answer = f"⚠️ AI service is temporarily unavailable: {e}"
 
     return answer, referenced_models
