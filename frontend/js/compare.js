@@ -488,7 +488,7 @@ async function downloadComparePDF() {
 
     try {
         _showToast("Generating PDF, please wait...");
-        const res = await fetch('/api/exportReport', {
+        const res = await fetch(`${typeof API_BASE !== 'undefined' ? API_BASE : ''}/api/exportReport`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
