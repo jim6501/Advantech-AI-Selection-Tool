@@ -363,6 +363,7 @@ def submit_product_selection(req: SubmitProdRequest):
             prod_fiber_100=safe_int(hw.get("Fiber 100M")),
             prod_fiber_giga=safe_int(hw.get("Fiber Gigabit")),
             prod_fiber_ge_combo=safe_int(hw.get("Fiber GE Combo")),
+            prod_fiber_10g=safe_int(hw.get("Fiber 10G")),
             prod_w_n=hw.get("Temp Grade", "Normal"),
             prod_poe_rj_100=safe_int(hw.get("PoE RJ-45 100M")),
             prod_poe_rj_giga=safe_int(hw.get("PoE RJ-45 GbE")),
@@ -374,7 +375,11 @@ def submit_product_selection(req: SubmitProdRequest):
             prod_bypass_m12_100=safe_int(hw.get("LAN Bypass 10/100M (D-code)")),
             prod_bypass_m12_giga=safe_int(hw.get("LAN Bypass Gigabit (X-code)")),
             prod_power_input=str(hw.get("Input Voltage") or "—").strip(),
-            prod_temp_range=str(hw.get("Op Temp Range") or hw.get("Temp Grade") or "—").strip()
+            prod_temp_range=str(hw.get("Op Temp Range") or hw.get("Temp Grade") or "—").strip(),
+            prod_application=str(hw.get("Application") or "").strip(),
+            prod_fiber_type=str(hw.get("Fiber Type") or "").strip(),
+            prod_fiber_conn=str(hw.get("Fiber Connector") or "").strip(),
+            prod_url=str(hw.get("prod_url") or hw.get("URL") or "").strip(),
         ))
 
     return SubmitProdResponse(products=response_items)
