@@ -29,31 +29,62 @@
 - **SFP 模組即時跳轉**：SFP 選型面板內之推薦模組轉換為獨立點擊連結，一鍵開新分頁直達搜尋頁面。
 - **URL 自動建構與 Fallback 策略**：後端新增 `prod_url` 欄位；前端會優先讀取此欄位，若空白則會以產品型號自動組出研華官網搜尋 URL。
 
+## 🌐 部署架構
+
+本工具採用「前端公開 + 後端內網」的混合部署模式：
+
+```
+瀏覽器 → GitHub Pages（靜態前端）
+              ↓ API 呼叫
+    https://api.namecheapest.cc（Cloudflare Tunnel 公開 URL）
+              ↓ 加密隧道
+    內部電腦 FastAPI :8000 → MongoDB（本機）
+```
+
+| 入口 | 網址 | 說明 |
+|------|------|------|
+| GitHub Pages | `https://jim6501.github.io/Advantech-AI-Selection-Tool/` | 靜態前端，對外公開 |
+| Cloudflare Tunnel | `https://api.namecheapest.cc` | 後端 API + 完整前端介面 |
+| 本機開發 | `http://localhost:8000` | 本機直接存取 |
+
+### Cloudflare Tunnel 啟動方式
+```bash
+cloudflared tunnel run advantech-tool
+```
+> 詳細設定步驟請參考 [Plan/cloudflare_tunnel_setup.md](Plan/cloudflare_tunnel_setup.md)
+
 ## 🛠️ 技術棧
 
 - **後端 (Backend)**: Python 3.10+, FastAPI, MongoDB
 - **前端 (Frontend)**: Vanilla HTML5, CSS3 (Glassmorphism design), JavaScript (ES6+)
 - **資料處理**: Pymongo, Uvicorn, UV Package Manager
 - **AI 整合**: RAG 架構 (Phase 1 完成，準備進入 Phase 2 Vector Search)
+- **部署**: GitHub Pages + Cloudflare Tunnel
 
 ## 📂 專案架構
 
 ```text
 .
 ├── app/
-│   ├── api/           # API 路由 (selection.py, chat.py)
+│   ├── api/           # API 路由 (selection.py, chat.py, report.py)
 │   ├── models/        # Pydantic 資料模型 (selection.py, chat.py)
 │   ├── rag/           # RAG 三階段管線 (intent_parser, hard_filter, report_generator)
 │   ├── database.py    # MongoDB 連線封裝
 │   ├── llm_gateway.py # LLM 統一呼叫層與用量控管
 │   └── main.py        # FastAPI 進入點（含前端快取控制）
 ├── frontend/
-│   ├── css/           # 獨立樣式表 (style.css, feature-selector.css)
-│   ├── data/          # 靜態 JSON 資料 (sfp_modules.json)
-│   ├── js/            # 獨立邏輯腳本 (app.js, scenes.js, feature-selector.js, sfp-selector.js)
-│   └── select_ui_with_options_claude.html  # 主選型介面
+│   ├── css/           # 獨立樣式表 (style.css, feature-selector.css, compare.css)
+│   ├── js/            # 獨立邏輯腳本 (app.js, scenes.js, feature-selector.js, sfp-selector.js, compare.js)
+│   │   └── config.js  # Cloudflare Tunnel URL 設定（部署時填入）
+│   ├── index.html     # GitHub Pages 入口（相對路徑版本）
+│   └── select_ui_with_options_claude.html  # 後端直接存取版本（絕對路徑）
+├── .github/
+│   └── workflows/
+│       └── deploy-pages.yml  # GitHub Actions 自動部署至 GitHub Pages
+├── Plan/
+│   └── cloudflare_tunnel_setup.md  # Cloudflare Tunnel 完整設定指南
 ├── configs/           # 環境變數與金鑰目錄 (.env, credentials.json)
-├── logs/              # 系統與開發日誌 (llm_usage.log, dev_log_sprint1.md)
+├── logs/              # 系統與開發日誌
 ├── scripts/           # 資料擷取與同步腳本 (sync_all.py 等)
 └── README.md
 ```
@@ -95,17 +126,33 @@ MONGO_DB_NAME="advantech_ind_sw_tool"
 uv run uvicorn app.main:app --reload --host 0.0.0.0
 ```
 
-### 3. 使用前端 (兩路徑)
+### 3. 啟動 Cloudflare Tunnel（對外部署時）
 
-#### A. 透過後台直接存取 (推薦)
-啟動後端後，直接在瀏覽器輸入您的 IP。這會自動處理 API 位址偵測，最適合多人使用：
-- **本機使用**：`http://localhost:8000`
-- **其他電腦連線**：`http://您的電腦IP:8000` (例如 `http://192.168.1.50:8000`)
+```bash
+cloudflared tunnel run advantech-tool
+```
 
-#### B. 點擊 HTML 檔案開啟
-直接在瀏覽器中開啟 `frontend/select_ui_with_options_claude.html`。
+### 4. 使用前端（三種入口）
+
+#### A. GitHub Pages（推薦對外分享）
+```
+https://jim6501.github.io/Advantech-AI-Selection-Tool/
+```
+- 靜態前端，API 會自動打到 `api.namecheapest.cc`（需 Cloudflare Tunnel 運作中）
+- 若更換 Tunnel URL，請更新 `frontend/js/config.js` 並 push
+
+#### B. Cloudflare Tunnel URL（完整功能）
+```
+https://api.namecheapest.cc
+```
+- 前後端一體，需後端與 Tunnel 同時運作
+
+#### C. 本機直接存取（開發用）
+```
+http://localhost:8000
+```
 > [!IMPORTANT]
-> 此方式下網頁會預設嘗試連線至 `127.0.0.1:8000`。若後台沒開在同一台電腦，搜尋功能將失效。
+> 若更換 server 電腦，需將 `~/.cloudflared/` 下的 Tunnel 憑證檔案複製至新電腦，詳見 [Plan/cloudflare_tunnel_setup.md](Plan/cloudflare_tunnel_setup.md)
 
 ## 📅 資料維護與同步步驟 (Google Sheets)
 
@@ -159,6 +206,11 @@ uv run python scripts/sync_all.py
   - 新增 SFP 快捷徽章直接跳轉與場景驗證徽章 (`✓ 場景驗證`)。
   - 整合開發 [sync_all.py](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/scripts/sync_all.py) 實現一鍵完成 5 階段自動化同步與驗證報告生成。
   - 後端新增 `NoCacheStaticMiddleware` 禁用前端 JS/CSS 瀏覽器快取，避免開發更新延遲。
+- [x] **GitHub Pages + Cloudflare Tunnel 部署架構**（2026-06-08）：
+  - 前端部署至 GitHub Pages，後端透過 Cloudflare Tunnel 對外暴露。
+  - 新增 `frontend/js/config.js` 設定 Tunnel URL，`detectApiBase()` 自動切換本機/外部 API 位址。
+  - 建立 GitHub Actions workflow 自動部署 `frontend/` 至 GitHub Pages。
+  - 維護兩份 HTML：`index.html`（GitHub Pages 相對路徑版）與 `select_ui_with_options_claude.html`（後端絕對路徑版）。
 - [x] **新增官網產品與 SFP 選型外部連結功能**（2026-06-03）：
   - 於產品卡片型號旁、展開卡片底部 CTA、以及 SFP 推薦晶片上，全面新增連往研華官網的外部連結（支援自動 fallback 為官網型號搜尋 URL）。
   - 後端 [ProductItemResponse](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/app/models/selection.py) 新增 `prod_url` 欄位。
