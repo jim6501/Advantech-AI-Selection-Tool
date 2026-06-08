@@ -8,7 +8,8 @@ let SFP_MODULES = null;
 async function loadSfpModules() {
     if (SFP_MODULES !== null) return SFP_MODULES;
     try {
-        const res = await fetch('/frontend/data/sfp_modules.json');
+        const base = (typeof API_BASE !== 'undefined' && API_BASE) ? API_BASE : '';
+        const res = await fetch(`${base}/frontend/data/sfp_modules.json`);
         SFP_MODULES = await res.json();
     } catch (e) {
         console.warn('[SFP] 無法載入 sfp_modules.json', e);

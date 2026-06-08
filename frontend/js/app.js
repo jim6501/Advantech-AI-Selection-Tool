@@ -538,6 +538,7 @@ function checkHasSfp(item) {
     if (item.prod_fiber_100 > 0) return true;
     if (item.prod_fiber_ge_combo > 0) return true;
     if (item.prod_rj_100_combo > 0) return true;
+    if (item.prod_fiber_10g > 0) return true;
     return false;
 }
 
