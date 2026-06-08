@@ -69,7 +69,7 @@ async function buildSfpPaneAsync(item, containerId) {
         const typeTitle = `${ft}${conn ? ' ' + conn : ''}`;
         container.innerHTML = `
             <div class="sfp-fixed-info">
-                <div class="sfp-title">
+                <div class="sfp-fixed-title">
                     <span class="sfp-icon">🔌</span>
                     ${typeTitle} Fixed Connector — No SFP module required
                 </div>
@@ -103,19 +103,14 @@ async function buildSfpPaneAsync(item, containerId) {
     let html = `<div class="sfp-slots-wrap">`;
     for (const slot of slots) {
         const matching  = modules.filter(m => m.speed === slot.speed);
-        const comboNote = slot.combo
-            ? `<span class="sfp-combo-note">Combo — RJ45 disabled when SFP is inserted</span>`
-            : '';
-        const speedKey  = slot.speed.replace('+', 'plus').toLowerCase();
         const displayFt = ft || 'SFP';
 
         html += `
         <div class="sfp-speed-group">
-            <div class="sfp-port-row">
-                <div class="port-total-label">Slots ${displayFt} ${slot.speed}</div>
-                <div class="port-total-val">${slot.count}</div>
+            <div class="port-total-row" style="margin-bottom: 12px;">
+                <span class="port-total-num">${slot.count}</span>
+                <span class="port-total-label">${displayFt} ${slot.speed} Slots</span>
             </div>
-            ${comboNote}
             ${buildSfpCategoryGrid(matching, slot.speed, containerId)}
         </div>`;
     }
@@ -177,7 +172,7 @@ function buildSfpModuleRows(modules, isBidi) {
         // 研華官網搜尋連結（以型號自動組合）
         const advUrl = `https://www.advantech.com/en/search?q=${encodeURIComponent(s.part)}`;
         
-        return `<a class="sfp-grid-item" href="${advUrl}" target="_blank" rel="noopener noreferrer"
+        return `<a class="sfp-scard" href="${advUrl}" target="_blank" rel="noopener noreferrer"
             title="View on Advantech website: ${s.part}">
             <div class="sfp-spart-row">
                 <div class="sfp-spart">${s.part}</div>

@@ -38,6 +38,7 @@ let currentDataList = []; // 目前搜尋結果的完整資料清單，供排序
 let activeScene = null;       // 目前啟用的場景 id
 let removedSugKeys = new Set();  // 使用者移除的建議條件 key
 let sceneOwnedItemKeys = new Set();  // 場景帶入 selectedItemsMap 的 key（避免雙重顯示）
+let fsAppliedKeys = new Set();   // 上次透過 Advanced Filter Apply 帶入的 key（用於同步移除）
 
 const numInput = document.getElementById('numInput');
 
@@ -92,6 +93,11 @@ function removeItem(itemKey) {
         if (typeof fsRender === 'function' && typeof fsReady !== 'undefined' && fsReady) {
             fsRender();
         }
+    }
+
+    // 同步清除追蹤集合，避免下次 Apply 時誤刪
+    if (typeof fsAppliedKeys !== 'undefined') {
+        fsAppliedKeys.delete(itemKey);
     }
 
     renderSelected();
@@ -500,6 +506,9 @@ function buildPortPane(item) {
     const poeInfo = poeParts.length > 0
         ? ` &nbsp;<span style="font-size:11px;color:#EA580C;font-weight:600">· ${poeParts.join(' · ')}</span>`
         : '';
+    
+    const hasCombo = (ports.rj45_combo || 0) > 0;
+    const comboInfo = hasCombo ? ` &nbsp;<span class="sfp-combo-note" style="margin-left:8px;">Combo — RJ45 disabled when SFP is inserted</span>` : '';
 
     let colCount = 0;
     if (rows.rj) colCount++;
@@ -510,7 +519,7 @@ function buildPortPane(item) {
     colCount = colCount || 1;
     const gridStyle = `grid-template-columns: repeat(${colCount + 1}, minmax(0,1fr))`;
 
-    return `<div class="port-total-row"><span class="port-total-num">${total}</span><span class="port-total-label">ports total</span>${poeInfo}</div>
+    return `<div class="port-total-row"><span class="port-total-num">${total}</span><span class="port-total-label">ports total</span>${poeInfo}${comboInfo}</div>
         <div class="port-grid" style="${gridStyle}">
             ${rows.rj ? `<div class="port-group"><div class="port-group-label">RJ-45</div>${rows.rj}</div>` : ''}
             ${rows.combo ? `<div class="port-group port-group-combo"><div class="port-group-label">Combo</div>${rows.combo}</div>` : ''}
@@ -929,6 +938,7 @@ function resetAll() {
     document.getElementById('searchResults').innerHTML = '';
 
     selectedItemsMap = {};
+    fsAppliedKeys = new Set();
     renderSelected();
 
     // 同步清除 Feature Selector 的選取狀態
@@ -1397,9 +1407,23 @@ document.getElementById('fs-s-clear')
 // ── 橋接函數：將 Feature Selector 結果注入 selectedItemsMap ──
 function applyFeatureSelector() {
     const selected = fsGetSelected();
+    const newKeys = new Set(selected.map(s => s.key));
+
+    // 移除上次 Apply 帶入、但這次已取消勾選的項目
+    fsAppliedKeys.forEach(key => {
+        if (!newKeys.has(key)) {
+            delete selectedItemsMap[key];
+        }
+    });
+
+    // 新增或更新目前勾選的項目
     selected.forEach(({ key, label }) => {
         selectedItemsMap[key] = label;
     });
+
+    // 更新追蹤集合
+    fsAppliedKeys = newKeys;
+
     renderSelected();
     closeFeatureSelector();
 }

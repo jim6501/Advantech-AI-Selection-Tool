@@ -1664,9 +1664,12 @@ select.scene-prefilled-sug {
 .sfp-speed-header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 8px;
     margin-bottom: 12px;
     flex-wrap: wrap;
+    border-bottom: 1px dashed var(--adv-border);
+    padding-bottom: 6px;
 }
 
 .sfp-slot-count {
@@ -1718,8 +1721,9 @@ select.scene-prefilled-sug {
 }
 
 .sfp-acc-hdr {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 10px;
     padding: 8px 14px;
     cursor: pointer;
@@ -1727,7 +1731,7 @@ select.scene-prefilled-sug {
     border-radius: 8px;
     border: 1px solid var(--adv-border);
     transition: background 0.15s, border-color 0.15s;
-    width: max-content;
+    width: 100%;
 }
 
 .sfp-acc-hdr:hover {
