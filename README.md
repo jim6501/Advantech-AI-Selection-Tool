@@ -29,6 +29,18 @@
 - **SFP 模組即時跳轉**：SFP 選型面板內之推薦模組轉換為獨立點擊連結，一鍵開新分頁直達搜尋頁面。
 - **URL 自動建構與 Fallback 策略**：後端新增 `prod_url` 欄位；前端會優先讀取此欄位，若空白則會以產品型號自動組出研華官網搜尋 URL。
 
+### 6. 多台產品規格比對 (Product Comparison)
+- **側拉對比面板**：支援勾選 1 至 5 台產品進行橫向規格對比。
+- **差異高亮機制**：自動比對每一項規格，並以橘黃色背景高亮不同設備之間的規格差異，方便快速評估。
+- **排序與電源篩選**：支援依型號/埠數進行結果排序，並新增電源輸入（DC/AC/電壓）條件過濾。
+
+### 7. 多格式規格報表下載 (PDF/CSV Export)
+- **多格式匯出**：對比面板內整合了報表匯出按鈕，支援前端生成 CSV 表格，以及呼叫後端 API 動態產出 PDF 規格書報表。
+- **單台與多台支援**：取消先前必須勾選至少 2 台才能進入對比與匯出的限制，單台設備亦能順利匯出 PDF 與 CSV。
+
+### 8. 已選條件與篩選器狀態雙向同步 (Filter & Selection Sync)
+- **資料狀態一致性**：當使用者在主畫面點選 `✖` 移除已選特徵時，系統會自動清除進階功能選擇器（Feature Selector）內部勾選狀態（`fsSelected`）並即時重繪選型介面，避免兩者狀態不一致。
+
 ## 🌐 部署架構
 
 本工具採用「前端公開 + 後端內網」的混合部署模式：
@@ -211,8 +223,13 @@ uv run python scripts/sync_all.py
   - 新增 `frontend/js/config.js` 設定 Tunnel URL，`detectApiBase()` 自動切換本機/外部 API 位址。
   - 建立 GitHub Actions workflow 自動部署 `frontend/` 至 GitHub Pages。
   - 維護兩份 HTML：`index.html`（GitHub Pages 相對路徑版）與 `select_ui_with_options_claude.html`（後端絕對路徑版）。
+- [x] **產品規格對比、報表匯出與選型狀態同步**（2026-06-05）：
+  - 實作前端產品規格多台對比側拉面板，並自動高亮規格差異。
+  - 支援 CSV 表格與 PDF 報表匯出，並放寬限制至單台設備亦可直接下載。
+  - 在 `app.js` 的 `removeItem` 函式中新增同步邏輯，當已選條件移除時，自動更新並重繪 Advanced Feature Selector 彈窗 UI。
+  - 進階功能篩選器（Advanced Features Filter）的中文標籤與選項全面完成英文標準術語對譯。
 - [x] **新增官網產品與 SFP 選型外部連結功能**（2026-06-03）：
-  - 於產品卡片型號旁、展開卡片底部 CTA、以及 SFP 推薦晶片上，全面新增連往研華官網的外部連結（支援自動 fallback 為官網型號搜尋 URL）。
+  - 於結果頁的產品卡片型號旁、展開卡片底部 CTA、以及 SFP 推薦晶片上，全面新增連往研華官網的外部連結（支援自動 fallback 為官網型號搜尋 URL）。
   - 後端 [ProductItemResponse](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/app/models/selection.py) 新增 `prod_url` 欄位。
   - 設計精緻 hover 微動畫，滑過外部連結圖示 `↗` 時自動變藍並往右上微幅位移，提升互動感。
 

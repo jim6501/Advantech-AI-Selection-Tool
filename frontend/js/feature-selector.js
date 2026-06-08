@@ -145,14 +145,14 @@ const FS_GROUPS = [
     {
         id: 'portspeed', label: 'Port Type / Speed', icon: '⚡', color: '#06b6d4',
         dbCategories: [
-            'Port Feature',  // Has_PoE, Has_Fiber, Has_RJ-45（存在性：有無該接頭）
+            'Port Feature',  // Has_PoE, Has_Fiber, Has_RJ-45
             'Port Speed'     // Port_RJ45_GbE, Port_RJ45_100M, Port_Fiber_GbE, Port_Fiber_10G, Port_M12_Any, Port_M12_GbE, Port_MultiGiga, Port_Bypass
         ]
     },
     {
         id: 'hw', label: 'Hardware Specs', icon: '◈', color: '#64748b',
         dbCategories: [
-            'Hardware Feature', // Temp_Wide（Has_PoE/Fiber/RJ-45 已移至 Port 類型卡片）
+            'Hardware Feature', // Temp_Wide
             'Power Input'       // Pwr_DC, Pwr_AC, Pwr_12V, Pwr_24V, Pwr_High_Voltage
         ]
     },

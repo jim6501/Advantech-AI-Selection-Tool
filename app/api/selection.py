@@ -32,7 +32,65 @@ base_hardware_mappings = {
         {"hardware.RJ-45 Combo": {"$regex": "^[1-9]"}},
         {"hardware.RJ-45 10GbE": {"$regex": "^[1-9]"}}
     ]},
-    "Temp_Wide": lambda: {"hardware.Temp Grade": {"$in": ["Wide", "wide", "T", "Wide Temp"]}}
+    "Temp_Wide": lambda: {"hardware.Temp Grade": {"$in": ["Wide", "wide", "T", "Wide Temp"]}},
+
+    # 電源輸入條件
+    "Pwr_DC": lambda: {
+        "hardware.Input Voltage": {
+            "$regex": "VDC|vdc",
+            "$options": "i"
+        }
+    },
+    "Pwr_AC": lambda: {
+        "hardware.Input Voltage": {
+            "$regex": "VAC|AC",
+            "$options": "i"
+        }
+    },
+    "Pwr_12V": lambda: {
+        "hardware.Input Voltage": {
+            "$regex": r"^(([1-9]|1[012])\s*(-|~|\s))",
+            "$options": "i"
+        }
+    },
+    "Pwr_24V": lambda: {
+        "hardware.Input Voltage": {
+            "$regex": r"^(([1-9]|1[0-9]|2[0-4])\s*(-|~|\s))",
+            "$options": "i"
+        }
+    },
+    "Pwr_High_Voltage": lambda: {
+        "hardware.Input Voltage": {
+            "$regex": r"48.*V|72.*V|96.*V|110.*V|220.*V|HV",
+            "$options": "i"
+        }
+    },
+
+    # 網口速度與接頭
+    "Port_RJ45_GbE": lambda: {"$or": [
+        {"hardware.RJ-45 Gigabit": {"$regex": "^[1-9]"}},
+        {"hardware.RJ-45 Combo": {"$regex": "^[1-9]"}}
+    ]},
+    "Port_RJ45_100M": lambda: {"hardware.RJ-45 10/100M": {"$regex": "^[1-9]"}},
+    "Port_Fiber_GbE": lambda: {"$or": [
+        {"hardware.Fiber Gigabit": {"$regex": "^[1-9]"}},
+        {"hardware.Fiber GE Combo": {"$regex": "^[1-9]"}}
+    ]},
+    "Port_Fiber_10G": lambda: {"hardware.Fiber 10G": {"$regex": "^[1-9]"}},
+    "Port_M12_Any": lambda: {"$or": [
+        {"hardware.Eth 10/100M (D-code)": {"$regex": "^[1-9]"}},
+        {"hardware.Eth Gigabit (X-code)": {"$regex": "^[1-9]"}},
+        {"hardware.Eth Multi-Giga (X-code)": {"$regex": "^[1-9]"}}
+    ]},
+    "Port_M12_GbE": lambda: {"hardware.Eth Gigabit (X-code)": {"$regex": "^[1-9]"}},
+    "Port_MultiGiga": lambda: {"$or": [
+        {"hardware.Eth Multi-Giga (X-code)": {"$regex": "^[1-9]"}},
+        {"hardware.RJ-45 10GbE": {"$regex": "^[1-9]"}}
+    ]},
+    "Port_Bypass": lambda: {"$or": [
+        {"hardware.LAN Bypass 10/100M (D-code)": {"$regex": "^[1-9]"}},
+        {"hardware.LAN Bypass Gigabit (X-code)": {"$regex": "^[1-9]"}}
+    ]}
 }
 
 # 三態值中合法的「有支援」值
@@ -96,12 +154,54 @@ def load_dynamic_mappings_if_needed():
     sw_data = sample_doc.get("software", {})
 
     # 載入手動定義的硬體進階條件
+    POWER_KEY_LABELS = {
+        "Pwr_DC":           "DC Power Input",
+        "Pwr_AC":           "AC Power Input",
+        "Pwr_12V":          "12V Support (Min ≤12V)",
+        "Pwr_24V":          "24V Support (Min ≤24V)",
+        "Pwr_High_Voltage": "High Voltage Power (≥48V)",
+    }
+    PORT_SPEED_KEY_LABELS = {
+        "Port_RJ45_GbE":  "RJ-45 GbE (incl. Combo)",
+        "Port_RJ45_100M": "RJ-45 100M (Fast Ethernet)",
+        "Port_Fiber_GbE": "Fiber GbE (SFP)",
+        "Port_Fiber_10G": "Fiber 10G (SFP+)",
+        "Port_M12_Any":   "Any M12 Connector",
+        "Port_M12_GbE":   "M12 GbE (X-code)",
+        "Port_MultiGiga": "Multi-Giga (2.5/5/10G M12)",
+        "Port_Bypass":    "LAN Bypass"
+    }
+    PORT_FEATURE_KEY_LABELS = {
+        "Has_PoE":        "Has PoE",
+        "Has_Fiber":      "Has Fiber Port",
+        "Has_RJ-45":      "Has RJ-45 Port"
+    }
+
     for hd_key in base_hardware_mappings.keys():
-        SEARCHABLE_ITEMS.append(SearchFeatureItem(
-            label=hd_key.replace("_", " "),
-            key=hd_key,
-            category="Hardware Feature"
-        ))
+        if hd_key in POWER_KEY_LABELS:
+            SEARCHABLE_ITEMS.append(SearchFeatureItem(
+                label=POWER_KEY_LABELS[hd_key],
+                key=hd_key,
+                category="Power Input"
+            ))
+        elif hd_key in PORT_SPEED_KEY_LABELS:
+            SEARCHABLE_ITEMS.append(SearchFeatureItem(
+                label=PORT_SPEED_KEY_LABELS[hd_key],
+                key=hd_key,
+                category="Port Speed"
+            ))
+        elif hd_key in PORT_FEATURE_KEY_LABELS:
+            SEARCHABLE_ITEMS.append(SearchFeatureItem(
+                label=PORT_FEATURE_KEY_LABELS[hd_key],
+                key=hd_key,
+                category="Port Feature"
+            ))
+        else:
+            SEARCHABLE_ITEMS.append(SearchFeatureItem(
+                label=hd_key.replace("_", " "),
+                key=hd_key,
+                category="Hardware Feature"
+            ))
 
     # 動態取得所有硬體 Application，也放到模糊篩選選項
     distinct_apps = db.product_specs.distinct("hardware.Application")

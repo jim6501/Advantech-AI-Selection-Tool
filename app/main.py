@@ -84,3 +84,7 @@ def root():
 # 掛載整個 frontend 資料夾作為靜態檔案，允許存取 /frontend/xxx.html (例如開啟其他分頁)
 app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
 
+# 讓根目錄也能直接存取 css/ js/ 等資源（供 Cloudflare Tunnel 直接存取時使用）
+app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
+app.mount("/js", StaticFiles(directory="frontend/js"), name="js")
+
