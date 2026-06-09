@@ -225,7 +225,7 @@
     position: sticky;
     left: 0;
     z-index: 2;
-    background: #ffffff;
+    background: #ffffff !important;
     width: 36px;
     min-width: 36px;
     text-align: center;
@@ -233,15 +233,14 @@
     font-family: 'IBM Plex Mono', monospace;
     color: var(--text-muted);
     padding: 9px 6px;
-    /* 右側分隔線 + 柔和陰影，提示後面有內容 */
     border-right: 1px solid var(--adv-border);
     box-shadow: 2px 0 6px -2px rgba(0,51,102,0.08);
 }
 
-/* thead 版本需要更高 z-index，避免被 tbody sticky 蓋住 */
+/* thead 版本需要更高 z-index */
 .tv-th-num {
     z-index: 4;
-    background: var(--adv-gray);
+    background: var(--adv-gray) !important;
 }
 
 /* ── Sticky Model column ─────────────────────────────────── */
@@ -249,28 +248,28 @@
     position: sticky;
     left: 36px;
     z-index: 2;
-    background: #ffffff;
+    background: #ffffff !important;
     min-width: 150px;
     max-width: 200px;
     overflow: hidden;
-    /* 右側陰影提示 */
     box-shadow: 3px 0 8px -3px rgba(0,51,102,0.10);
 }
 
 /* thead 版本 */
 .tv-col-model.tv-sticky-model {
     z-index: 4;
-    background: var(--adv-gray);
+    background: var(--adv-gray) !important;
 }
 
-/* 偶數行：完全不透明 */
-tr:nth-child(even) .tv-sticky-num,
-tr:nth-child(even) .tv-sticky-model {
-    background: #eef1f6;
+/* 偶數行 sticky 欄：完全不透明 */
+tr:nth-child(even) td.tv-sticky-num,
+tr:nth-child(even) td.tv-sticky-model {
+    background: #eef1f6 !important;
 }
 
-tr:hover .tv-sticky-num,
-tr:hover .tv-sticky-model {
+/* hover */
+tr:hover td.tv-sticky-num,
+tr:hover td.tv-sticky-model {
     background: #ddeaf8 !important;
 }
 
