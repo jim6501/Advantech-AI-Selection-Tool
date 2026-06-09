@@ -1586,7 +1586,7 @@ function tvRenderCell(item, key) {
     }
     if (key === 'temp') {
         if (v === 'Wide') return `<span class="tv-tag tv-tag-w">Wide Temp</span>`;
-        return `<span class="tv-dash">Standard</span>`;
+        return `<span class="tv-tag tv-tag-std">Standard</span>`;
     }
     if (key === 'fiber_type') {
         if (!v || v === '—') return `<span class="tv-dash">—</span>`;
