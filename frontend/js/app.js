@@ -897,9 +897,9 @@ function applySort() {
 
     sortedList.sort((a, b) => {
         if (sortValue === 'port_asc') {
-            return (a.prod_portnum || 0) - (b.prod_portnum || 0);
+            return tvCalcTotalPorts(a) - tvCalcTotalPorts(b);
         } else if (sortValue === 'port_desc') {
-            return (b.prod_portnum || 0) - (a.prod_portnum || 0);
+            return tvCalcTotalPorts(b) - tvCalcTotalPorts(a);
         } else if (sortValue === 'model_asc') {
             return (a.prod_model || '').localeCompare(b.prod_model || '');
         } else if (sortValue === 'model_desc') {
@@ -1499,8 +1499,8 @@ function _getSortedList() {
     };
 
     list.sort((a, b) => {
-        if (sortValue === 'port_asc')  return (a.prod_portnum||0) - (b.prod_portnum||0);
-        if (sortValue === 'port_desc') return (b.prod_portnum||0) - (a.prod_portnum||0);
+        if (sortValue === 'port_asc')  return tvCalcTotalPorts(a) - tvCalcTotalPorts(b);
+        if (sortValue === 'port_desc') return tvCalcTotalPorts(b) - tvCalcTotalPorts(a);
         if (sortValue === 'model_asc') return (a.prod_model||'').localeCompare(b.prod_model||'');
         if (sortValue === 'model_desc')return (b.prod_model||'').localeCompare(a.prod_model||'');
         if (sortValue === 'mgmt_asc')  return getMgmtWeight(a.prod_type) - getMgmtWeight(b.prod_type);
