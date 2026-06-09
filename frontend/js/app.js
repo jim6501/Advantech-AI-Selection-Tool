@@ -1532,8 +1532,12 @@ function tvCalcTotalPorts(item) {
     const m12_100  = Math.max(item.prod_m12_100||0,  item.prod_poe_m12_100||0);
     const m12Multi = item.prod_m12_multi_giga || 0;
     const bypass   = (item.prod_bypass_m12_100||0) + (item.prod_bypass_m12_giga||0);
-    return rjGiga + rj100 + combo + fiberG + fiber10g + fiber100 +
-           m12G + m12_100 + m12Multi + bypass;
+    const computed = rjGiga + rj100 + combo + fiberG + fiber10g + fiber100 +
+                     m12G + m12_100 + m12Multi + bypass;
+    // 取計算值與 DB prod_portnum 的較大值：
+    // - 計算值修正 DB prod_portnum 錯誤（如 EKI-7712 prod_portnum=4）
+    // - prod_portnum 補足模組化產品個別欄位未填的情況（如 EKI-8528 prod_portnum=28）
+    return Math.max(computed, item.prod_portnum || 0);
 }
 
 // ── 取得單一 item 的欄位值（數字 or 字串）──────
