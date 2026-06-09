@@ -225,7 +225,7 @@
     position: sticky;
     left: 0;
     z-index: 2;
-    background: var(--surface);
+    background: #ffffff;
     width: 36px;
     min-width: 36px;
     text-align: center;
@@ -249,9 +249,10 @@
     position: sticky;
     left: 36px;
     z-index: 2;
-    background: var(--surface);
+    background: #ffffff;
     min-width: 150px;
     max-width: 200px;
+    overflow: hidden;
     /* 右側陰影提示 */
     box-shadow: 3px 0 8px -3px rgba(0,51,102,0.10);
 }
@@ -262,15 +263,15 @@
     background: var(--adv-gray);
 }
 
-/* 偶數行也要給 sticky 欄正確背景 */
+/* 偶數行：完全不透明 */
 tr:nth-child(even) .tv-sticky-num,
 tr:nth-child(even) .tv-sticky-model {
-    background: rgb(238 241 246 / 0.8);
+    background: #eef1f6;
 }
 
 tr:hover .tv-sticky-num,
 tr:hover .tv-sticky-model {
-    background: var(--adv-light-blue) !important;
+    background: #ddeaf8 !important;
 }
 
 /* ── Model cell ─────────────────────────────────────────── */
