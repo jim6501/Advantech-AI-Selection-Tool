@@ -1443,21 +1443,21 @@ const TV_PAGE_SIZE = 30;
 
 // 所有可選欄位定義
 const TV_ALL_COLS = [
-    { key: 'totalPorts',   label: 'Total Ports',   default: true,  sortable: true  },
-    { key: 'rjGiga',       label: 'GbE (RJ45)',     default: true,  sortable: true  },
-    { key: 'rj100',        label: 'FE (RJ45)',      default: true,  sortable: true  },
-    { key: 'fiberGiga',    label: 'SFP (GbE)',      default: true,  sortable: true  },
-    { key: 'fiber10g',     label: 'SFP+ (10G)',     default: true,  sortable: true  },
-    { key: 'fiber100',     label: 'FX (100M)',      default: false, sortable: true  },
-    { key: 'fiberCombo',   label: 'GE Combo',       default: false, sortable: true  },
-    { key: 'm12Giga',      label: 'M12 GbE',        default: false, sortable: true  },
-    { key: 'm12Multi',     label: 'M12 MultiGiga',  default: false, sortable: true  },
-    { key: 'poe',          label: 'PoE',            default: true,  sortable: true  },
-    { key: 'mgmt',         label: 'Management',     default: true,  sortable: false },
-    { key: 'temp',         label: 'Temp Grade',     default: true,  sortable: false },
-    { key: 'power',        label: 'Power Input',    default: false, sortable: false },
-    { key: 'fiber_type',   label: 'Fiber Type',     default: false, sortable: false },
-    { key: 'application',  label: 'Application',    default: false, sortable: false },
+    { key: 'totalPorts',   label: 'Total',    title: 'Total Ports',              default: true,  sortable: true  },
+    { key: 'rjGiga',       label: 'GbE',      title: 'GbE RJ45 ports',           default: true,  sortable: true  },
+    { key: 'rj100',        label: 'FE',       title: 'Fast Ethernet RJ45 ports', default: true,  sortable: true  },
+    { key: 'fiberGiga',    label: 'SFP',      title: 'SFP GbE fiber ports',      default: true,  sortable: true  },
+    { key: 'fiber10g',     label: 'SFP+',     title: 'SFP+ 10G fiber ports',     default: true,  sortable: true  },
+    { key: 'fiber100',     label: 'FX',       title: 'FX 100M fixed fiber',      default: false, sortable: true  },
+    { key: 'fiberCombo',   label: 'Combo',    title: 'GE Combo (RJ45/SFP shared)', default: false, sortable: true },
+    { key: 'm12Giga',      label: 'M12-G',    title: 'M12 GbE ports',            default: false, sortable: true  },
+    { key: 'm12Multi',     label: 'M12-MG',   title: 'M12 Multi-Giga (2.5/5/10G)', default: false, sortable: true },
+    { key: 'poe',          label: 'PoE',      title: 'PoE port count',           default: true,  sortable: true  },
+    { key: 'mgmt',         label: 'Mgmt',     title: 'Management type',          default: true,  sortable: false },
+    { key: 'temp',         label: 'Temp',     title: 'Temperature grade (Wide / Standard)', default: true, sortable: false },
+    { key: 'power',        label: 'Power',    title: 'Power input voltage',      default: false, sortable: false },
+    { key: 'fiber_type',   label: 'F.Type',   title: 'Fiber connector type',     default: false, sortable: false },
+    { key: 'application',  label: 'App',      title: 'Application category',     default: false, sortable: false },
 ];
 
 let tvActiveCols = new Set(TV_ALL_COLS.filter(c => c.default).map(c => c.key));
@@ -1519,6 +1519,23 @@ function _renderCurrentView(list) {
     }
 }
 
+// ── 從各 port 欄位加總計算真實總 port 數 ────────
+function tvCalcTotalPorts(item) {
+    // Combo port 是共用 physical port，取較大值（不重複計算）
+    const rjGiga   = Math.max(item.prod_rj_giga||0, item.prod_poe_rj_giga||0);
+    const rj100    = Math.max(item.prod_rj_100||0,  item.prod_poe_rj_100||0);
+    const combo    = Math.max(item.prod_fiber_ge_combo||0, item.prod_rj_100_combo||0);
+    const fiberG   = item.prod_fiber_giga  || 0;
+    const fiber10g = item.prod_fiber_10g   || 0;
+    const fiber100 = item.prod_fiber_100   || 0;
+    const m12G     = Math.max(item.prod_m12_giga||0, item.prod_poe_m12_giga||0);
+    const m12_100  = Math.max(item.prod_m12_100||0,  item.prod_poe_m12_100||0);
+    const m12Multi = item.prod_m12_multi_giga || 0;
+    const bypass   = (item.prod_bypass_m12_100||0) + (item.prod_bypass_m12_giga||0);
+    return rjGiga + rj100 + combo + fiberG + fiber10g + fiber100 +
+           m12G + m12_100 + m12Multi + bypass;
+}
+
 // ── 取得單一 item 的欄位值（數字 or 字串）──────
 function tvGetVal(item, key) {
     const resolveCardTotal = (a, b) => {
@@ -1526,7 +1543,7 @@ function tvGetVal(item, key) {
         return Math.max(a, b);
     };
     switch (key) {
-        case 'totalPorts':  return item.prod_portnum || 0;
+        case 'totalPorts':  return tvCalcTotalPorts(item);
         case 'rjGiga':      return resolveCardTotal(item.prod_rj_giga||0, item.prod_poe_rj_giga||0);
         case 'rj100':       return resolveCardTotal(item.prod_rj_100||0, item.prod_poe_rj_100||0);
         case 'fiberGiga':   return item.prod_fiber_giga || 0;
@@ -1621,10 +1638,11 @@ function renderProductTable(data_list) {
         <th class="tv-col-model" style="position:sticky;left:0;z-index:3;">Model</th>
         ${cols.map(c => `
         <th class="${c.sortable ? '' : 'tv-unsortable'} ${tvSortCol===c.key?'tv-sorted':''}"
-            ${c.sortable ? `onclick="tvDoSort('${c.key}',${JSON.stringify(data_list)})"` : ''}>
+            title="${c.title || c.label}"
+            ${c.sortable ? `onclick="tvDoSort('${c.key}')"` : ''}>
             ${c.label}${c.sortable ? sortIconFor(c.key) : ''}
         </th>`).join('')}
-        <th style="width:64px;text-align:center;">Compare</th>
+        <th style="width:54px;text-align:center;" title="Add to compare panel">Cmp</th>
     </tr>`;
 
     // ── Table rows ──
@@ -1707,10 +1725,9 @@ function tvToggleCol(key, chipEl) {
 }
 
 // ── Table 內欄位排序 ──────────────────────────
-function tvDoSort(key, _) {
+function tvDoSort(key) {
     if (tvSortCol === key) tvSortDir *= -1;
     else { tvSortCol = key; tvSortDir = 1; }
-    // 重新以 tvSortCol/tvSortDir 排序後渲染
     const list = _getSortedList();
     const col = TV_ALL_COLS.find(c => c.key === key);
     if (col && col.sortable) {
@@ -1721,9 +1738,9 @@ function tvDoSort(key, _) {
         });
     }
     tvPage = 1;
+    const wasOpen = document.getElementById('tv-col-panel')?.classList.contains('open');
     renderProductTable(list);
-    const panel = document.getElementById('tv-col-panel');
-    if (panel && panel.classList.contains('open')) panel.classList.add('open');
+    if (wasOpen) document.getElementById('tv-col-panel')?.classList.add('open');
 }
 
 // ── 分頁跳轉 ──────────────────────────────────

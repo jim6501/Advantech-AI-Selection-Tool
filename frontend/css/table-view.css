@@ -135,8 +135,7 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 0.8rem;
-    table-layout: fixed;
-    min-width: 600px;
+    table-layout: auto;   /* 讓欄寬依內容自適應，超出範圍橫向捲動 */
 }
 
 /* ── Header row ─────────────────────────────────────────── */
@@ -148,7 +147,7 @@
     font-size: 0.7rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    padding: 9px 14px;
+    padding: 9px 10px;
     text-align: left;
     border-bottom: 1px solid var(--adv-border);
     white-space: nowrap;
@@ -158,6 +157,12 @@
     cursor: pointer;
     user-select: none;
     transition: color 0.15s, background 0.15s;
+    min-width: 64px;    /* 數字欄最小寬度 */
+}
+
+/* 數字 port 欄：統一最小寬度，不壓縮 */
+.tv-table thead th:not(.tv-col-model):not(.tv-unsortable) {
+    min-width: 70px;
 }
 
 .tv-table thead th:hover {
@@ -210,7 +215,7 @@
 }
 
 .tv-table tbody td {
-    padding: 10px 14px;
+    padding: 9px 10px;
     color: var(--text-main);
     vertical-align: middle;
 }
