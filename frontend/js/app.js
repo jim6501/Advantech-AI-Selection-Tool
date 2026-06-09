@@ -1635,8 +1635,8 @@ function renderProductTable(data_list) {
     };
 
     let thead = `<tr>
-        <th style="width:36px;text-align:center;position:sticky;left:0;z-index:3;padding:9px 6px;">#</th>
-        <th class="tv-col-model" style="position:sticky;left:36px;z-index:3;">Model</th>
+        <th class="tv-sticky-num tv-th-num">#</th>
+        <th class="tv-col-model tv-sticky-model">Model</th>
         ${cols.map(c => `
         <th class="${c.sortable ? '' : 'tv-unsortable'} ${tvSortCol===c.key?'tv-sorted':''}"
             title="${c.title || c.label}"
@@ -1668,10 +1668,10 @@ function renderProductTable(data_list) {
         const isCmpActive = typeof compareIsSelected === 'function' && compareIsSelected(pid);
 
         return `<tr>
-            <td style="position:sticky;left:0;background:inherit;z-index:1;width:36px;text-align:center;font-size:0.72rem;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);padding:9px 6px;">
+            <td class="tv-sticky-num">
                 ${globalIdx + 1}
             </td>
-            <td style="position:sticky;left:36px;background:inherit;z-index:1;min-width:150px;max-width:180px;">
+            <td class="tv-sticky-model">
                 <div class="tv-model-name">
                     <a href="${prodUrl}" target="_blank" rel="noopener noreferrer"
                        title="View on Advantech website">${item.prod_model} <span style="font-size:9px;opacity:0.7">↗</span></a>
