@@ -876,7 +876,8 @@ function applySort() {
     const sortSelect = document.getElementById('sortSelect');
     if (!sortSelect || currentDataList.length === 0) {
         acquiredModels = currentDataList.map(item => item.prod_name || item.prod_model);
-        renderProductCards(currentDataList);
+        tvPage = 1;
+        _renderCurrentView(currentDataList);
         return;
     }
 
@@ -913,9 +914,10 @@ function applySort() {
 
     // 更新 Chatbot context 使用的順序
     acquiredModels = sortedList.map(item => item.prod_name || item.prod_model);
-    
-    // 渲染卡片
-    renderProductCards(sortedList);
+
+    // 依目前視圖模式渲染
+    tvPage = 1;
+    _renderCurrentView(sortedList);
 }
 
 function _appendZeroHint(text) {
@@ -1427,3 +1429,334 @@ function applyFeatureSelector() {
     renderSelected();
     closeFeatureSelector();
 }
+
+// ═══════════════════════════════════════════════════════════
+// TABLE VIEW — 表格視圖
+// ═══════════════════════════════════════════════════════════
+
+// ── 狀態 ──────────────────────────────────────────────────
+let currentView = 'list';          // 'list' | 'table'
+let tvSortCol   = null;            // 目前排序欄
+let tvSortDir   = 1;               // 1=升冪, -1=降冪
+let tvPage      = 1;
+const TV_PAGE_SIZE = 30;
+
+// 所有可選欄位定義
+const TV_ALL_COLS = [
+    { key: 'totalPorts',   label: 'Total Ports',   default: true,  sortable: true  },
+    { key: 'rjGiga',       label: 'GbE (RJ45)',     default: true,  sortable: true  },
+    { key: 'rj100',        label: 'FE (RJ45)',      default: true,  sortable: true  },
+    { key: 'fiberGiga',    label: 'SFP (GbE)',      default: true,  sortable: true  },
+    { key: 'fiber10g',     label: 'SFP+ (10G)',     default: true,  sortable: true  },
+    { key: 'fiber100',     label: 'FX (100M)',      default: false, sortable: true  },
+    { key: 'fiberCombo',   label: 'GE Combo',       default: false, sortable: true  },
+    { key: 'm12Giga',      label: 'M12 GbE',        default: false, sortable: true  },
+    { key: 'm12Multi',     label: 'M12 MultiGiga',  default: false, sortable: true  },
+    { key: 'poe',          label: 'PoE',            default: true,  sortable: true  },
+    { key: 'mgmt',         label: 'Management',     default: true,  sortable: false },
+    { key: 'temp',         label: 'Temp Grade',     default: true,  sortable: false },
+    { key: 'power',        label: 'Power Input',    default: false, sortable: false },
+    { key: 'fiber_type',   label: 'Fiber Type',     default: false, sortable: false },
+    { key: 'application',  label: 'Application',    default: false, sortable: false },
+];
+
+let tvActiveCols = new Set(TV_ALL_COLS.filter(c => c.default).map(c => c.key));
+
+// ── 視圖切換入口 ───────────────────────────────
+function switchView(view) {
+    currentView = view;
+    tvPage = 1;
+
+    const listBtn  = document.getElementById('view-btn-list');
+    const tableBtn = document.getElementById('view-btn-table');
+    if (listBtn)  listBtn.classList.toggle('active',  view === 'list');
+    if (tableBtn) tableBtn.classList.toggle('active', view === 'table');
+
+    // Col Picker 只在表格模式顯示
+    const pickerBtn = document.getElementById('tv-col-picker-btn');
+    if (pickerBtn) pickerBtn.style.display = view === 'table' ? '' : 'none';
+
+    // 重新渲染
+    _renderCurrentView(currentDataList.length > 0
+        ? _getSortedList()
+        : []);
+}
+
+function _getSortedList() {
+    // 借用 applySort 的排序邏輯取得已排序清單
+    const sortSelect = document.getElementById('sortSelect');
+    const sortValue  = sortSelect ? sortSelect.value : 'default';
+    let list = [...currentDataList];
+
+    const getMgmtWeight = (t) => {
+        const l = (t || '').toLowerCase();
+        if (l.includes('unmanage')) return 0;
+        if (l.includes('smart') || l.includes('web')) return 1;
+        if (l.includes('l2')) return 2;
+        if (l.includes('l3')) return 4;
+        if (l.includes('manage')) return 3;
+        return 0;
+    };
+
+    list.sort((a, b) => {
+        if (sortValue === 'port_asc')  return (a.prod_portnum||0) - (b.prod_portnum||0);
+        if (sortValue === 'port_desc') return (b.prod_portnum||0) - (a.prod_portnum||0);
+        if (sortValue === 'model_asc') return (a.prod_model||'').localeCompare(b.prod_model||'');
+        if (sortValue === 'model_desc')return (b.prod_model||'').localeCompare(a.prod_model||'');
+        if (sortValue === 'mgmt_asc')  return getMgmtWeight(a.prod_type) - getMgmtWeight(b.prod_type);
+        if (sortValue === 'mgmt_desc') return getMgmtWeight(b.prod_type) - getMgmtWeight(a.prod_type);
+        return 0;
+    });
+    return list;
+}
+
+// ── 統一渲染入口（被 applySort 呼叫）─────────
+function _renderCurrentView(list) {
+    if (currentView === 'table') {
+        renderProductTable(list);
+    } else {
+        renderProductCards(list);
+    }
+}
+
+// ── 取得單一 item 的欄位值（數字 or 字串）──────
+function tvGetVal(item, key) {
+    const resolveCardTotal = (a, b) => {
+        if (a === 0) return b; if (b === 0) return a;
+        return Math.max(a, b);
+    };
+    switch (key) {
+        case 'totalPorts':  return item.prod_portnum || 0;
+        case 'rjGiga':      return resolveCardTotal(item.prod_rj_giga||0, item.prod_poe_rj_giga||0);
+        case 'rj100':       return resolveCardTotal(item.prod_rj_100||0, item.prod_poe_rj_100||0);
+        case 'fiberGiga':   return item.prod_fiber_giga || 0;
+        case 'fiber10g':    return item.prod_fiber_10g || 0;
+        case 'fiber100':    return item.prod_fiber_100 || 0;
+        case 'fiberCombo':  return Math.max(item.prod_fiber_ge_combo||0, item.prod_rj_100_combo||0);
+        case 'm12Giga':     return resolveCardTotal(item.prod_m12_giga||0, item.prod_poe_m12_giga||0);
+        case 'm12Multi':    return item.prod_m12_multi_giga || 0;
+        case 'poe':         return (item.prod_poe_rj_100||0)+(item.prod_poe_rj_giga||0)+(item.prod_poe_m12_100||0)+(item.prod_poe_m12_giga||0);
+        case 'mgmt':        return item.prod_type || '';
+        case 'temp':        return (item.prod_w_n||'').toLowerCase() === 'wide' ? 'Wide' : 'Standard';
+        case 'power':       return item.prod_power_input || '—';
+        case 'fiber_type':  return item.prod_fiber_type || '—';
+        case 'application': return item.prod_application || '—';
+        default: return '—';
+    }
+}
+
+// ── 產生欄位的 HTML（格式化）─────────────────
+function tvRenderCell(item, key) {
+    const v = tvGetVal(item, key);
+    if (key === 'totalPorts' || key === 'rjGiga' || key === 'rj100' ||
+        key === 'fiberGiga'  || key === 'fiber10g'|| key === 'fiber100' ||
+        key === 'fiberCombo' || key === 'm12Giga' || key === 'm12Multi') {
+        if (v === 0) return `<span class="tv-dash">—</span>`;
+        const labelMap = {
+            totalPorts:'total', rjGiga:'GbE', rj100:'FE', fiberGiga:'SFP',
+            fiber10g:'SFP+', fiber100:'FX', fiberCombo:'Combo',
+            m12Giga:'M12', m12Multi:'Multi-G'
+        };
+        return `<span class="tv-port-num">${v}</span><span class="tv-port-label">${labelMap[key]||''}</span>`;
+    }
+    if (key === 'poe') {
+        if (v === 0) return `<span class="tv-dash">—</span>`;
+        return `<span class="tv-tag tv-tag-poe">PoE ×${v}</span>`;
+    }
+    if (key === 'mgmt') {
+        const isM = v.toLowerCase().includes('manage') && !v.toLowerCase().includes('unmanage');
+        return `<span class="tv-tag ${isM ? 'tv-tag-m' : 'tv-tag-u'}">${v||'—'}</span>`;
+    }
+    if (key === 'temp') {
+        if (v === 'Wide') return `<span class="tv-tag tv-tag-w">Wide Temp</span>`;
+        return `<span class="tv-dash">Standard</span>`;
+    }
+    if (key === 'fiber_type') {
+        if (!v || v === '—') return `<span class="tv-dash">—</span>`;
+        return `<span class="tv-tag tv-tag-sfp">${v}</span>`;
+    }
+    if (key === 'application') {
+        if (!v || v === '—') return `<span class="tv-dash">—</span>`;
+        return `<span class="tv-tag tv-tag-app">${v}</span>`;
+    }
+    return `<span>${v}</span>`;
+}
+
+// ── 渲染表格 ───────────────────────────────────
+function renderProductTable(data_list) {
+    const container = document.getElementById('prodList');
+    if (!container) return;
+
+    if (data_list.length === 0) {
+        container.innerHTML = '<div class="tv-empty">No matching products found</div>';
+        return;
+    }
+
+    const cols = TV_ALL_COLS.filter(c => tvActiveCols.has(c.key));
+
+    // ── Col Picker UI ──
+    let pickerHtml = `
+    <div class="col-picker-panel" id="tv-col-panel">
+        <div class="col-picker-label">Select columns to display</div>
+        <div class="col-chips" id="tv-col-chips">
+        ${TV_ALL_COLS.map(c => `
+            <div class="col-chip ${tvActiveCols.has(c.key) ? 'on' : ''}"
+                 onclick="tvToggleCol('${c.key}',this)">${c.label}</div>
+        `).join('')}
+        </div>
+    </div>`;
+
+    // ── 分頁 ──
+    const totalPages = Math.ceil(data_list.length / TV_PAGE_SIZE);
+    tvPage = Math.max(1, Math.min(tvPage, totalPages));
+    const pageData = data_list.slice((tvPage - 1) * TV_PAGE_SIZE, tvPage * TV_PAGE_SIZE);
+
+    // ── Table header ──
+    const sortIconFor = (key) => {
+        if (tvSortCol !== key) return `<span class="tv-sort-icon">⇅</span>`;
+        return `<span class="tv-sort-icon">${tvSortDir > 0 ? '↑' : '↓'}</span>`;
+    };
+
+    let thead = `<tr>
+        <th class="tv-col-model" style="position:sticky;left:0;z-index:3;">Model</th>
+        ${cols.map(c => `
+        <th class="${c.sortable ? '' : 'tv-unsortable'} ${tvSortCol===c.key?'tv-sorted':''}"
+            ${c.sortable ? `onclick="tvDoSort('${c.key}',${JSON.stringify(data_list)})"` : ''}>
+            ${c.label}${c.sortable ? sortIconFor(c.key) : ''}
+        </th>`).join('')}
+        <th style="width:64px;text-align:center;">Compare</th>
+    </tr>`;
+
+    // ── Table rows ──
+    let tbody = pageData.map((item, idx) => {
+        const globalIdx = (tvPage - 1) * TV_PAGE_SIZE + idx;
+        const pid = `pc-${globalIdx}`;
+        const prodUrl = item.prod_url || `https://www.advantech.com/en/search?q=${encodeURIComponent(item.prod_model)}`;
+
+        const totalRj = Math.max(item.prod_rj_giga||0, item.prod_poe_rj_giga||0) +
+                        Math.max(item.prod_rj_100||0, item.prod_poe_rj_100||0);
+        const totalFib = (item.prod_fiber_giga||0)+(item.prod_fiber_10g||0)+(item.prod_fiber_100||0);
+        const totalM12 = Math.max(item.prod_m12_giga||0,item.prod_poe_m12_giga||0)+
+                         Math.max(item.prod_m12_100||0,item.prod_poe_m12_100||0)+
+                         (item.prod_m12_multi_giga||0);
+        const subParts = [
+            totalRj > 0  ? `${totalRj}×RJ45`  : '',
+            totalFib > 0 ? `${totalFib}×Fiber` : '',
+            totalM12 > 0 ? `${totalM12}×M12`   : '',
+        ].filter(Boolean).join(' · ');
+
+        // 同步 compare bar 的 active 狀態
+        const isCmpActive = typeof compareIsSelected === 'function' && compareIsSelected(pid);
+
+        return `<tr>
+            <td style="position:sticky;left:0;background:inherit;z-index:1;min-width:150px;max-width:180px;">
+                <div class="tv-model-name">
+                    <a href="${prodUrl}" target="_blank" rel="noopener noreferrer"
+                       title="View on Advantech website">${item.prod_model} <span style="font-size:9px;opacity:0.7">↗</span></a>
+                </div>
+                ${subParts ? `<div class="tv-model-sub">${subParts}</div>` : ''}
+            </td>
+            ${cols.map(c => `<td>${tvRenderCell(item, c.key)}</td>`).join('')}
+            <td class="tv-cmp-cell">
+                <button class="tv-cmp-btn ${isCmpActive ? 'selected' : ''}"
+                    id="tv-cmp-${pid}"
+                    onclick="tvToggleCompare('${pid}',${globalIdx})">
+                    ${isCmpActive ? '✓' : '+'}
+                </button>
+            </td>
+        </tr>`;
+    }).join('');
+
+    // ── Pagination ──
+    let pagerHtml = '';
+    if (totalPages > 1) {
+        pagerHtml = `
+        <div class="tv-pager">
+            <span class="tv-pager-info">${data_list.length} results · Page ${tvPage} / ${totalPages}</span>
+            <button class="tv-pager-btn" onclick="tvGoPage(${tvPage-1})" ${tvPage===1?'disabled':''}>‹ Prev</button>
+            <span class="tv-pager-page">${tvPage}</span>
+            <button class="tv-pager-btn" onclick="tvGoPage(${tvPage+1})" ${tvPage===totalPages?'disabled':''}>Next ›</button>
+        </div>`;
+    }
+
+    container.innerHTML = `
+        ${pickerHtml}
+        <div class="tv-wrap">
+            <table class="tv-table">
+                <thead id="tv-thead">${thead}</thead>
+                <tbody id="tv-tbody">${tbody}</tbody>
+            </table>
+        </div>
+        ${pagerHtml}
+    `;
+}
+
+// ── Col 開關 ──────────────────────────────────
+function tvToggleCol(key, chipEl) {
+    if (tvActiveCols.has(key)) {
+        if (tvActiveCols.size <= 1) return; // 至少保留一欄
+        tvActiveCols.delete(key);
+    } else {
+        tvActiveCols.add(key);
+    }
+    chipEl.classList.toggle('on', tvActiveCols.has(key));
+    renderProductTable(_getSortedList());
+    // 保持 panel 展開
+    const panel = document.getElementById('tv-col-panel');
+    if (panel) panel.classList.add('open');
+}
+
+// ── Table 內欄位排序 ──────────────────────────
+function tvDoSort(key, _) {
+    if (tvSortCol === key) tvSortDir *= -1;
+    else { tvSortCol = key; tvSortDir = 1; }
+    // 重新以 tvSortCol/tvSortDir 排序後渲染
+    const list = _getSortedList();
+    const col = TV_ALL_COLS.find(c => c.key === key);
+    if (col && col.sortable) {
+        list.sort((a, b) => {
+            const av = tvGetVal(a, key), bv = tvGetVal(b, key);
+            if (typeof av === 'number') return (av - bv) * tvSortDir;
+            return String(av).localeCompare(String(bv)) * tvSortDir;
+        });
+    }
+    tvPage = 1;
+    renderProductTable(list);
+    const panel = document.getElementById('tv-col-panel');
+    if (panel && panel.classList.contains('open')) panel.classList.add('open');
+}
+
+// ── 分頁跳轉 ──────────────────────────────────
+function tvGoPage(p) {
+    tvPage = p;
+    renderProductTable(_getSortedList());
+    // scroll to results top
+    const lowerPart = document.querySelector('.lower-part.card');
+    if (lowerPart) lowerPart.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Compare 橋接 ──────────────────────────────
+function tvToggleCompare(pid, globalIdx) {
+    // 確保 _sfpItemCache 有對應 item（表格模式下也需要）
+    if (!window._sfpItemCache) window._sfpItemCache = {};
+    const list = _getSortedList();
+    if (list[globalIdx]) window._sfpItemCache[pid] = list[globalIdx];
+
+    if (typeof compareToggle === 'function') {
+        compareToggle(pid);
+    }
+    // 更新按鈕狀態
+    const btn = document.getElementById(`tv-cmp-${pid}`);
+    if (btn) {
+        const active = typeof compareIsSelected === 'function' && compareIsSelected(pid);
+        btn.classList.toggle('selected', active);
+        btn.textContent = active ? '✓' : '+';
+    }
+}
+
+// ── Col-picker panel 開關 ─────────────────────
+function tvToggleColPanel() {
+    const panel = document.getElementById('tv-col-panel');
+    if (panel) panel.classList.toggle('open');
+}
+

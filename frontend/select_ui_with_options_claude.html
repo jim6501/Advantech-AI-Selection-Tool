@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="/frontend/css/style.css?v=2">
     <link rel="stylesheet" href="/frontend/css/feature-selector.css">
     <link rel="stylesheet" href="/frontend/css/compare.css">
+    <link rel="stylesheet" href="/frontend/css/table-view.css">
 
     <!-- marked.js：Markdown 渲染（Chatbot 回覆美化） -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -124,7 +125,20 @@
         <div class="lower-part card">
             <div class="results-header">
                 <h3>Acquired Product Information</h3>
-                <div style="display: flex; align-items: center;">
+                <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
+                    <!-- View Toggle -->
+                    <div class="view-toggle">
+                        <button class="view-tab-btn active" id="view-btn-list" onclick="switchView('list')" title="Card List">
+                            <i class="ti ti-layout-list" aria-hidden="true"></i> List
+                        </button>
+                        <button class="view-tab-btn" id="view-btn-table" onclick="switchView('table')" title="Table View">
+                            <i class="ti ti-table" aria-hidden="true"></i> Table
+                        </button>
+                    </div>
+                    <!-- Col Picker (table mode only) -->
+                    <button class="col-picker-btn" id="tv-col-picker-btn" onclick="tvToggleColPanel()" style="display:none;">
+                        <i class="ti ti-columns" aria-hidden="true"></i> Columns
+                    </button>
                     <select id="sortSelect" onchange="applySort()" class="sort-select">
                         <option value="default">Default Sorting</option>
                         <option value="port_asc">Total Ports: Low to High</option>

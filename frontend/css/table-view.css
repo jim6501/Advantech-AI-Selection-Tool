@@ -1,0 +1,369 @@
+/* ═══════════════════════════════════════════════════════════
+   Advantech Switch Selection Tool — Table View Styles
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── 視圖切換 Tabs ──────────────────────────────────────── */
+.view-toggle {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--adv-border);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.view-tab-btn {
+    padding: 5px 14px;
+    font-size: 0.75rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--text-muted);
+    border: none;
+    transition: background 0.15s, color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.view-tab-btn + .view-tab-btn {
+    border-left: 1px solid var(--adv-border);
+}
+
+.view-tab-btn.active {
+    background: var(--adv-blue);
+    color: #fff;
+}
+
+.view-tab-btn:hover:not(.active) {
+    background: var(--adv-light-blue);
+    color: var(--adv-blue);
+}
+
+/* ── Col Picker Panel ───────────────────────────────────── */
+.col-picker-btn {
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--adv-blue);
+    border: 1px solid #b3cfea;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.15s;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.col-picker-btn:hover {
+    background: var(--adv-light-blue);
+}
+
+.col-picker-panel {
+    background: var(--adv-gray);
+    border: 1px solid var(--adv-border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    display: none;
+}
+
+.col-picker-panel.open {
+    display: block;
+}
+
+.col-picker-label {
+    font-size: 0.72rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.col-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.col-chip {
+    padding: 4px 12px;
+    font-size: 0.78rem;
+    border-radius: 100px;
+    border: 1px solid var(--adv-border);
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--text-muted);
+    transition: all 0.15s;
+    user-select: none;
+    font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+}
+
+.col-chip.on {
+    background: var(--adv-light-blue);
+    color: var(--adv-blue);
+    border-color: #85b7eb;
+    font-weight: 600;
+}
+
+.col-chip:hover:not(.on) {
+    background: var(--adv-gray);
+    color: var(--text-main);
+}
+
+/* ── Table Wrapper ──────────────────────────────────────── */
+.tv-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--adv-border);
+    border-radius: var(--radius-sm);
+    /* top border が card::before に被らないよう */
+    margin-top: 2px;
+}
+
+.tv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    table-layout: fixed;
+    min-width: 600px;
+}
+
+/* ── Header row ─────────────────────────────────────────── */
+.tv-table thead th {
+    background: var(--adv-gray);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 9px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--adv-border);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s, background 0.15s;
+}
+
+.tv-table thead th:hover {
+    color: var(--adv-blue);
+    background: var(--adv-light-blue);
+}
+
+.tv-table thead th.tv-sorted {
+    color: var(--adv-blue);
+    background: var(--adv-light-blue);
+}
+
+.tv-table thead th.tv-col-model {
+    width: 170px;
+    cursor: default;
+}
+.tv-table thead th.tv-col-model:hover {
+    color: var(--text-muted);
+    background: var(--adv-gray);
+}
+
+.tv-sort-icon {
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 10px;
+    opacity: 0.5;
+    vertical-align: middle;
+}
+
+.tv-table thead th.tv-sorted .tv-sort-icon {
+    opacity: 1;
+}
+
+/* ── Body rows ──────────────────────────────────────────── */
+.tv-table tbody tr {
+    transition: background 0.12s;
+    border-bottom: 1px solid var(--adv-border);
+}
+
+.tv-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.tv-table tbody tr:nth-child(even) td {
+    background: rgba(238, 241, 246, 0.45);
+}
+
+.tv-table tbody tr:hover td {
+    background: var(--adv-light-blue) !important;
+}
+
+.tv-table tbody td {
+    padding: 10px 14px;
+    color: var(--text-main);
+    vertical-align: middle;
+}
+
+/* ── Model cell ─────────────────────────────────────────── */
+.tv-model-name {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--adv-blue);
+}
+
+.tv-model-name a {
+    color: var(--adv-blue);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.tv-model-name a:hover {
+    text-decoration: underline;
+}
+
+.tv-model-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    line-height: 1.4;
+}
+
+/* ── Numeric port cell ──────────────────────────────────── */
+.tv-port-num {
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--adv-blue);
+    display: block;
+}
+
+.tv-port-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+
+/* ── Tags inside cells ──────────────────────────────────── */
+.tv-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 100px;
+    margin: 2px 2px 0 0;
+    line-height: 1.6;
+    white-space: nowrap;
+}
+
+.tv-tag-m   { background: #DBEAFE; color: #1D4ED8; border: 1px solid #BFDBFE; }
+.tv-tag-u   { background: #F3F4F6; color: #374151; border: 1px solid #D1D5DB; }
+.tv-tag-w   { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+.tv-tag-poe { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+.tv-tag-sfp { background: #E6F1FB; color: #185FA5; border: 1px solid #B3CFE8; }
+.tv-tag-app { background: #F0FDF4; color: #166534; border: 1px solid #A7F3D0; }
+
+/* ── Compare checkbox col ───────────────────────────────── */
+.tv-cmp-cell {
+    text-align: center;
+    width: 60px;
+}
+
+.tv-cmp-btn {
+    padding: 4px 8px;
+    font-size: 0.72rem;
+    font-family: 'IBM Plex Mono', monospace;
+    border: 1px solid var(--adv-border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.tv-cmp-btn.selected {
+    background: var(--adv-blue);
+    color: #fff;
+    border-color: var(--adv-blue);
+}
+
+.tv-cmp-btn:hover:not(.selected) {
+    border-color: var(--adv-blue);
+    color: var(--adv-blue);
+}
+
+/* ── Dash placeholder ───────────────────────────────────── */
+.tv-dash {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* ── Empty state ────────────────────────────────────────── */
+.tv-empty {
+    text-align: center;
+    padding: 48px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* ── Pagination bar ─────────────────────────────────────── */
+.tv-pager {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 10px 0 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.tv-pager-info {
+    margin-right: 8px;
+}
+
+.tv-pager-btn {
+    padding: 3px 10px;
+    border: 1px solid var(--adv-border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--adv-blue);
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: background 0.15s;
+}
+
+.tv-pager-btn:hover:not(:disabled) {
+    background: var(--adv-light-blue);
+}
+
+.tv-pager-btn:disabled {
+    color: var(--text-muted);
+    cursor: default;
+    opacity: 0.5;
+}
+
+.tv-pager-page {
+    padding: 3px 10px;
+    border: 1px solid var(--adv-accent);
+    border-radius: 6px;
+    background: var(--adv-blue);
+    color: #fff;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
