@@ -1635,8 +1635,8 @@ function renderProductTable(data_list) {
     };
 
     let thead = `<tr>
-        <th class="tv-sticky-num tv-th-num">#</th>
-        <th class="tv-col-model tv-sticky-model">Model</th>
+        <th style="position:sticky;left:0;z-index:4;background:var(--adv-gray);width:36px;min-width:36px;text-align:center;padding:9px 6px;border-right:1px solid var(--adv-border);font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--adv-border);">#</th>
+        <th style="position:sticky;left:37px;z-index:4;background:var(--adv-gray);min-width:160px;box-shadow:3px 0 8px -3px rgba(0,51,102,0.10);cursor:default;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--adv-border);">Model</th>
         ${cols.map(c => `
         <th class="${c.sortable ? '' : 'tv-unsortable'} ${tvSortCol===c.key?'tv-sorted':''}"
             title="${c.title || c.label}"
@@ -1667,11 +1667,15 @@ function renderProductTable(data_list) {
         // 同步 compare bar 的 active 狀態
         const isCmpActive = typeof compareIsSelected === 'function' && compareIsSelected(pid);
 
-        return `<tr>
-            <td class="tv-sticky-num">
+        const rowBg  = (globalIdx % 2 === 1) ? '#eef1f6' : '#ffffff';
+        const hoverBg = '#ddeaf8';
+        return `<tr
+            onmouseenter="this.querySelectorAll('.tv-s').forEach(c=>c.style.background='${hoverBg}')"
+            onmouseleave="this.querySelectorAll('.tv-s').forEach(c=>c.style.background='${rowBg}')">
+            <td class="tv-s" style="position:sticky;left:0;z-index:2;background:${rowBg};width:36px;min-width:36px;text-align:center;font-size:0.72rem;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);padding:9px 6px;border-right:1px solid var(--adv-border);box-shadow:2px 0 6px -2px rgba(0,51,102,0.08);">
                 ${globalIdx + 1}
             </td>
-            <td class="tv-sticky-model">
+            <td class="tv-s" style="position:sticky;left:37px;z-index:2;background:${rowBg};min-width:160px;max-width:210px;box-shadow:3px 0 8px -3px rgba(0,51,102,0.10);padding:9px 10px;">
                 <div class="tv-model-name">
                     <a href="${prodUrl}" target="_blank" rel="noopener noreferrer"
                        title="View on Advantech website">${item.prod_model} <span style="font-size:9px;opacity:0.7">↗</span></a>
