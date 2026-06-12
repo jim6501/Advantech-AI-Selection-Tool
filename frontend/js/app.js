@@ -106,11 +106,11 @@ function removeItem(itemKey) {
 // ═══════════════════════════════════════════════
 // 條件快照（用於「零結果」警告判斷）
 // ═══════════════════════════════════════════════
-function getSnapshotNow() {
+function getSnapshotNow(extraItems = []) {
     return {
         mgmt: document.getElementById('mgmtType').value,
         port: document.getElementById('numInput').value,
-        items: new Set(Object.keys(selectedItemsMap))
+        items: new Set([...Object.keys(selectedItemsMap), ...extraItems])
     };
 }
 
@@ -139,7 +139,7 @@ function renderSelected(culpritItems = new Set()) {
 // ═══════════════════════════════════════════════
 // 渲染：Filter Tags（管理類型 + Port 數）
 // ═══════════════════════════════════════════════
-function renderFilterTags(culprits = {}) {
+function renderFilterTags(culprits = {}, culpritItems = new Set()) {
     const filterDiv = document.getElementById('filterTags');
     filterDiv.innerHTML = '';
 
@@ -231,7 +231,7 @@ function renderFilterTags(culprits = {}) {
         checkSceneModified();
 
     } else {
-        // ── 手動模式：原有綠色 tag 行為 ──────────────────
+        // ── 手動模式：含 × 移除按鈕的 tag ──────────────
         const mgmtVal = document.getElementById('mgmtType').value;
         const portVal = document.getElementById('numInput').value;
 
@@ -240,45 +240,52 @@ function renderFilterTags(culprits = {}) {
             const label = labelMap[mgmtVal] || 'Unmanaged';
             const tag = document.createElement('span');
             tag.className = 'filter-tag' + (culprits.mgmt ? ' culprit' : '');
-            tag.innerHTML = `Type: ${label}`;
+            tag.innerHTML = `Type: ${label} <span class="filter-tag-x" onclick="ftRemoveMgmt()">×</span>`;
             filterDiv.appendChild(tag);
         }
         if (portVal) {
             const tag = document.createElement('span');
             tag.className = 'filter-tag' + (culprits.port ? ' culprit' : '');
-            tag.innerHTML = `Port: ≥${portVal}`;
+            tag.innerHTML = `Port: ≥${portVal} <span class="filter-tag-x" onclick="ftRemovePort()">×</span>`;
             filterDiv.appendChild(tag);
         }
         // Max Port Speed
         const activeSpeedChip = document.querySelector('#speedChips .dp-chip.active');
         if (activeSpeedChip) {
+            const speedKeyMap = { '100M': 'Speed_100M', '1G': 'Speed_GbE', '10G+': 'Speed_10G' };
+            const speedCulprit = culpritItems.has(speedKeyMap[activeSpeedChip.dataset.val]);
+            const speedVal = activeSpeedChip.dataset.val;
             const tag = document.createElement('span');
-            tag.className = 'filter-tag';
-            tag.textContent = `Speed: ${activeSpeedChip.textContent.trim()}`;
+            tag.className = 'filter-tag' + (speedCulprit ? ' culprit' : '');
+            tag.innerHTML = `Speed: ${activeSpeedChip.textContent.trim()} <span class="filter-tag-x" onclick="ftRemoveChip('#speedChips','${speedVal}')">×</span>`;
             filterDiv.appendChild(tag);
         }
 
         // PoE Required
         if (document.getElementById('poeToggle')?.checked) {
             const tag = document.createElement('span');
-            tag.className = 'filter-tag';
-            tag.textContent = 'PoE: Required';
+            tag.className = 'filter-tag' + (culpritItems.has('Has_PoE') ? ' culprit' : '');
+            tag.innerHTML = `PoE: Required <span class="filter-tag-x" onclick="ftRemovePoe()">×</span>`;
             filterDiv.appendChild(tag);
         }
 
         // Interface Type
+        const ifaceKeyMap = { 'rj45': 'Has_RJ-45', 'fiber': 'Has_Fiber' };
         document.querySelectorAll('#ifaceChips .dp-chip.active').forEach(c => {
+            const val = c.dataset.val;
+            const isCulprit = culpritItems.has(ifaceKeyMap[val]);
             const tag = document.createElement('span');
-            tag.className = 'filter-tag';
-            tag.textContent = `Interface: ${c.textContent.trim()}`;
+            tag.className = 'filter-tag' + (isCulprit ? ' culprit' : '');
+            tag.innerHTML = `Interface: ${c.textContent.trim()} <span class="filter-tag-x" onclick="ftRemoveChip('#ifaceChips','${val}')">×</span>`;
             filterDiv.appendChild(tag);
         });
 
         // Certifications
         document.querySelectorAll('#certChips .dp-chip.active').forEach(c => {
+            const val = c.dataset.val;
             const tag = document.createElement('span');
-            tag.className = 'filter-tag';
-            tag.textContent = `Cert: ${c.textContent.trim()}`;
+            tag.className = 'filter-tag' + (culpritItems.has(val) ? ' culprit' : '');
+            tag.innerHTML = `Cert: ${c.textContent.trim()} <span class="filter-tag-x" onclick="ftRemoveChip('#certChips','${val}')">×</span>`;
             filterDiv.appendChild(tag);
         });
 
@@ -759,6 +766,20 @@ function renderProductCards(data_list) {
         // 組合研華官網搜尋 URL（使用 prod_url 欄位，或自動組合）
         const prodUrl = item.prod_url || `https://www.advantech.com/en/search?q=${encodeURIComponent(item.prod_model)}`;
 
+        // 照片 URL（PNG 優先，onerror 嘗試 JPG，再失敗則隱藏區塊）
+        const photoBase = `${API_BASE}/data/pics/${encodeURIComponent(item.prod_model)}`;
+        const photoHtml = `<div class="pc-photo" onclick="event.stopPropagation()">
+                    <img class="pc-photo-thumb"
+                         src="${photoBase}.png"
+                         onerror="this.onerror=null;this.src='${photoBase}.jpg';this.onerror=function(){this.closest('.pc-photo').style.display='none';}"
+                         alt="${item.prod_model}">
+                    <div class="pc-photo-popup">
+                        <img src="${photoBase}.png"
+                             onerror="this.onerror=null;this.src='${photoBase}.jpg';this.onerror=null;"
+                             alt="${item.prod_model}">
+                    </div>
+                </div>`;
+
         return `
         <div class="pc" id="${pid}">
             <div class="pc-main" onclick="pcToggleDetail('${pid}')">
@@ -775,6 +796,7 @@ function renderProductCards(data_list) {
                     <div class="pc-badges">${badgeHtml}</div>
                 </div>
                 <div class="pc-right">
+                    ${photoHtml}
                     <!-- 比較按鈕（用 button 避免 label+checkbox 雙重觸發問題） -->
                     <button class="cmp-cb-wrap" id="cmp-cb-btn-${pid}"
                             onclick="event.stopPropagation(); compareToggle('${pid}')"
@@ -814,13 +836,11 @@ function submitItems() {
     let portVal = parseInt(numInput.value);
     if (isNaN(portVal)) portVal = -1;
 
-    const thisSnapshot = getSnapshotNow();
-
     // 移除舊的 zero-result hint
     const oldHint = document.getElementById('zeroResultHint');
     if (oldHint) oldHint.remove();
 
-    // 收集 dark-panel UI 額外條件
+    // 收集 dark-panel UI 額外條件（需在 snapshot 前計算）
     const extraItems = [];
 
     // Max Port Speed
@@ -847,6 +867,8 @@ function submitItems() {
     document.querySelectorAll('#certChips .dp-chip.active').forEach(c => {
         extraItems.push(c.dataset.val);
     });
+
+    const thisSnapshot = getSnapshotNow(extraItems);
 
     const requestBody = {
         items: [...Object.keys(selectedItemsMap), ...extraItems],
@@ -895,7 +917,7 @@ function submitItems() {
                     if (!lastSuccessSnapshot.items.has(key)) culpritItems.add(key);
                 });
                 renderSelected(culpritItems);
-                renderFilterTags(culprits);
+                renderFilterTags(culprits, culpritItems);
                 _appendZeroHint('⚠ No products found. The highlighted condition(s) are newly added and may be causing this.');
 
             } else if (data_list.length > 0) {
@@ -918,7 +940,7 @@ function submitItems() {
                 const allCulprits = { mgmt: !!thisSnapshot.mgmt, port: !!thisSnapshot.port };
                 const allCulpritItems = new Set(thisSnapshot.items);
                 renderSelected(allCulpritItems);
-                renderFilterTags(allCulprits);
+                renderFilterTags(allCulprits, allCulpritItems);
                 _appendZeroHint('⚠ No products found. The highlighted condition(s) may be causing this. Please broaden your search criteria.');
             }
 
@@ -975,6 +997,9 @@ function applySort() {
 
     // 更新 Chatbot context 使用的順序
     acquiredModels = sortedList.map(item => item.prod_name || item.prod_model);
+
+    // 依結果內容自動調整 Table 欄位可見性
+    autoAdjustTableCols(sortedList);
 
     // 依目前視圖模式渲染
     tvPage = 1;
@@ -1508,15 +1533,18 @@ const TV_PAGE_SIZE = 30;
 
 // 所有可選欄位定義
 const TV_ALL_COLS = [
-    { key: 'totalPorts', label: 'Total', title: 'Total Ports', default: true, sortable: true },
-    { key: 'rjGiga', label: 'GbE', title: 'GbE RJ45 ports', default: true, sortable: true },
-    { key: 'rj100', label: 'FE', title: 'Fast Ethernet RJ45 ports', default: true, sortable: true },
-    { key: 'fiberGiga', label: 'SFP', title: 'SFP GbE fiber ports', default: true, sortable: true },
-    { key: 'fiber10g', label: 'SFP+', title: 'SFP+ 10G fiber ports', default: true, sortable: true },
-    { key: 'fiber100', label: 'FX', title: 'FX 100M fixed fiber', default: false, sortable: true },
-    { key: 'fiberCombo', label: 'Combo', title: 'GE Combo (RJ45/SFP shared)', default: false, sortable: true },
-    { key: 'm12Giga', label: 'M12-G', title: 'M12 GbE ports', default: false, sortable: true },
-    { key: 'm12Multi', label: 'M12-MG', title: 'M12 Multi-Giga (2.5/5/10G)', default: false, sortable: true },
+    { key: 'totalPorts',  label: 'Total',          title: 'Total Ports',                    default: true,  sortable: true },
+    { key: 'rjGiga',      label: 'RJ45-1G',        title: 'RJ-45 GbE ports',                default: true,  sortable: true },
+    { key: 'rj100',       label: 'RJ45-FE',        title: 'RJ-45 Fast Ethernet ports',      default: true,  sortable: true },
+    { key: 'fiberGiga',   label: 'Fiber-1G',       title: 'Fiber GbE (SFP) ports',          default: true,  sortable: true },
+    { key: 'fiber10g',    label: 'Fiber-10G',      title: 'Fiber 10G (SFP+) ports',         default: true,  sortable: true },
+    { key: 'fiber100',    label: 'Fiber-100M',     title: 'Fiber 100M fixed ports',         default: false, sortable: true },
+    { key: 'fiberCombo',  label: 'Combo',          title: 'GE Combo (RJ45/Fiber shared)',   default: false, sortable: true },
+    { key: 'm12Fe',       label: 'M12-FE',         title: 'M12 D-code 10/100M ports',      default: false, sortable: true },
+    { key: 'm12Giga',     label: 'M12-1G',         title: 'M12 X-code GbE ports',          default: false, sortable: true },
+    { key: 'm12Multi',    label: 'M12-MG',         title: 'M12 Multi-Giga (2.5/5/10G)',    default: false, sortable: true },
+    { key: 'bypassFe',    label: 'M12-Bypass-FE',  title: 'LAN Bypass D-code 100M ports',  default: false, sortable: true },
+    { key: 'bypassGiga',  label: 'M12-Bypass-1G',  title: 'LAN Bypass X-code GbE ports',   default: false, sortable: true },
     { key: 'poe', label: 'PoE', title: 'PoE port count', default: true, sortable: true },
     { key: 'mgmt', label: 'Mgmt', title: 'Management type', default: true, sortable: false },
     { key: 'temp', label: 'Temp', title: 'Temperature grade (Wide / Standard)', default: true, sortable: false },
@@ -1526,6 +1554,24 @@ const TV_ALL_COLS = [
 ];
 
 let tvActiveCols = new Set(TV_ALL_COLS.filter(c => c.default).map(c => c.key));
+
+function autoAdjustTableCols(list) {
+    const hasRj      = list.some(i => (i.prod_rj_giga||0)+(i.prod_rj_100||0)+(i.prod_poe_rj_giga||0)+(i.prod_poe_rj_100||0) > 0);
+    const hasM12Fe   = list.some(i => (i.prod_m12_100||0)+(i.prod_poe_m12_100||0) > 0);
+    const hasM12G    = list.some(i => (i.prod_m12_giga||0)+(i.prod_poe_m12_giga||0) > 0);
+    const hasM12MG   = list.some(i => (i.prod_m12_multi_giga||0) > 0);
+    const hasBypFe   = list.some(i => (i.prod_bypass_m12_100||0) > 0);
+    const hasBypGiga = list.some(i => (i.prod_bypass_m12_giga||0) > 0);
+
+    if (hasRj)    { tvActiveCols.add('rjGiga');    tvActiveCols.add('rj100'); }
+    else          { tvActiveCols.delete('rjGiga');  tvActiveCols.delete('rj100'); }
+
+    if (hasM12Fe)   tvActiveCols.add('m12Fe');     else tvActiveCols.delete('m12Fe');
+    if (hasM12G)    tvActiveCols.add('m12Giga');   else tvActiveCols.delete('m12Giga');
+    if (hasM12MG)   tvActiveCols.add('m12Multi');  else tvActiveCols.delete('m12Multi');
+    if (hasBypFe)   tvActiveCols.add('bypassFe');  else tvActiveCols.delete('bypassFe');
+    if (hasBypGiga) tvActiveCols.add('bypassGiga');else tvActiveCols.delete('bypassGiga');
+}
 
 // ── 視圖切換入口 ───────────────────────────────
 function switchView(view) {
@@ -1587,16 +1633,16 @@ function _renderCurrentView(list) {
 // ── 從各 port 欄位加總計算真實總 port 數 ────────
 function tvCalcTotalPorts(item) {
     // Combo port 是共用 physical port，取較大值（不重複計算）
-    const rjGiga = Math.max(item.prod_rj_giga || 0, item.prod_poe_rj_giga || 0);
-    const rj100 = Math.max(item.prod_rj_100 || 0, item.prod_poe_rj_100 || 0);
-    const combo = Math.max(item.prod_fiber_ge_combo || 0, item.prod_rj_100_combo || 0);
-    const fiberG = item.prod_fiber_giga || 0;
-    const fiber10g = item.prod_fiber_10g || 0;
-    const fiber100 = item.prod_fiber_100 || 0;
-    const m12G = Math.max(item.prod_m12_giga || 0, item.prod_poe_m12_giga || 0);
-    const m12_100 = Math.max(item.prod_m12_100 || 0, item.prod_poe_m12_100 || 0);
-    const m12Multi = item.prod_m12_multi_giga || 0;
-    const bypass = (item.prod_bypass_m12_100 || 0) + (item.prod_bypass_m12_giga || 0);
+    const rjGiga  = (item.prod_rj_giga||0)  + (item.prod_poe_rj_giga||0);
+    const rj100   = (item.prod_rj_100||0)   + (item.prod_poe_rj_100||0);
+    const combo   = Math.max(item.prod_fiber_ge_combo||0, item.prod_rj_100_combo||0);
+    const fiberG  = item.prod_fiber_giga  || 0;
+    const fiber10g= item.prod_fiber_10g   || 0;
+    const fiber100= item.prod_fiber_100   || 0;
+    const m12G    = (item.prod_m12_giga||0)  + (item.prod_poe_m12_giga||0);
+    const m12_100 = (item.prod_m12_100||0)   + (item.prod_poe_m12_100||0);
+    const m12Multi= item.prod_m12_multi_giga || 0;
+    const bypass  = (item.prod_bypass_m12_100||0) + (item.prod_bypass_m12_giga||0);
     const computed = rjGiga + rj100 + combo + fiberG + fiber10g + fiber100 +
         m12G + m12_100 + m12Multi + bypass;
     // 取計算值與 DB prod_portnum 的較大值：
@@ -1613,14 +1659,17 @@ function tvGetVal(item, key) {
     };
     switch (key) {
         case 'totalPorts': return tvCalcTotalPorts(item);
-        case 'rjGiga': return resolveCardTotal(item.prod_rj_giga || 0, item.prod_poe_rj_giga || 0);
-        case 'rj100': return resolveCardTotal(item.prod_rj_100 || 0, item.prod_poe_rj_100 || 0);
-        case 'fiberGiga': return item.prod_fiber_giga || 0;
-        case 'fiber10g': return item.prod_fiber_10g || 0;
-        case 'fiber100': return item.prod_fiber_100 || 0;
-        case 'fiberCombo': return Math.max(item.prod_fiber_ge_combo || 0, item.prod_rj_100_combo || 0);
-        case 'm12Giga': return resolveCardTotal(item.prod_m12_giga || 0, item.prod_poe_m12_giga || 0);
-        case 'm12Multi': return item.prod_m12_multi_giga || 0;
+        case 'rjGiga':     return (item.prod_rj_giga||0)   + (item.prod_poe_rj_giga||0);
+        case 'rj100':      return (item.prod_rj_100||0)    + (item.prod_poe_rj_100||0);
+        case 'fiberGiga':  return item.prod_fiber_giga  || 0;
+        case 'fiber10g':   return item.prod_fiber_10g   || 0;
+        case 'fiber100':   return item.prod_fiber_100   || 0;
+        case 'fiberCombo': return Math.max(item.prod_fiber_ge_combo||0, item.prod_rj_100_combo||0);
+        case 'm12Fe':      return (item.prod_m12_100||0)   + (item.prod_poe_m12_100||0);
+        case 'm12Giga':    return (item.prod_m12_giga||0)  + (item.prod_poe_m12_giga||0);
+        case 'm12Multi':   return item.prod_m12_multi_giga || 0;
+        case 'bypassFe':   return item.prod_bypass_m12_100  || 0;
+        case 'bypassGiga': return item.prod_bypass_m12_giga || 0;
         case 'poe': return (item.prod_poe_rj_100 || 0) + (item.prod_poe_rj_giga || 0) + (item.prod_poe_m12_100 || 0) + (item.prod_poe_m12_giga || 0);
         case 'mgmt': return item.prod_type || '';
         case 'temp': return (item.prod_w_n || '').toLowerCase() === 'wide' ? 'Wide' : 'Standard';
@@ -1634,14 +1683,14 @@ function tvGetVal(item, key) {
 // ── 產生欄位的 HTML（格式化）─────────────────
 function tvRenderCell(item, key) {
     const v = tvGetVal(item, key);
-    if (key === 'totalPorts' || key === 'rjGiga' || key === 'rj100' ||
-        key === 'fiberGiga' || key === 'fiber10g' || key === 'fiber100' ||
-        key === 'fiberCombo' || key === 'm12Giga' || key === 'm12Multi') {
+    if (['totalPorts','rjGiga','rj100','fiberGiga','fiber10g','fiber100',
+         'fiberCombo','m12Fe','m12Giga','m12Multi','bypassFe','bypassGiga'].includes(key)) {
         if (v === 0) return `<span class="tv-dash">—</span>`;
         const labelMap = {
-            totalPorts: 'total', rjGiga: 'GbE', rj100: 'FE', fiberGiga: 'SFP',
-            fiber10g: 'SFP+', fiber100: 'FX', fiberCombo: 'Combo',
-            m12Giga: 'M12', m12Multi: 'Multi-G'
+            totalPorts:'total',     rjGiga:'RJ45-1G',   rj100:'RJ45-FE',
+            fiberGiga:'Fiber-1G',   fiber10g:'Fiber-10G', fiber100:'Fiber-100M',
+            fiberCombo:'Combo',     m12Fe:'M12-FE',     m12Giga:'M12-1G',
+            m12Multi:'M12-MG',      bypassFe:'Bypass-FE', bypassGiga:'Bypass-1G'
         };
         return `<span class="tv-port-num">${v}</span><span class="tv-port-label">${labelMap[key] || ''}</span>`;
     }
@@ -1902,5 +1951,31 @@ function dpResetAll() {
     const poe = document.getElementById('poeToggle');
     if (poe) { poe.checked = false; dpUpdatePoE(poe); }
     window._dpSpeed = null;
+}
+
+// ═══════════════════════════════════════════════
+// Filter Tag × 移除按鈕 helpers
+// ═══════════════════════════════════════════════
+function ftRemoveMgmt() {
+    document.getElementById('mgmtType').value = '';
+    document.getElementById('mgmtType').dispatchEvent(new Event('change'));
+    document.querySelectorAll('#mgmtChips .dp-chip').forEach(c => c.classList.remove('active'));
+    renderFilterTags();
+}
+
+function ftRemovePort() {
+    document.getElementById('numInput').value = '';
+    renderFilterTags();
+}
+
+function ftRemovePoe() {
+    const poe = document.getElementById('poeToggle');
+    if (poe) { poe.checked = false; dpUpdatePoE(poe); }
+}
+
+function ftRemoveChip(containerSelector, val) {
+    const chip = document.querySelector(`${containerSelector} .dp-chip[data-val="${val}"]`);
+    if (chip) chip.classList.remove('active');
+    renderFilterTags();
 }
 
