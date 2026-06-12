@@ -90,7 +90,38 @@ base_hardware_mappings = {
     "Port_Bypass": lambda: {"$or": [
         {"hardware.LAN Bypass 10/100M (D-code)": {"$regex": "^[1-9]"}},
         {"hardware.LAN Bypass Gigabit (X-code)": {"$regex": "^[1-9]"}}
-    ]}
+    ]},
+
+    # Max Port Speed filters
+    "Speed_100M": lambda: {"$or": [
+        {"hardware.RJ-45 10/100M": {"$regex": "^[1-9]"}},
+        {"hardware.Fiber 100M": {"$regex": "^[1-9]"}},
+        {"hardware.Eth 10/100M (D-code)": {"$regex": "^[1-9]"}}
+    ]},
+    "Speed_GbE": lambda: {"$or": [
+        {"hardware.RJ-45 Gigabit": {"$regex": "^[1-9]"}},
+        {"hardware.RJ-45 Combo": {"$regex": "^[1-9]"}},
+        {"hardware.Fiber Gigabit": {"$regex": "^[1-9]"}},
+        {"hardware.Fiber GE Combo": {"$regex": "^[1-9]"}},
+        {"hardware.Fiber 10G": {"$regex": "^[1-9]"}},
+        {"hardware.Eth Gigabit (X-code)": {"$regex": "^[1-9]"}},
+        {"hardware.Eth Multi-Giga (X-code)": {"$regex": "^[1-9]"}},
+        {"hardware.RJ-45 10GbE": {"$regex": "^[1-9]"}}
+    ]},
+    "Speed_10G": lambda: {"$or": [
+        {"hardware.Fiber 10G": {"$regex": "^[1-9]"}},
+        {"hardware.Eth Multi-Giga (X-code)": {"$regex": "^[1-9]"}},
+        {"hardware.RJ-45 10GbE": {"$regex": "^[1-9]"}}
+    ]},
+
+    # Certifications filters (regex match within comma-separated string)
+    "Cert_UL":      lambda: {"hardware.Certifications": {"$regex": "UL",       "$options": "i"}},
+    "Cert_LVD":     lambda: {"hardware.Certifications": {"$regex": "LVD",      "$options": "i"}},
+    "Cert_IEC61850":lambda: {"hardware.Certifications": {"$regex": "IEC61850", "$options": "i"}},
+    "Cert_NEMA":    lambda: {"hardware.Certifications": {"$regex": "NEMA",     "$options": "i"}},
+    "Cert_EN50155": lambda: {"hardware.Certifications": {"$regex": "EN 50155", "$options": "i"}},
+    "Cert_EMark":   lambda: {"hardware.Certifications": {"$regex": "E-Mark",   "$options": "i"}},
+    "Cert_ITxPT":   lambda: {"hardware.Certifications": {"$regex": "ITxPT",    "$options": "i"}},
 }
 
 # 三態值中合法的「有支援」值
@@ -271,6 +302,8 @@ def submit_product_selection(req: SubmitProdRequest):
         load_dynamic_mappings_if_needed()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB connection error: {str(e)}")
+
+    print(f"[submitProdType] items={req.items}, type={req.type}, portnum={req.portnum}")
 
     # Step 1：組裝基本硬體條件（直接對應資料庫原始欄位）
     and_conditions = [

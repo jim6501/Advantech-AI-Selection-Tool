@@ -1517,6 +1517,238 @@ select.scene-prefilled-sug {
     color: #fff;
 }
 
+/* ═══════════════════════════════════════════════════════
+   LIGHT BLUE PANEL — left filter card redesign
+   ═══════════════════════════════════════════════════════ */
+.dark-panel {
+    background: #f0f5ff !important;
+    border-color: #c5d8f5 !important;
+    color: #1a2a4a;
+}
+
+.dark-panel::before {
+    background: linear-gradient(90deg, #003366 0%, #0062cc 100%) !important;
+}
+
+.dark-panel h3 {
+    color: #003366;
+}
+
+.dark-panel h3::after {
+    background: #c5d8f5;
+}
+
+/* ── dp-section labels ─────────────────────────── */
+.dp-section {
+    margin-bottom: 20px;
+}
+
+.dp-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.7rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #3a5a8a;
+    margin-bottom: 8px;
+}
+
+.dp-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: #003366;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* ── Chip buttons ─────────────────────────────── */
+.dp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.dp-chip {
+    background: #fff;
+    border: 1.5px solid #b8cfe8;
+    color: #2a4a7a;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 0.78rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s;
+    line-height: 1.2;
+}
+
+.dp-chip:hover {
+    border-color: #0062cc;
+    color: #003366;
+    background: #ddeaf8;
+}
+
+.dp-chip.active {
+    background: #003366;
+    border-color: #003366;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 51, 102, 0.25);
+}
+
+/* ── Dropdown (light) ─────────────────────────── */
+.dp-select-wrap {
+    position: relative;
+}
+
+.dp-select-wrap::after {
+    content: '';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 6px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%233a5a8a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    pointer-events: none;
+}
+
+.dp-select {
+    width: 100%;
+    padding: 9px 34px 9px 13px;
+    background: #fff;
+    border: 1.5px solid #b8cfe8;
+    border-radius: 8px;
+    color: #2a4a7a;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.85rem;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.18s;
+}
+
+.dp-select:focus {
+    border-color: #0062cc;
+    box-shadow: 0 0 0 3px rgba(0, 98, 204, 0.12);
+}
+
+/* ── PoE toggle ───────────────────────────────── */
+.dp-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dp-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.dp-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.dp-toggle-track {
+    position: absolute;
+    inset: 0;
+    background: #d0ddf0;
+    border-radius: 22px;
+    border: 1.5px solid #b8cfe8;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.dp-toggle-track::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background: #8aaad0;
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.dp-toggle-switch input:checked + .dp-toggle-track {
+    background: #003366;
+    border-color: #003366;
+}
+
+.dp-toggle-switch input:checked + .dp-toggle-track::after {
+    transform: translateX(18px) translateY(-50%);
+    background: #fff;
+}
+
+.dp-toggle-label {
+    font-size: 0.82rem;
+    color: #3a5a8a;
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* ── Search & Advanced Filter ─────────────────── */
+.dp-search {
+    width: 100%;
+    padding: 9px 13px;
+    background: #fff !important;
+    border: 1.5px solid #b8cfe8 !important;
+    border-radius: 8px !important;
+    color: #1a2a4a !important;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.18s;
+}
+
+.dp-search::placeholder {
+    color: #7a9ab8;
+}
+
+.dp-search:focus {
+    border-color: #0062cc !important;
+    background: #fff !important;
+    box-shadow: 0 0 0 3px rgba(0, 98, 204, 0.12) !important;
+}
+
+.dp-adv-btn {
+    margin-top: 8px;
+    width: 100%;
+    padding: 8px 14px;
+    background: transparent;
+    border: 1.5px dashed #b8cfe8;
+    border-radius: 8px;
+    color: #0062cc;
+    font-size: 0.78rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.18s;
+}
+
+.dp-adv-btn:hover {
+    border-color: #003366;
+    color: #003366;
+    background: #ddeaf8;
+}
+
 /* 場景說明注解 */
 .scene-state-note {
     font-size: 0.74rem;

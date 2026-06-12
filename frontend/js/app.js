@@ -249,7 +249,40 @@ function renderFilterTags(culprits = {}) {
             tag.innerHTML = `Port: ≥${portVal}`;
             filterDiv.appendChild(tag);
         }
-        if (!mgmtVal && !portVal) {
+        // Max Port Speed
+        const activeSpeedChip = document.querySelector('#speedChips .dp-chip.active');
+        if (activeSpeedChip) {
+            const tag = document.createElement('span');
+            tag.className = 'filter-tag';
+            tag.textContent = `Speed: ${activeSpeedChip.textContent.trim()}`;
+            filterDiv.appendChild(tag);
+        }
+
+        // PoE Required
+        if (document.getElementById('poeToggle')?.checked) {
+            const tag = document.createElement('span');
+            tag.className = 'filter-tag';
+            tag.textContent = 'PoE: Required';
+            filterDiv.appendChild(tag);
+        }
+
+        // Interface Type
+        document.querySelectorAll('#ifaceChips .dp-chip.active').forEach(c => {
+            const tag = document.createElement('span');
+            tag.className = 'filter-tag';
+            tag.textContent = `Interface: ${c.textContent.trim()}`;
+            filterDiv.appendChild(tag);
+        });
+
+        // Certifications
+        document.querySelectorAll('#certChips .dp-chip.active').forEach(c => {
+            const tag = document.createElement('span');
+            tag.className = 'filter-tag';
+            tag.textContent = `Cert: ${c.textContent.trim()}`;
+            filterDiv.appendChild(tag);
+        });
+
+        if (filterDiv.children.length === 0) {
             filterDiv.innerHTML = '<span style="font-size:0.78rem;color:var(--text-muted);font-style:italic;">No filters applied yet</span>';
         }
 
@@ -787,8 +820,36 @@ function submitItems() {
     const oldHint = document.getElementById('zeroResultHint');
     if (oldHint) oldHint.remove();
 
+    // 收集 dark-panel UI 額外條件
+    const extraItems = [];
+
+    // Max Port Speed
+    const speedMap = { '100M': 'Speed_100M', '1G': 'Speed_GbE', '10G+': 'Speed_10G' };
+    const activeSpeedChip = document.querySelector('#speedChips .dp-chip.active');
+    if (activeSpeedChip) {
+        const key = speedMap[activeSpeedChip.dataset.val];
+        if (key) extraItems.push(key);
+    }
+
+    // PoE Required
+    if (document.getElementById('poeToggle')?.checked) {
+        extraItems.push('Has_PoE');
+    }
+
+    // Interface Type (multi-select)
+    const ifaceMap = { 'rj45': 'Has_RJ-45', 'fiber': 'Has_Fiber' };
+    document.querySelectorAll('#ifaceChips .dp-chip.active').forEach(c => {
+        const key = ifaceMap[c.dataset.val];
+        if (key) extraItems.push(key);
+    });
+
+    // Certifications (multi-select chips)
+    document.querySelectorAll('#certChips .dp-chip.active').forEach(c => {
+        extraItems.push(c.dataset.val);
+    });
+
     const requestBody = {
-        items: Object.keys(selectedItemsMap),
+        items: [...Object.keys(selectedItemsMap), ...extraItems],
         type: typeVal,
         portnum: portVal,
         application: 'ALL'
@@ -802,6 +863,8 @@ function submitItems() {
             Object.keys(selectedItemsMap).map(k => [k, selectedItemsMap[k]])
         )
     };
+
+    console.log('[submitItems] requestBody:', JSON.stringify(requestBody));
 
     fetch(`${API_BASE}/api/submitProdType`, {
         method: 'POST',
@@ -960,6 +1023,7 @@ function resetAll() {
 
     updateContextBar();
     clearChat();
+    if (typeof dpResetAll === 'function') dpResetAll();
 }
 
 // ═══════════════════════════════════════════════
@@ -1224,6 +1288,7 @@ function selectScene(id) {
                 const el = document.getElementById('mgmtType');
                 el.value = cond.value;
                 el.className = cls;
+                if (typeof dpSyncMgmtChips === 'function') dpSyncMgmtChips();
                 break;
             }
             case 'numPorts': {
@@ -1264,6 +1329,7 @@ function clearScene(silent = false) {
                     const el = document.getElementById('mgmtType');
                     if (el.classList.contains('scene-prefilled') || el.classList.contains('scene-prefilled-sug')) {
                         el.value = ''; el.className = '';
+                        if (typeof dpSyncMgmtChips === 'function') dpSyncMgmtChips();
                     }
                     break;
                 }
@@ -1308,6 +1374,7 @@ function removeSuggestedCondition(key) {
         case 'mgmtType': {
             const el = document.getElementById('mgmtType');
             el.value = ''; el.className = '';
+            if (typeof dpSyncMgmtChips === 'function') dpSyncMgmtChips();
             break;
         }
         case 'numPorts': {
@@ -1787,5 +1854,55 @@ function tvToggleCompare(pid, globalIdx) {
 function tvToggleColPanel() {
     const panel = document.getElementById('tv-col-panel');
     if (panel) panel.classList.toggle('open');
+}
+
+// ═══════════════════════════════════════════════
+// DARK PANEL — chip & toggle helpers
+// ═══════════════════════════════════════════════
+
+// Single-select chip (only one active per group)
+function dpChipSelect(group, val, btn) {
+    const container = btn.closest('.dp-chips');
+    container.querySelectorAll('.dp-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+
+    if (group === 'mgmt') {
+        document.getElementById('mgmtType').value = val;
+        document.getElementById('mgmtType').dispatchEvent(new Event('change'));
+    } else if (group === 'speed') {
+        window._dpSpeed = val;
+        renderFilterTags();
+    }
+}
+
+// Multi-select chip (toggle on/off)
+function dpChipToggle(group, val, btn) {
+    btn.classList.toggle('active');
+    renderFilterTags();
+}
+
+// Single-select chip — also triggers renderFilterTags via dpChipSelect already
+
+// PoE toggle label update
+function dpUpdatePoE(checkbox) {
+    document.getElementById('poeLabel').textContent = checkbox.checked ? 'Required' : 'Not Required';
+    renderFilterTags();
+}
+
+// Sync MGMT chips to match the hidden select value (called by scene system)
+function dpSyncMgmtChips() {
+    const val = document.getElementById('mgmtType').value;
+    document.querySelectorAll('#mgmtChips .dp-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.val === val);
+    });
+}
+
+// Clear all dark-panel chips/toggles
+function dpResetAll() {
+    document.querySelectorAll('#mgmtChips .dp-chip, #speedChips .dp-chip, #ifaceChips .dp-chip, #certChips .dp-chip')
+        .forEach(c => c.classList.remove('active'));
+    const poe = document.getElementById('poeToggle');
+    if (poe) { poe.checked = false; dpUpdatePoE(poe); }
+    window._dpSpeed = null;
 }
 

@@ -8,10 +8,12 @@
     <title>Advantech Switch Selection Tool</title>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
 
     <!-- Main Stylesheet（相對路徑，供 GitHub Pages 使用） -->
-    <link rel="stylesheet" href="css/style.css?v=3">
+    <link rel="stylesheet" href="css/style.css?v=4">
     <link rel="stylesheet" href="css/feature-selector.css">
     <link rel="stylesheet" href="css/compare.css">
     <link rel="stylesheet" href="css/table-view.css">
@@ -31,9 +33,9 @@
     <div class="page-header">
         <div class="logo-mark">
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                <rect x="2"  y="2"  width="8" height="8" fill="white" opacity="0.9" />
-                <rect x="12" y="2"  width="8" height="8" fill="white" opacity="0.5" />
-                <rect x="2"  y="12" width="8" height="8" fill="white" opacity="0.5" />
+                <rect x="2" y="2" width="8" height="8" fill="white" opacity="0.9" />
+                <rect x="12" y="2" width="8" height="8" fill="white" opacity="0.5" />
+                <rect x="2" y="12" width="8" height="8" fill="white" opacity="0.5" />
                 <rect x="12" y="12" width="8" height="8" fill="white" opacity="0.9" />
             </svg>
         </div>
@@ -49,52 +51,127 @@
         <div class="upper-part">
 
             <!-- 左側：篩選條件 -->
-            <div class="left-part card">
+            <div class="left-part card dark-panel">
                 <h3>Device Configuration</h3>
 
-                <!-- Quick Start 場景模板 -->
+                <!-- Quick Start 場景模板（暫時隱藏，保留供日後重新啟用） -->
+                <!--
                 <div class="section scene-section">
                     <label>⚡ Quick Start — Applications</label>
                     <div class="scene-grid" id="sceneGrid"></div>
                     <button class="scene-clear-link" id="sceneClearBtn" onclick="clearScene()" style="display:none">✕ Clear Scene</button>
                     <button class="scene-restore-btn" id="sceneRestoreBtn" onclick="restoreSceneDefaults()" style="display:none">↺ Restore Defaults</button>
                 </div>
+                -->
+                <!-- Quick Start 隱藏時仍需初始化 sceneGrid（scenes.js 依賴此 DOM） -->
+                <div style="display:none">
+                    <div id="sceneGrid"></div><button id="sceneClearBtn"></button><button id="sceneRestoreBtn"></button>
+                </div>
 
-                <div class="section">
-                    <label><span class="step-badge">1</span> Management Type</label>
-                    <select id="mgmtType">
-                        <option value="" disabled selected hidden>Please select Management Type ...</option>
+                <!-- 1. MGMT -->
+                <div class="section dp-section">
+                    <label class="dp-label"><span class="dp-badge">1</span> Management Type</label>
+                    <!-- hidden select kept for backward-compat with app.js -->
+                    <select id="mgmtType" style="display:none">
+                        <option value=""></option>
                         <option value="managed">Managed (All)</option>
                         <option value="l2_managed">L2 Managed</option>
                         <option value="l3_managed">L3 Managed</option>
                         <option value="unmanaged">Unmanaged</option>
                     </select>
+                    <div class="dp-chips" id="mgmtChips">
+                        <button class="dp-chip" data-val="managed"
+                            onclick="dpChipSelect('mgmt','managed',   this)">Managed (All)</button>
+                        <button class="dp-chip" data-val="l2_managed"
+                            onclick="dpChipSelect('mgmt','l2_managed',this)">L2 Managed</button>
+                        <button class="dp-chip" data-val="l3_managed"
+                            onclick="dpChipSelect('mgmt','l3_managed',this)">L3 Managed</button>
+                        <button class="dp-chip" data-val="unmanaged"
+                            onclick="dpChipSelect('mgmt','unmanaged', this)">Unmanaged</button>
+                    </div>
                 </div>
 
-                <div class="section">
-                    <label><span class="step-badge">2</span> Port Number</label>
-                    <select id="numInput">
-                        <option value="" disabled selected hidden>Please select port number ...</option>
-                        <option value="2">2</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="8">8</option>
-                        <option value="10">10</option>
-                        <option value="12">12</option>
-                        <option value="16">16</option>
-                        <option value="18">18</option>
-                        <option value="20">20</option>
-                        <option value="26">26</option>
-                        <option value="28">28</option>
-                    </select>
+                <!-- 2. MIN PORT -->
+                <div class="section dp-section">
+                    <label class="dp-label"><span class="dp-badge">2</span> Min Port Count</label>
+                    <div class="dp-select-wrap">
+                        <select id="numInput" class="dp-select">
+                            <option value="" disabled selected hidden>Select port count...</option>
+                            <option value="2">2</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="8">8</option>
+                            <option value="10">10</option>
+                            <option value="12">12</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="20">20</option>
+                            <option value="26">26</option>
+                            <option value="28">28</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="section">
-                    <label><span class="step-badge">3</span> Search Inventory</label>
-                    <input type="text" id="searchInput" placeholder="Search product items…">
+                <!-- 3. MAX SPEED -->
+                <div class="section dp-section">
+                    <label class="dp-label"><span class="dp-badge">3</span> Max Port Speed</label>
+                    <div class="dp-chips" id="speedChips">
+                        <button class="dp-chip" data-val="100M"
+                            onclick="dpChipSelect('speed','100M', this)">100M</button>
+                        <button class="dp-chip" data-val="1G" onclick="dpChipSelect('speed','1G',   this)">1G</button>
+                        <button class="dp-chip" data-val="10G+"
+                            onclick="dpChipSelect('speed','10G+', this)">10G+</button>
+                    </div>
+                </div>
+
+                <!-- 4. PoE -->
+                <div class="section dp-section">
+                    <label class="dp-label"><span class="dp-badge">4</span> PoE Required</label>
+                    <div class="dp-toggle-row">
+                        <label class="dp-toggle-switch">
+                            <input type="checkbox" id="poeToggle" onchange="dpUpdatePoE(this)">
+                            <span class="dp-toggle-track"></span>
+                        </label>
+                        <span class="dp-toggle-label" id="poeLabel">Not Required</span>
+                    </div>
+                </div>
+
+                <!-- 5. INTERFACE -->
+                <div class="section dp-section">
+                    <label class="dp-label"><span class="dp-badge">5</span> Interface Type</label>
+                    <div class="dp-chips" id="ifaceChips">
+                        <button class="dp-chip" data-val="rj45"
+                            onclick="dpChipToggle('iface','rj45',  this)">RJ-45</button>
+                        <button class="dp-chip" data-val="fiber"
+                            onclick="dpChipToggle('iface','fiber', this)">Fiber</button>
+                    </div>
+                </div>
+
+                <!-- 6. CERTIFICATIONS -->
+                <div class="section dp-section">
+                    <label class="dp-label"><span class="dp-badge">6</span> Certifications (Optional)</label>
+                    <div class="dp-chips" id="certChips">
+                        <button class="dp-chip" data-val="Cert_UL"
+                            onclick="dpChipToggle('cert','Cert_UL',      this)">UL</button>
+                        <button class="dp-chip" data-val="Cert_IEC61850"
+                            onclick="dpChipToggle('cert','Cert_IEC61850',this)">IEC 61850</button>
+                        <button class="dp-chip" data-val="Cert_EN50155"
+                            onclick="dpChipToggle('cert','Cert_EN50155', this)">EN 50155</button>
+                        <button class="dp-chip" data-val="Cert_EMark"
+                            onclick="dpChipToggle('cert','Cert_EMark',   this)">E-Mark</button>
+                        <button class="dp-chip" data-val="Cert_ITxPT"
+                            onclick="dpChipToggle('cert','Cert_ITxPT',   this)">ITxPT</button>
+                    </div>
+                </div>
+
+                <!-- Search Inventory -->
+                <div class="section dp-section">
+                    <label class="dp-label" style="margin-bottom:6px;">Search Inventory</label>
+
+                    <input type="text" id="searchInput" class="dp-search" placeholder="Search product items…">
                     <div id="searchResults"></div>
-                    <button id="advancedFilterBtn" type="button">⊞ Advanced Filter</button>
+                    <button id="advancedFilterBtn" type="button" class="dp-adv-btn">⊞ Advanced Filter</button>
                 </div>
             </div>
 
@@ -104,7 +181,8 @@
 
                 <div class="forth-part">
                     <label>Filter Conditions</label>
-                    <div id="filterTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:28px;"></div>
+                    <div id="filterTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:28px;">
+                    </div>
                     <label>Chosen Items</label>
                     <div class="chosen-items-area">
                         <div id="selectedItems"></div>
@@ -126,15 +204,18 @@
                 <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
                     <!-- View Toggle -->
                     <div class="view-toggle">
-                        <button class="view-tab-btn active" id="view-btn-list" onclick="switchView('list')" title="Card List">
+                        <button class="view-tab-btn active" id="view-btn-list" onclick="switchView('list')"
+                            title="Card List">
                             <i class="ti ti-layout-list" aria-hidden="true"></i> List
                         </button>
-                        <button class="view-tab-btn" id="view-btn-table" onclick="switchView('table')" title="Table View">
+                        <button class="view-tab-btn" id="view-btn-table" onclick="switchView('table')"
+                            title="Table View">
                             <i class="ti ti-table" aria-hidden="true"></i> Table
                         </button>
                     </div>
                     <!-- Col Picker (table mode only) -->
-                    <button class="col-picker-btn" id="tv-col-picker-btn" onclick="tvToggleColPanel()" style="display:none;">
+                    <button class="col-picker-btn" id="tv-col-picker-btn" onclick="tvToggleColPanel()"
+                        style="display:none;">
                         <i class="ti ti-columns" aria-hidden="true"></i> Columns
                     </button>
                     <select id="sortSelect" onchange="applySort()" class="sort-select">
@@ -157,8 +238,8 @@
 
     </div><!-- /.main-container -->
 
-    <!-- ═══════════════ CHATBOT PANEL ═══════════════ -->
-    <button id="chatFab" onclick="toggleChat()" title="AI Assistant">💬</button>
+    <!-- ═══════════════ CHATBOT PANEL（暫時隱藏，開發完成後移除 style） ═══════════════ -->
+    <button id="chatFab" onclick="toggleChat()" title="AI Assistant" style="display:none">💬</button>
 
     <div id="chatPanel">
         <div id="chatHeader">
@@ -184,9 +265,12 @@
         <div id="quickPrompts">
             <button class="quick-btn" onclick="sendQuick('Application: Power System')">⚡ Power System</button>
             <button class="quick-btn" onclick="sendQuick('Application: Railway System')">🚆 Railway System</button>
-            <button class="quick-btn" onclick="sendQuick('What is the operating temperature range?')">🌡️ Temp Spec</button>
-            <button class="quick-btn" onclick="sendQuick('Which model supports PoE? What is the power budget?')">⚡ PoE Feature</button>
-            <button class="quick-btn" onclick="sendQuick('Compare the port count and types of these models')">🔌 Port Compare</button>
+            <button class="quick-btn" onclick="sendQuick('What is the operating temperature range?')">🌡️ Temp
+                Spec</button>
+            <button class="quick-btn" onclick="sendQuick('Which model supports PoE? What is the power budget?')">⚡ PoE
+                Feature</button>
+            <button class="quick-btn" onclick="sendQuick('Compare the port count and types of these models')">🔌 Port
+                Compare</button>
         </div>
 
         <div id="chatInputBar">
@@ -232,7 +316,7 @@
     <script src="js/scenes.js?v=3"></script>
     <script src="js/sfp-selector.js?v=4"></script>
     <script src="js/compare.js"></script>
-    <script src="js/app.js?v=3"></script>
+    <script src="js/app.js?v=4"></script>
 
 </body>
 

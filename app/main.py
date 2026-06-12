@@ -78,8 +78,7 @@ app.include_router(report.router,    prefix="/api", tags=["Report"])
 
 @app.get("/")
 def root():
-    # 當使用者存取後台根目錄時，直接回傳前端 HTML 介面
-    return FileResponse("frontend/select_ui_with_options_claude.html")
+    return FileResponse("frontend/index.html")
 
 # 掛載整個 frontend 資料夾作為靜態檔案，允許存取 /frontend/xxx.html (例如開啟其他分頁)
 app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
