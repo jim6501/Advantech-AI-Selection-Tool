@@ -87,13 +87,13 @@ def get_pic(model: str, full: bool = Query(False)):
         if path.exists():
             if full:
                 return FileResponse(path, headers={"Cache-Control": "public, max-age=86400"})
-            # 縮圖：長邊限 400px，轉 JPEG 壓縮
-            img = Image.open(path).convert("RGB")
+            # 縮圖：長邊限 400px，保留透明背景
+            img = Image.open(path).convert("RGBA")
             img.thumbnail((400, 400))
             buf = io.BytesIO()
-            img.save(buf, format="JPEG", quality=75, optimize=True)
+            img.save(buf, format="PNG", optimize=True)
             buf.seek(0)
-            return StreamingResponse(buf, media_type="image/jpeg",
+            return StreamingResponse(buf, media_type="image/png",
                                      headers={"Cache-Control": "public, max-age=86400"})
     raise HTTPException(status_code=404, detail="Photo not found")
 
