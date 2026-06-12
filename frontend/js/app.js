@@ -331,7 +331,7 @@ const specDef = [
 const tabsDef = [
     { id: 'port', icon: 'ti-plug-connected', label: 'Port' },
     { id: 'spec', icon: 'ti-list-details', label: 'Specs' },
-    { id: 'sfp',  icon: 'ti-wave-sine',     label: 'SFP Guide' },
+    { id: 'sfp', icon: 'ti-wave-sine', label: 'SFP Guide' },
 ];
 
 // 解決部分型號資料庫中 RJ-45 欄位已包含 PoE 數量，而部分型號卻未包含的不一致問題
@@ -539,7 +539,7 @@ function buildPortPane(item) {
     const poeInfo = poeParts.length > 0
         ? ` &nbsp;<span style="font-size:11px;color:#EA580C;font-weight:600">· ${poeParts.join(' · ')}</span>`
         : '';
-    
+
     const hasCombo = (ports.rj45_combo || 0) > 0;
     const comboInfo = hasCombo ? ` &nbsp;<span class="sfp-combo-note" style="margin-left:8px;">Combo — RJ45 disabled when SFP is inserted</span>` : '';
 
@@ -864,8 +864,6 @@ function submitItems() {
         )
     };
 
-    console.log('[submitItems] requestBody:', JSON.stringify(requestBody));
-
     fetch(`${API_BASE}/api/submitProdType`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -955,7 +953,7 @@ function applySort() {
         if (lower.includes('l2')) return 2;
         if (lower.includes('l3')) return 4;
         if (lower.includes('manage')) return 3; // 一般 Managed 介於 L2/L3 之間或當作 L3 以下
-        return 0; 
+        return 0;
     };
 
     sortedList.sort((a, b) => {
@@ -1503,28 +1501,28 @@ function applyFeatureSelector() {
 
 // ── 狀態 ──────────────────────────────────────────────────
 let currentView = 'list';          // 'list' | 'table'
-let tvSortCol   = null;            // 目前排序欄
-let tvSortDir   = 1;               // 1=升冪, -1=降冪
-let tvPage      = 1;
+let tvSortCol = null;            // 目前排序欄
+let tvSortDir = 1;               // 1=升冪, -1=降冪
+let tvPage = 1;
 const TV_PAGE_SIZE = 30;
 
 // 所有可選欄位定義
 const TV_ALL_COLS = [
-    { key: 'totalPorts',   label: 'Total',    title: 'Total Ports',              default: true,  sortable: true  },
-    { key: 'rjGiga',       label: 'GbE',      title: 'GbE RJ45 ports',           default: true,  sortable: true  },
-    { key: 'rj100',        label: 'FE',       title: 'Fast Ethernet RJ45 ports', default: true,  sortable: true  },
-    { key: 'fiberGiga',    label: 'SFP',      title: 'SFP GbE fiber ports',      default: true,  sortable: true  },
-    { key: 'fiber10g',     label: 'SFP+',     title: 'SFP+ 10G fiber ports',     default: true,  sortable: true  },
-    { key: 'fiber100',     label: 'FX',       title: 'FX 100M fixed fiber',      default: false, sortable: true  },
-    { key: 'fiberCombo',   label: 'Combo',    title: 'GE Combo (RJ45/SFP shared)', default: false, sortable: true },
-    { key: 'm12Giga',      label: 'M12-G',    title: 'M12 GbE ports',            default: false, sortable: true  },
-    { key: 'm12Multi',     label: 'M12-MG',   title: 'M12 Multi-Giga (2.5/5/10G)', default: false, sortable: true },
-    { key: 'poe',          label: 'PoE',      title: 'PoE port count',           default: true,  sortable: true  },
-    { key: 'mgmt',         label: 'Mgmt',     title: 'Management type',          default: true,  sortable: false },
-    { key: 'temp',         label: 'Temp',     title: 'Temperature grade (Wide / Standard)', default: true, sortable: false },
-    { key: 'power',        label: 'Power',    title: 'Power input voltage',      default: false, sortable: false },
-    { key: 'fiber_type',   label: 'F.Type',   title: 'Fiber connector type',     default: false, sortable: false },
-    { key: 'application',  label: 'App',      title: 'Application category',     default: false, sortable: false },
+    { key: 'totalPorts', label: 'Total', title: 'Total Ports', default: true, sortable: true },
+    { key: 'rjGiga', label: 'GbE', title: 'GbE RJ45 ports', default: true, sortable: true },
+    { key: 'rj100', label: 'FE', title: 'Fast Ethernet RJ45 ports', default: true, sortable: true },
+    { key: 'fiberGiga', label: 'SFP', title: 'SFP GbE fiber ports', default: true, sortable: true },
+    { key: 'fiber10g', label: 'SFP+', title: 'SFP+ 10G fiber ports', default: true, sortable: true },
+    { key: 'fiber100', label: 'FX', title: 'FX 100M fixed fiber', default: false, sortable: true },
+    { key: 'fiberCombo', label: 'Combo', title: 'GE Combo (RJ45/SFP shared)', default: false, sortable: true },
+    { key: 'm12Giga', label: 'M12-G', title: 'M12 GbE ports', default: false, sortable: true },
+    { key: 'm12Multi', label: 'M12-MG', title: 'M12 Multi-Giga (2.5/5/10G)', default: false, sortable: true },
+    { key: 'poe', label: 'PoE', title: 'PoE port count', default: true, sortable: true },
+    { key: 'mgmt', label: 'Mgmt', title: 'Management type', default: true, sortable: false },
+    { key: 'temp', label: 'Temp', title: 'Temperature grade (Wide / Standard)', default: true, sortable: false },
+    { key: 'power', label: 'Power', title: 'Power input voltage', default: false, sortable: false },
+    { key: 'fiber_type', label: 'F.Type', title: 'Fiber connector type', default: false, sortable: false },
+    { key: 'application', label: 'App', title: 'Application category', default: false, sortable: false },
 ];
 
 let tvActiveCols = new Set(TV_ALL_COLS.filter(c => c.default).map(c => c.key));
@@ -1534,9 +1532,9 @@ function switchView(view) {
     currentView = view;
     tvPage = 1;
 
-    const listBtn  = document.getElementById('view-btn-list');
+    const listBtn = document.getElementById('view-btn-list');
     const tableBtn = document.getElementById('view-btn-table');
-    if (listBtn)  listBtn.classList.toggle('active',  view === 'list');
+    if (listBtn) listBtn.classList.toggle('active', view === 'list');
     if (tableBtn) tableBtn.classList.toggle('active', view === 'table');
 
     // Col Picker 只在表格模式顯示
@@ -1552,7 +1550,7 @@ function switchView(view) {
 function _getSortedList() {
     // 借用 applySort 的排序邏輯取得已排序清單
     const sortSelect = document.getElementById('sortSelect');
-    const sortValue  = sortSelect ? sortSelect.value : 'default';
+    const sortValue = sortSelect ? sortSelect.value : 'default';
     let list = [...currentDataList];
 
     const getMgmtWeight = (t) => {
@@ -1566,11 +1564,11 @@ function _getSortedList() {
     };
 
     list.sort((a, b) => {
-        if (sortValue === 'port_asc')  return tvCalcTotalPorts(a) - tvCalcTotalPorts(b);
+        if (sortValue === 'port_asc') return tvCalcTotalPorts(a) - tvCalcTotalPorts(b);
         if (sortValue === 'port_desc') return tvCalcTotalPorts(b) - tvCalcTotalPorts(a);
-        if (sortValue === 'model_asc') return (a.prod_model||'').localeCompare(b.prod_model||'');
-        if (sortValue === 'model_desc')return (b.prod_model||'').localeCompare(a.prod_model||'');
-        if (sortValue === 'mgmt_asc')  return getMgmtWeight(a.prod_type) - getMgmtWeight(b.prod_type);
+        if (sortValue === 'model_asc') return (a.prod_model || '').localeCompare(b.prod_model || '');
+        if (sortValue === 'model_desc') return (b.prod_model || '').localeCompare(a.prod_model || '');
+        if (sortValue === 'mgmt_asc') return getMgmtWeight(a.prod_type) - getMgmtWeight(b.prod_type);
         if (sortValue === 'mgmt_desc') return getMgmtWeight(b.prod_type) - getMgmtWeight(a.prod_type);
         return 0;
     });
@@ -1589,18 +1587,18 @@ function _renderCurrentView(list) {
 // ── 從各 port 欄位加總計算真實總 port 數 ────────
 function tvCalcTotalPorts(item) {
     // Combo port 是共用 physical port，取較大值（不重複計算）
-    const rjGiga   = Math.max(item.prod_rj_giga||0, item.prod_poe_rj_giga||0);
-    const rj100    = Math.max(item.prod_rj_100||0,  item.prod_poe_rj_100||0);
-    const combo    = Math.max(item.prod_fiber_ge_combo||0, item.prod_rj_100_combo||0);
-    const fiberG   = item.prod_fiber_giga  || 0;
-    const fiber10g = item.prod_fiber_10g   || 0;
-    const fiber100 = item.prod_fiber_100   || 0;
-    const m12G     = Math.max(item.prod_m12_giga||0, item.prod_poe_m12_giga||0);
-    const m12_100  = Math.max(item.prod_m12_100||0,  item.prod_poe_m12_100||0);
+    const rjGiga = Math.max(item.prod_rj_giga || 0, item.prod_poe_rj_giga || 0);
+    const rj100 = Math.max(item.prod_rj_100 || 0, item.prod_poe_rj_100 || 0);
+    const combo = Math.max(item.prod_fiber_ge_combo || 0, item.prod_rj_100_combo || 0);
+    const fiberG = item.prod_fiber_giga || 0;
+    const fiber10g = item.prod_fiber_10g || 0;
+    const fiber100 = item.prod_fiber_100 || 0;
+    const m12G = Math.max(item.prod_m12_giga || 0, item.prod_poe_m12_giga || 0);
+    const m12_100 = Math.max(item.prod_m12_100 || 0, item.prod_poe_m12_100 || 0);
     const m12Multi = item.prod_m12_multi_giga || 0;
-    const bypass   = (item.prod_bypass_m12_100||0) + (item.prod_bypass_m12_giga||0);
+    const bypass = (item.prod_bypass_m12_100 || 0) + (item.prod_bypass_m12_giga || 0);
     const computed = rjGiga + rj100 + combo + fiberG + fiber10g + fiber100 +
-                     m12G + m12_100 + m12Multi + bypass;
+        m12G + m12_100 + m12Multi + bypass;
     // 取計算值與 DB prod_portnum 的較大值：
     // - 計算值修正 DB prod_portnum 錯誤（如 EKI-7712 prod_portnum=4）
     // - prod_portnum 補足模組化產品個別欄位未填的情況（如 EKI-8528 prod_portnum=28）
@@ -1614,20 +1612,20 @@ function tvGetVal(item, key) {
         return Math.max(a, b);
     };
     switch (key) {
-        case 'totalPorts':  return tvCalcTotalPorts(item);
-        case 'rjGiga':      return resolveCardTotal(item.prod_rj_giga||0, item.prod_poe_rj_giga||0);
-        case 'rj100':       return resolveCardTotal(item.prod_rj_100||0, item.prod_poe_rj_100||0);
-        case 'fiberGiga':   return item.prod_fiber_giga || 0;
-        case 'fiber10g':    return item.prod_fiber_10g || 0;
-        case 'fiber100':    return item.prod_fiber_100 || 0;
-        case 'fiberCombo':  return Math.max(item.prod_fiber_ge_combo||0, item.prod_rj_100_combo||0);
-        case 'm12Giga':     return resolveCardTotal(item.prod_m12_giga||0, item.prod_poe_m12_giga||0);
-        case 'm12Multi':    return item.prod_m12_multi_giga || 0;
-        case 'poe':         return (item.prod_poe_rj_100||0)+(item.prod_poe_rj_giga||0)+(item.prod_poe_m12_100||0)+(item.prod_poe_m12_giga||0);
-        case 'mgmt':        return item.prod_type || '';
-        case 'temp':        return (item.prod_w_n||'').toLowerCase() === 'wide' ? 'Wide' : 'Standard';
-        case 'power':       return item.prod_power_input || '—';
-        case 'fiber_type':  return item.prod_fiber_type || '—';
+        case 'totalPorts': return tvCalcTotalPorts(item);
+        case 'rjGiga': return resolveCardTotal(item.prod_rj_giga || 0, item.prod_poe_rj_giga || 0);
+        case 'rj100': return resolveCardTotal(item.prod_rj_100 || 0, item.prod_poe_rj_100 || 0);
+        case 'fiberGiga': return item.prod_fiber_giga || 0;
+        case 'fiber10g': return item.prod_fiber_10g || 0;
+        case 'fiber100': return item.prod_fiber_100 || 0;
+        case 'fiberCombo': return Math.max(item.prod_fiber_ge_combo || 0, item.prod_rj_100_combo || 0);
+        case 'm12Giga': return resolveCardTotal(item.prod_m12_giga || 0, item.prod_poe_m12_giga || 0);
+        case 'm12Multi': return item.prod_m12_multi_giga || 0;
+        case 'poe': return (item.prod_poe_rj_100 || 0) + (item.prod_poe_rj_giga || 0) + (item.prod_poe_m12_100 || 0) + (item.prod_poe_m12_giga || 0);
+        case 'mgmt': return item.prod_type || '';
+        case 'temp': return (item.prod_w_n || '').toLowerCase() === 'wide' ? 'Wide' : 'Standard';
+        case 'power': return item.prod_power_input || '—';
+        case 'fiber_type': return item.prod_fiber_type || '—';
         case 'application': return item.prod_application || '—';
         default: return '—';
     }
@@ -1637,15 +1635,15 @@ function tvGetVal(item, key) {
 function tvRenderCell(item, key) {
     const v = tvGetVal(item, key);
     if (key === 'totalPorts' || key === 'rjGiga' || key === 'rj100' ||
-        key === 'fiberGiga'  || key === 'fiber10g'|| key === 'fiber100' ||
+        key === 'fiberGiga' || key === 'fiber10g' || key === 'fiber100' ||
         key === 'fiberCombo' || key === 'm12Giga' || key === 'm12Multi') {
         if (v === 0) return `<span class="tv-dash">—</span>`;
         const labelMap = {
-            totalPorts:'total', rjGiga:'GbE', rj100:'FE', fiberGiga:'SFP',
-            fiber10g:'SFP+', fiber100:'FX', fiberCombo:'Combo',
-            m12Giga:'M12', m12Multi:'Multi-G'
+            totalPorts: 'total', rjGiga: 'GbE', rj100: 'FE', fiberGiga: 'SFP',
+            fiber10g: 'SFP+', fiber100: 'FX', fiberCombo: 'Combo',
+            m12Giga: 'M12', m12Multi: 'Multi-G'
         };
-        return `<span class="tv-port-num">${v}</span><span class="tv-port-label">${labelMap[key]||''}</span>`;
+        return `<span class="tv-port-num">${v}</span><span class="tv-port-label">${labelMap[key] || ''}</span>`;
     }
     if (key === 'poe') {
         if (v === 0) return `<span class="tv-dash">—</span>`;
@@ -1653,7 +1651,7 @@ function tvRenderCell(item, key) {
     }
     if (key === 'mgmt') {
         const isM = v.toLowerCase().includes('manage') && !v.toLowerCase().includes('unmanage');
-        return `<span class="tv-tag ${isM ? 'tv-tag-m' : 'tv-tag-u'}">${v||'—'}</span>`;
+        return `<span class="tv-tag ${isM ? 'tv-tag-m' : 'tv-tag-u'}">${v || '—'}</span>`;
     }
     if (key === 'temp') {
         if (v === 'Wide') return `<span class="tv-tag tv-tag-w">Wide Temp</span>`;
@@ -1709,7 +1707,7 @@ function renderProductTable(data_list) {
         <th style="position:sticky;left:0;z-index:4;background:var(--adv-gray);width:36px;min-width:36px;text-align:center;padding:9px 6px;border-right:1px solid var(--adv-border);font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--adv-border);">#</th>
         <th style="position:sticky;left:37px;z-index:4;background:var(--adv-gray);min-width:160px;box-shadow:3px 0 8px -3px rgba(0,51,102,0.10);cursor:default;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--adv-border);">Model</th>
         ${cols.map(c => `
-        <th class="${c.sortable ? '' : 'tv-unsortable'} ${tvSortCol===c.key?'tv-sorted':''}"
+        <th class="${c.sortable ? '' : 'tv-unsortable'} ${tvSortCol === c.key ? 'tv-sorted' : ''}"
             title="${c.title || c.label}"
             ${c.sortable ? `onclick="tvDoSort('${c.key}')"` : ''}>
             ${c.label}${c.sortable ? sortIconFor(c.key) : ''}
@@ -1723,22 +1721,22 @@ function renderProductTable(data_list) {
         const pid = `pc-${globalIdx}`;
         const prodUrl = item.prod_url || `https://www.advantech.com/en/search?q=${encodeURIComponent(item.prod_model)}`;
 
-        const totalRj = Math.max(item.prod_rj_giga||0, item.prod_poe_rj_giga||0) +
-                        Math.max(item.prod_rj_100||0, item.prod_poe_rj_100||0);
-        const totalFib = (item.prod_fiber_giga||0)+(item.prod_fiber_10g||0)+(item.prod_fiber_100||0);
-        const totalM12 = Math.max(item.prod_m12_giga||0,item.prod_poe_m12_giga||0)+
-                         Math.max(item.prod_m12_100||0,item.prod_poe_m12_100||0)+
-                         (item.prod_m12_multi_giga||0);
+        const totalRj = Math.max(item.prod_rj_giga || 0, item.prod_poe_rj_giga || 0) +
+            Math.max(item.prod_rj_100 || 0, item.prod_poe_rj_100 || 0);
+        const totalFib = (item.prod_fiber_giga || 0) + (item.prod_fiber_10g || 0) + (item.prod_fiber_100 || 0);
+        const totalM12 = Math.max(item.prod_m12_giga || 0, item.prod_poe_m12_giga || 0) +
+            Math.max(item.prod_m12_100 || 0, item.prod_poe_m12_100 || 0) +
+            (item.prod_m12_multi_giga || 0);
         const subParts = [
-            totalRj > 0  ? `${totalRj}×RJ45`  : '',
+            totalRj > 0 ? `${totalRj}×RJ45` : '',
             totalFib > 0 ? `${totalFib}×Fiber` : '',
-            totalM12 > 0 ? `${totalM12}×M12`   : '',
+            totalM12 > 0 ? `${totalM12}×M12` : '',
         ].filter(Boolean).join(' · ');
 
         // 同步 compare bar 的 active 狀態
         const isCmpActive = typeof compareIsSelected === 'function' && compareIsSelected(pid);
 
-        const rowBg  = (globalIdx % 2 === 1) ? '#eef1f6' : '#ffffff';
+        const rowBg = (globalIdx % 2 === 1) ? '#eef1f6' : '#ffffff';
         const hoverBg = '#ddeaf8';
         return `<tr
             onmouseenter="this.querySelectorAll('.tv-s').forEach(c=>c.style.background='${hoverBg}')"
@@ -1770,9 +1768,9 @@ function renderProductTable(data_list) {
         pagerHtml = `
         <div class="tv-pager">
             <span class="tv-pager-info">${data_list.length} results · Page ${tvPage} / ${totalPages}</span>
-            <button class="tv-pager-btn" onclick="tvGoPage(${tvPage-1})" ${tvPage===1?'disabled':''}>‹ Prev</button>
+            <button class="tv-pager-btn" onclick="tvGoPage(${tvPage - 1})" ${tvPage === 1 ? 'disabled' : ''}>‹ Prev</button>
             <span class="tv-pager-page">${tvPage}</span>
-            <button class="tv-pager-btn" onclick="tvGoPage(${tvPage+1})" ${tvPage===totalPages?'disabled':''}>Next ›</button>
+            <button class="tv-pager-btn" onclick="tvGoPage(${tvPage + 1})" ${tvPage === totalPages ? 'disabled' : ''}>Next ›</button>
         </div>`;
     }
 

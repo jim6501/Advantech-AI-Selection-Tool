@@ -166,6 +166,7 @@ function _renderBar() {
 
     if (count === 0) {
         bar.classList.remove('visible');
+        document.getElementById('prodList').style.paddingBottom = '';
         return;
     }
 
@@ -196,6 +197,7 @@ function _renderBar() {
         </div>`;
 
     bar.classList.add('visible');
+    document.getElementById('prodList').style.paddingBottom = '70px';
 }
 
 // ─────────────────────────────────────────────

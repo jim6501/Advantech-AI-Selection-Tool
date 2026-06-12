@@ -20,4 +20,6 @@ validation_report.json
 logs/
 data/*.json
 data/DS_md/
+data/pics/
 frontend/temp/
+frontend/data/pics/

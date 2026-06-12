@@ -1,237 +1,245 @@
-# 🤖 Advantech Industrial Switch AI Selection Tool
+# 🤖 Advantech Industrial Switch AI Selection Tool (研華工業交換機智慧選型工具)
 
-這是一個專為 Advantech 工業交換機設計的智慧型選型工具。結合了**條件式篩選**與 **RAG (Retrieval-Augmented Generation) AI 助手**，協助使用者從數百種型號中精確找出符合需求的產品。
+這是一個專為 Advantech 工業交換機設計的智慧型選型工具。結合了**多維度條件式篩選**、**產品規格對比**、**SFP 模組推薦**、**實體照片預覽**與 **RAG (Retrieval-Augmented Generation) AI 助手**，協助業務與客戶從數百種型號中精確找出符合需求的產品。
 
-## 🌟 核心功能 (第一階段完成)
+---
 
-### 1. 智慧選型介面
-- **多維度篩選**：支援管理型/非管理型、埠數 (Port Numbers) 以及多項硬體特徵篩選。
-- **動態關鍵字搜尋**：即時比對資料庫中超過 200 項軟硬體功能特徵（如 Private VLAN, PoE+, ERPS 等）。
-- **即時回傳**：直接對接 MongoDB 進行高效查詢，即時顯示詳細規格表。
-- **篩選衝突提醒**：當組合條件導致無結果時，系統會自動標示「可能的衝突項」，協助使用者調整參數。
+## 🚀 專案核心流程與架構
 
-### 2. AI 選型助手 (Stage 1 Beta)
-- **上下文鎖定**：AI 會自動感知使用者目前篩選出的型號清單，進行針對性分析。
-- **型號收納功能**：支援型號列出時的展開/收起功能，保持介面整潔。
-- **快速提問**：內建常用場景（電力、交通、PoE 規格等）快速入口。
+本系統的運作流程可分為三個階段：**資料同步與圖像處理**、**後端 API 與 AI 服務**、以及**前端 UI 呈現**。
 
-### 3. SFP 光纖模組選型面板 (SFP Selector)
-- **自動速度判定**：依產品規格動態推薦 100M/1G/10G 適用 SFP 模組清單，並標記 Combo 埠排他警告。
-- **固定接頭支援**：針對固定光纖埠（如 SC/ST 接頭、多模/單模光纖）顯示對應選線與跳線建議，無需手動查詢。
-- **捷徑快速跳轉**：卡片上新增 SFP 快捷 Badge，點擊即可直接切換至 SFP 選型頁籤。
+```mermaid
+graph TD
+    subgraph 1. 資料導入與圖像處理
+        A[Google Sheets 雲端規格] -->|sync_all.py| B[(MongoDB)]
+        A -->|sync_all.py| C[sfp_modules.json]
+        D[data/pics 原始圖庫] -->|check_product_pics.py| E[pics_index.json]
+        E -->|copy_pics_to_frontend.py| F[frontend/data/pics]
+    end
 
-### 4. 場景驗證與引導
-- **✓ 場景驗證**：產品 Application 欄位若與套用的場景模板關鍵字匹配，卡片會動態亮起驗證徽章。
-- **應用場景分組**：Feature Selector 中新增獨立的「應用場景」分組，提供更直觀的場景引導。
+    subgraph 2. 後端 API 與 AI 服務 (FastAPI)
+        B -->|selection.py API| G[FastAPI 後端服務]
+        C -->|SFP API/Static| G
+        F -->|Static /data| G
+        H[Google Gemini API] -->|llm_gateway.py| I[RAG Chatbot Pipeline]
+        I --> G
+    end
 
-### 5. 官方產品與 SFP 連結導流
-- **雙路徑官網導流**：於結果頁的產品卡片型號旁新增 `↗` 連結圖示，並在卡片展開底部新增明顯的「前往研華產品頁 →」CTA 按鈕。
-- **SFP 模組即時跳轉**：SFP 選型面板內之推薦模組轉換為獨立點擊連結，一鍵開新分頁直達搜尋頁面。
-- **URL 自動建構與 Fallback 策略**：後端新增 `prod_url` 欄位；前端會優先讀取此欄位，若空白則會以產品型號自動組出研華官網搜尋 URL。
-
-### 6. 多台產品規格比對 (Product Comparison)
-- **側拉對比面板**：支援勾選 1 至 5 台產品進行橫向規格對比。
-- **差異高亮機制**：自動比對每一項規格，並以橘黃色背景高亮不同設備之間的規格差異，方便快速評估。
-- **排序與電源篩選**：支援依型號/埠數進行結果排序，並新增電源輸入（DC/AC/電壓）條件過濾。
-
-### 7. 多格式規格報表下載 (PDF/CSV Export)
-- **多格式匯出**：對比面板內整合了報表匯出按鈕，支援前端生成 CSV 表格，以及呼叫後端 API 動態產出 PDF 規格書報表。
-- **單台與多台支援**：取消先前必須勾選至少 2 台才能進入對比與匯出的限制，單台設備亦能順利匯出 PDF 與 CSV。
-
-### 8. 已選條件與篩選器狀態雙向同步 (Filter & Selection Sync)
-- **資料狀態一致性**：當使用者在主畫面點選 `✖` 移除已選特徵時，系統會自動清除進階功能選擇器（Feature Selector）內部勾選狀態（`fsSelected`）並即時重繪選型介面，避免兩者狀態不一致。
-
-## 🌐 部署架構
-
-本工具採用「前端公開 + 後端內網」的混合部署模式：
-
-```
-瀏覽器 → GitHub Pages（靜態前端）
-              ↓ API 呼叫
-    https://api.namecheapest.cc（Cloudflare Tunnel 公開 URL）
-              ↓ 加密隧道
-    內部電腦 FastAPI :8000 → MongoDB（本機）
-```
-
-| 入口 | 網址 | 說明 |
-|------|------|------|
-| GitHub Pages | `https://jim6501.github.io/Advantech-AI-Selection-Tool/` | 靜態前端，對外公開 |
-| Cloudflare Tunnel | `https://api.namecheapest.cc` | 後端 API + 完整前端介面 |
-| 本機開發 | `http://localhost:8000` | 本機直接存取 |
-
-### Cloudflare Tunnel 啟動方式
-```bash
-cloudflared tunnel run advantech-tool
-```
-> 詳細設定步驟請參考 [Plan/cloudflare_tunnel_setup.md](Plan/cloudflare_tunnel_setup.md)
-
-## 🛠️ 技術棧
-
-- **後端 (Backend)**: Python 3.10+, FastAPI, MongoDB
-- **前端 (Frontend)**: Vanilla HTML5, CSS3 (Glassmorphism design), JavaScript (ES6+)
-- **資料處理**: Pymongo, Uvicorn, UV Package Manager
-- **AI 整合**: RAG 架構 (Phase 1 完成，準備進入 Phase 2 Vector Search)
-- **部署**: GitHub Pages + Cloudflare Tunnel
-
-## 📂 專案架構
-
-```text
-.
-├── app/
-│   ├── api/           # API 路由 (selection.py, chat.py, report.py)
-│   ├── models/        # Pydantic 資料模型 (selection.py, chat.py)
-│   ├── rag/           # RAG 三階段管線 (intent_parser, hard_filter, report_generator)
-│   ├── database.py    # MongoDB 連線封裝
-│   ├── llm_gateway.py # LLM 統一呼叫層與用量控管
-│   └── main.py        # FastAPI 進入點（含前端快取控制）
-├── frontend/
-│   ├── css/           # 獨立樣式表 (style.css, feature-selector.css, compare.css)
-│   ├── js/            # 獨立邏輯腳本 (app.js, scenes.js, feature-selector.js, sfp-selector.js, compare.js)
-│   │   └── config.js  # Cloudflare Tunnel URL 設定（部署時填入）
-│   ├── index.html     # GitHub Pages 入口（相對路徑版本）
-│   └── select_ui_with_options_claude.html  # 後端直接存取版本（絕對路徑）
-├── .github/
-│   └── workflows/
-│       └── deploy-pages.yml  # GitHub Actions 自動部署至 GitHub Pages
-├── Plan/
-│   └── cloudflare_tunnel_setup.md  # Cloudflare Tunnel 完整設定指南
-├── configs/           # 環境變數與金鑰目錄 (.env, credentials.json)
-├── logs/              # 系統與開發日誌
-├── scripts/           # 資料擷取與同步腳本 (sync_all.py 等)
-└── README.md
-```
-
-## 🚀 快速啟動
-
-### 1. 環境設定
-本專案建議使用 `uv` 進行環境管理：
-```bash
-# 安裝所需套件
-uv sync
-```
-
-### 2. 設定金鑰與環境變數 (重要)
-由於安全因素，憑證檔案已被 Git 忽略。啟動前請確保 `configs/` 資料夾內包含以下檔案：
-
-#### A. 建立 `configs/.env`
-根據專案根目錄的 `.env.example` 建立，填入您的金鑰資訊：
-
-> [!TIP]
-> **注意**：`.env` 檔案必須放在 `configs/` 資料夾內（路徑為 `configs/.env`），因為專案腳本與後端程式已固定從該路徑讀取。
-
-```ini
-GOOGLE_SHEET_ID="您的_GOOGLE_SHEET_ID"
-GOOGLE_CREDENTIALS_PATH="configs/credentials.json"
-MONGO_URI="您的_MONGODB_連線字串"
-MONGO_DB_NAME="advantech_ind_sw_tool"
-```
-
-#### B. 放入 `configs/credentials.json`
-- 請從 Google Cloud Console 下載服務帳戶 (Service Account) 的 JSON 金鑰。
-- 檔案名稱請命名為 `credentials.json` 並放入 `configs/` 資料夾。
-- **注意**：請確保該服務帳戶對於您指定的 Google Sheet 擁有「檢視」權限。
-
-### 3. 啟動後端
-若需允許**其他電腦**連線（區域網路），啟動時必須指定 `--host 0.0.0.0`：
-```bash
-# 啟動 FastAPI (允許外部連線)
-uv run uvicorn app.main:app --reload --host 0.0.0.0
-```
-
-### 3. 啟動 Cloudflare Tunnel（對外部署時）
-
-```bash
-cloudflared tunnel run advantech-tool
-```
-
-### 4. 使用前端（三種入口）
-
-#### A. GitHub Pages（推薦對外分享）
-```
-https://jim6501.github.io/Advantech-AI-Selection-Tool/
-```
-- 靜態前端，API 會自動打到 `api.namecheapest.cc`（需 Cloudflare Tunnel 運作中）
-- 若更換 Tunnel URL，請更新 `frontend/js/config.js` 並 push
-
-#### B. Cloudflare Tunnel URL（完整功能）
-```
-https://api.namecheapest.cc
-```
-- 前後端一體，需後端與 Tunnel 同時運作
-
-#### C. 本機直接存取（開發用）
-```
-http://localhost:8000
-```
-> [!IMPORTANT]
-> 若更換 server 電腦，需將 `~/.cloudflared/` 下的 Tunnel 憑證檔案複製至新電腦，詳見 [Plan/cloudflare_tunnel_setup.md](Plan/cloudflare_tunnel_setup.md)
-
-## 📅 資料維護與同步步驟 (Google Sheets)
-
-當硬體規格、軟體版本或 SFP 模組有更新時，請依以下步驟同步至資料庫：
-
-### 1. 更新 Google Sheets 雲端資料
-- **硬體更新**：修改 `Ind. SW` 或 `Train SW` 分頁。
-- **軟體更新**：修改各系列對應的分頁（如 `EKI-7700`, `EKI-5500` 等）。
-- **SFP 模組更新**：修改 `SFP` 分頁。
-- 請確保 **Product PN** 與 **Software Series** 填寫正確，這是合併資料的關鍵。
-
-### 2. 執行一鍵同步 (推薦)
-本專案提供一鍵同步腳本，自動完成「Sheets 登入 -> 擷取硬體 -> 擷取軟體 -> 擷取 SFP -> 合併寫入 MongoDB」的 5 階段自動化管線：
-```bash
-# 執行一鍵同步並生成驗證報告
-uv run python scripts/sync_all.py
+    subgraph 3. 前端 UI 呈現 (HTML/CSS/JS)
+        G -->|API 請求 / 靜態資源| J[前端網頁]
+        J -->|卡片 & 表格檢視| K[選型主介面]
+        J -->|對比 & 匯出 PDF/CSV| L[對比面板]
+        J -->|自然語言對話| M[AI 聊天視窗]
+    end
 ```
 
 ---
 
-### 💡 備用：手動分步同步步驟
-若有需要，您也可以分步執行各個擷取與同步腳本：
-1. **擷取硬體規格**：`uv run scripts/fetch_hardware_specs.py` -> 存至 `data/hardware_specs_raw.json`
-2. **擷取軟體規格**：`uv run scripts/fetch_sw_specs.py` -> 存至 `data/software_specs_raw.json`
-3. **擷取 SFP 規格**：`uv run scripts/fetch_sfp_modules.py` -> 存至 `frontend/data/sfp_modules.json`
-4. **合併並寫入 MongoDB**：`uv run scripts/sync_specs_to_mongo.py` -> 同步至資料庫並生成 `data/validation_report.json`
+## 📋 前置作業 (Pre-requisites)
 
-> [!NOTE]
-> 同步過程會自動根據 Product PN 推導軟體系列，若無法配對，預設會回退至最新版的軟體規格。您可以查看 `data/validation_report.json` 確認哪些型號配對失敗。
+啟動本專案前，必須完成以下環境與金鑰配置：
 
-## 📈 現階段更新紀錄 (Stage 1)
-- [x] 完成 MongoDB 動態特徵掃描邏輯與三態值優化。
-- [x] 修正 PoE 與 RJ-45 欄位匹配邏輯（包含 M12 D-code/X-code 支援）。
-- [x] 建立自動化特徵對應表，無需手動維護功能清單，並將 Application 動態野放至搜尋選項。
-- [x] 前端程式碼模組化重構 (分離 HTML/CSS/JS)，優化 Glassmorphism UI。
-- [x] **完成 RAG Chatbot Phase 1 基礎建設**：
-  - 實作 3-Stage Pipeline（意圖解析、資料庫篩選、報告生成）。
-  - 實作具備 RPM 限流與 Retry 機制的 LLM Gateway。
-  - 修正非同步事件迴圈阻塞問題，確保 Chatbot 思考時介面不卡頓。
-  - 優化 Chatbot 介面「📄 參考型號」的收納互動與 Chip 視覺。
-  - 升級至最新 `google-genai` SDK，配置 `gemini-2.5-flash` 模型。
-- [x] **完成進階功能選擇器 (Feature Selector) 建置與分類重構**（2026-05-15 / 2026-06-02）：
-  - 設計「Modal 嵌入式」互動模式，使用者無需離開主頁即可瀏覽所有功能分類。
-  - 採用混合式架構：10 個大分類卡片（人工維護），子功能清單由 DB 自動同步。
-  - 將「應用場景 (Application)」獨立為獨立分類卡片（採用 `◉` 圖示與天藍色設計），與「硬體規格」區隔。
-  - 支援大分類卡片展開、前端即時搜尋過濾（零 API 請求）、已選功能 Chip 列。
-  - 新增 `FS_HIDDEN_FEATURES` 設定，讓 PM 可一行設定隱藏不常用的子項目。
-  - 實作 `fsReset()` 與 `applyFeatureSelector()` 橋接函數，與主頁 Reset All 完整整合。
-- [x] **完成 SFP 光纖模組選型面板與一鍵同步管線**（2026-06-02）：
-  - 實作前端非同步 SFP 選型面板 ([sfp-selector.js](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/frontend/js/sfp-selector.js))，依產品光纖/Combo 埠自動推薦 100M/1G/10G 模組，並提供固定接頭之選線建議。
-  - 新增 SFP 快捷徽章直接跳轉與場景驗證徽章 (`✓ 場景驗證`)。
-  - 整合開發 [sync_all.py](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/scripts/sync_all.py) 實現一鍵完成 5 階段自動化同步與驗證報告生成。
-  - 後端新增 `NoCacheStaticMiddleware` 禁用前端 JS/CSS 瀏覽器快取，避免開發更新延遲。
-- [x] **GitHub Pages + Cloudflare Tunnel 部署架構**（2026-06-08）：
-  - 前端部署至 GitHub Pages，後端透過 Cloudflare Tunnel 對外暴露。
-  - 新增 `frontend/js/config.js` 設定 Tunnel URL，`detectApiBase()` 自動切換本機/外部 API 位址。
-  - 建立 GitHub Actions workflow 自動部署 `frontend/` 至 GitHub Pages。
-  - 維護兩份 HTML：`index.html`（GitHub Pages 相對路徑版）與 `select_ui_with_options_claude.html`（後端絕對路徑版）。
-- [x] **產品規格對比、報表匯出與選型狀態同步**（2026-06-05）：
-  - 實作前端產品規格多台對比側拉面板，並自動高亮規格差異。
-  - 支援 CSV 表格與 PDF 報表匯出，並放寬限制至單台設備亦可直接下載。
-  - 在 `app.js` 的 `removeItem` 函式中新增同步邏輯，當已選條件移除時，自動更新並重繪 Advanced Feature Selector 彈窗 UI。
-  - 進階功能篩選器（Advanced Features Filter）的中文標籤與選項全面完成英文標準術語對譯。
-- [x] **新增官網產品與 SFP 選型外部連結功能**（2026-06-03）：
-  - 於結果頁的產品卡片型號旁、展開卡片底部 CTA、以及 SFP 推薦晶片上，全面新增連往研華官網的外部連結（支援自動 fallback 為官網型號搜尋 URL）。
-  - 後端 [ProductItemResponse](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/app/models/selection.py) 新增 `prod_url` 欄位。
-  - 設計精緻 hover 微動畫，滑過外部連結圖示 `↗` 時自動變藍並往右上微幅位移，提升互動感。
+### 1. 安裝 Python 環境與套件管理工具
+本專案建議使用 `uv` 包管理器。請確保已安裝 Python 3.10+。
+```bash
+# 安裝依賴項並建立虛擬環境
+uv sync
+```
+
+### 2. 資料庫與 API 服務準備
+* **MongoDB**: 本專案使用 MongoDB 儲存整合後的規格資料。請使用 MongoDB Atlas 雲端服務或本機 MongoDB 實例。
+* **Google Cloud Service Account**: 
+  * 專案需要存取 Google Sheets API，請在 Google Cloud Console 建立服務帳戶。
+  * 下載金鑰 JSON 檔案，命名為 `credentials.json`，並放置於 [configs/](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/configs/) 目錄下。
+  * 請將您的服務帳戶 Email 加為 Google Sheet 的**檢視者 (Viewer)**。
+* **Gemini API Key**: 用於 RAG Chatbot 意圖解析與報告生成，請前往 Google AI Studio 申請 API Key。
+
+### 3. 配置環境變數
+在 [configs/](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/configs/) 目錄下建立 `.env` 檔案（可參考根目錄 `.env.example`）：
+
+```ini
+# Google Sheets 設定
+GOOGLE_SHEET_ID="您的_GOOGLE_SHEET_ID"
+GOOGLE_CREDENTIALS_PATH="configs/credentials.json"
+
+# MongoDB 設定
+MONGO_URI="您的_MONGODB_連線字串"
+MONGO_DB_NAME="advantech_ind_sw_tool"
+
+# Gemini AI 與 RAG 設定
+GOOGLE_API_KEY="您的_GEMINI_API_KEY"
+EMBEDDING_MODEL="text-embedding-004"
+```
+
+> [!IMPORTANT]
+> **金鑰路徑注意**：`.env` 與 `credentials.json` 必須嚴格放置在 `configs/` 資料夾下，系統中所有同步腳本與後端啟動時均已寫死讀取此相對路徑。
+
+---
+
+## 🛠️ 操作與準備步驟 (Step-by-Step Guide)
+
+當基礎環境與 [configs/](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/configs/) 下的金鑰配置完成後，請依序執行以下步驟進行資料初始化與系統部署：
+
+### STEP 1：執行雲端資料同步管線
+本專案提供一鍵同步腳本，自動登入 Google Sheets，擷取硬體（`Ind. SW` / `Train SW` 工作表）、軟體規格（`SW Dead Pool` 工作表）、SFP 模組對照表（`SFP` 工作表），自動進行軟體系列推導與規格 Join，寫入 MongoDB 並產生 SFP 對照清單：
+```bash
+# 執行一鍵資料庫同步與驗證報告生成
+uv run python scripts/sync_all.py
+```
+> 同步完成後可檢視 `data/validation_report.json`，確認是否有無法自動配對的產品型號。
+
+### STEP 2：放置產品實體照片 (圖片管理)
+
+本選型工具支援展示交換機實體縮圖與 Hover 放大預覽。請直接將整理好的產品照片放置於 [frontend/data/pics/](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/frontend/data/pics/) 目錄下：
+
+* **命名規範**：將照片命名為 **`型號.png`** 或 **`型號.jpg`**（例如：`EKI-7710G.png` 或 `EKI-5729F.jpg`，需與資料庫中的 Model Name 完全一致）。
+* **格式建議**：建議採用去背透明背景的 PNG 圖檔，以融入系統毛玻璃 (Glassmorphism) 的高質感設計。
+
+### STEP 3：啟動後端 FastAPI 伺服器
+若要在區域網路內提供服務（例如允許其他電腦連線），啟動時請務必指定 `--host 0.0.0.0`：
+```bash
+# 啟動 Uvicorn 伺服器 (開發模式帶 reload)
+uv run uvicorn app.main:app --reload --host 0.0.0.0
+```
+
+### STEP 4：設定 Cloudflare Tunnel (外部連線與部署必備)
+為了讓部署在 GitHub Pages 的公開前端網頁能夠安全存取位於您內網/本機的後端 API，必須建立 Cloudflare Tunnel 隧道：
+
+1. **安裝 cloudflared**：前往 [Cloudflare Releases](https://github.com/cloudflare/cloudflared/releases) 下載並安裝適用您系統的安裝包（如 Windows 的 `cloudflared-windows-amd64.msi`）。
+2. **授權登入**：在終端機中執行 `cloudflared tunnel login`，並在瀏覽器中授權您的 Cloudflare 託管網域（免費方案帳戶即可）。
+3. **建立隧道**：
+   ```powershell
+   cloudflared tunnel create advantech-tool
+   ```
+   記下產生的 **Tunnel ID**，其憑證 JSON 檔會存放於 `~/.cloudflared/` 目錄。
+4. **配置設定檔**：在用戶目錄下建立設定檔 `%USERPROFILE%\.cloudflared\config.yml`：
+   ```yaml
+   tunnel: <您的 Tunnel ID>
+   credentials-file: C:\Users\<您的使用者名稱>\.cloudflared\<Tunnel ID>.json
+   
+   ingress:
+     - hostname: api.namecheapest.cc       # 對外公開的 API 域名 (替換為您的網域)
+       service: http://localhost:8000      # 轉發至本地 FastAPI 埠
+     - service: http_status:404
+   ```
+5. **配置 DNS 路由映射**：將公開域名導向您所建立的 Tunnel：
+   ```powershell
+   cloudflared tunnel route dns advantech-tool api.namecheapest.cc
+   ```
+6. **啟動加密隧道**：
+   ```powershell
+   cloudflared tunnel run advantech-tool
+   ```
+   > [!TIP]
+   > **設定開機自啟**：以管理員權限執行 `cloudflared service install`，可將其設定為 Windows 系統背景服務。
+
+### STEP 5：部署 GitHub Pages 靜態前端
+1. **推送代碼至倉庫**：將專案推送至您的 GitHub 倉庫（請再次確認機密檔 `.env` 及 `credentials.json` 未被推送）。
+2. **更新 API 設定**：編輯 [frontend/js/config.js](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/frontend/js/config.js)，將 `CLOUDFLARE_API_URL` 設定為您的 Cloudflare Tunnel 網址：
+   ```javascript
+   const CLOUDFLARE_API_URL = 'https://api.namecheapest.cc';
+   ```
+3. **啟用 Pages 功能**：到 GitHub Repo 的 **Settings** -> **Pages** 頁面：
+   * **Source** 選擇 `Deploy from a branch`。
+   * **Branch** 選擇主分支（如 `master`），目錄選擇 `/frontend`。
+   * 儲存設定後，GitHub Actions 會自動編譯並部署，數分鐘後即生成您的公開選型網站網址。
+
+   > [!NOTE]
+   > **CORS 安全性建議**：後端預設在 [app/main.py](file:///d:/OneDrive%20-%20advantech/Project/Advantech%20AI%20Selection%20Tool/app/main.py) 中開啟 `allow_origins=["*"]` 以利測試。部署完畢後，建議將跨來源許可限縮為特定的 GitHub Pages 網址與本地端以提高安全性。
+
+### STEP 6：瀏覽與存取前端 (三種入口)
+* **入口 A：本機直接存取（開發與單機使用首選）**
+  * 網址：`http://localhost:8000/frontend/`
+* **入口 B：Cloudflare Tunnel 外部部署存取**
+  * 網址：`https://api.namecheapest.cc`（需啟動 FastAPI 與 Cloudflare Tunnel 服務）
+* **入口 C：GitHub Pages 公開託管**
+  * 網址：`https://<您的帳號>.github.io/Advantech-AI-Selection-Tool/`
+
+---
+
+## 🌟 系統核心功能介紹
+
+### 1. 智慧選型與多維度篩選
+* **動態關鍵字搜尋 (Search Inventory)**：即時模糊掃描資料庫中 200+ 項軟硬體特徵（如 Private VLAN, ERPS 等），支援自動優先顯示「開頭匹配」型號。
+* **應用場景快速引導 (Scene Templates)**：內建鐵路車載 (EN 50155)、電力系統 (IEC 61850) 等四大情境。提供必選與建議條件的分級載入，支援一鍵還原。
+* **衝突條件警告 (Culprit Items)**：當選取的特徵組合導致無任何產品符合時，系統以紅色標示出造成無結果的「元凶條件」，降低認知負擔。
+
+### 2. 雙維度切換：卡片清單與表格檢視
+* **卡片檢視 (List View)**：Glassmorphism 視覺風格，卡片會動態生成關鍵 Badges（網管類型、工作溫度、PoE 總數、SFP 模組引導、場景驗證 ✓）。
+* **表格檢視 (Table View)**：方便橫向掃描規格。支援動態選取欲顯示的欄位（Column Picker）、前端資料快速排序、以及分頁（Pagination）機制。序號與產品型號在水平滾動時會自動固定（Sticky）。
+
+### 3. SFP 光纖選型導航面板 (SFP Selector)
+* 卡片上設有 SFP 可選型捷徑，切換至 SFP 頁籤時會動態推導該設備的光口速度（100M/1G/10G），並拉取靜態資料推薦相容的 SFP 模組清單。
+* 針對固定接頭（SC/ST 等非 SFP 插槽）提供對應選線與單/多模跳線建議。
+
+### 4. 產品多台規格對比與 PDF/CSV 匯出
+* **產品對比 (Product Compare)**：可勾選 1 至 5 台產品拉出側拉面板進行橫向比對，並以橘黃色底色**高亮規格差異欄位**。
+* **多格式報表**：對比面板內整合 CSV 規格下載與呼叫後端 API 動態生成的 PDF 規格書報表。單台設備亦可直接匯出。
+
+### 5. 官方產品連結導流與實體照片 Hover 預覽
+* **研華官網直達**：卡片型號旁、展開卡片底部 CTA 及 SFP 推薦晶片上，均設有外部連結圖示 `↗`，點擊即可直達官網（支援以型號自動拼湊搜尋連結的 Fallback 機制）。
+* **照片預覽**：滑鼠懸停於卡片左側的縮圖上，會動態浮現該交換器的實體清晰大圖預覽。
+
+### 6. 上下文鎖定 AI 選型助手 (RAG Chatbot)
+* **上下文感知對話**：AI 會自動讀取並鎖定當前頁面篩選出的型號清單，回答使用者的規格比較與分析提問。
+* **非阻塞執行 (Non-blocking)**：後端將同步 LLM 請求交由 FastAPI 內建的 Thread Pool 執行，確保 Chatbot 在思考時，前端的篩選與模糊搜尋依然保持「毫秒級」流暢反應。
+
+---
+
+## 📂 專案目錄架構說明
+
+```text
+.
+├── .github/workflows/
+│   └── deploy-pages.yml  # GitHub Actions 自動部署至 GitHub Pages 工作流
+├── app/
+│   ├── api/           # API 端點 (selection:選型, chat:AI對話, report:PDF/CSV匯出)
+│   ├── models/        # Pydantic 資料模型定義
+│   ├── rag/           # RAG 三階段核心管線 (意圖解析、動態條件過濾、LLM報告生成)
+│   ├── database.py    # MongoDB 連線封裝
+│   ├── llm_gateway.py # LLM 統一閘道器（具 RPM 限流防護與 Retry 機制）
+│   └── main.py        # FastAPI 入口（含前端靜態檔案無快取控制中間件）
+├── configs/           # 機密金鑰與設定檔目錄（已被 .gitignore 忽略）
+│   ├── .env           # 專案環境變數與連線字串
+│   └── credentials.json # Google 服務帳戶認證 JSON
+├── data/              # 暫存與同步資料目錄
+│   ├── hardware_specs_raw.json  # 從 Sheets 抓取的原始硬體資料
+│   ├── software_specs_raw.json  # 從 Sheets 抓取的原始軟體資料
+│   └── validation_report.json   # 規格同步後的配對驗證報告
+├── frontend/
+│   ├── css/           # 樣式表目錄 (style.css, table-view.css, compare.css 等)
+│   ├── data/          # 前端靜態資料目錄
+│   │   ├── pics/      # [NEW] 產品照片目錄，需依型號命名放置於此 (提供網頁展示，例如 EKI-7710G.png)
+│   │   └── sfp_modules.json # 從雲端 SFP Sheet 同步下來的相容模組清單
+│   ├── js/            # 前端 JavaScript 邏輯模組
+│   │   ├── app.js     # 前端主控制邏輯（包含 API 連線判定與表格視圖）
+│   │   ├── compare.js # 產品對比與底部 padding 動態計算邏輯
+│   │   ├── config.js  # Cloudflare Tunnel API 終端設定
+│   │   ├── feature-selector.js # 進階功能選擇器 (Feature Selector) 控制
+│   │   ├── scenes.js  # 應用場景模板定義
+│   │   └── sfp-selector.js  # SFP 模組動態過濾推薦與選線邏輯
+│   ├── index.html     # GitHub Pages 使用的相對路徑入口網頁
+│   └── select_ui_with_options_claude.html # 後端掛載使用的絕對路徑網頁
+├── scripts/           # 資料維護與診斷腳本目錄
+│   ├── fetch_hardware_specs.py  # 擷取 Sheets 硬體規格
+│   ├── fetch_sw_specs.py        # 擷取 Sheets 軟體功能 (指向 "SW Dead Pool")
+│   ├── sw_index.py              # 資料庫動態特徵掃描診斷工具
+│   ├── sync_all.py              # 一鍵自動化同步管線（Sheets -> MongoDB & JSON）
+│   └── sync_specs_to_mongo.py   # 合併規格並匯入至 MongoDB
+└── README.md          # 專案說明文件
+```
+
+---
+
+## 🔍 診斷與測試工具 (Diagnostics)
+
+在資料同步或更新後，您可以使用以下腳本進行健康檢查：
+
+### 1. 資料庫動態特徵索引診斷
+檢查資料庫中是否存在有效的規格，並確認被動態讀取為進階搜尋與 Feature Selector 中的軟體功能總數：
+```bash
+uv run python scripts/sw_index.py
+```
 
 ---
 © 2026 Advantech | AI Selection Tool Project

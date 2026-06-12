@@ -553,6 +553,55 @@ input[type="text"]:focus {
     letter-spacing: 0.01em;
 }
 
+.pc-photo {
+    flex-shrink: 0;
+    width: 80px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.pc-photo-thumb {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.pc-photo-popup {
+    position: absolute;
+    right: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%) scale(0.92);
+    background: #fff;
+    border: 1px solid var(--adv-border);
+    border-radius: 6px;
+    padding: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s, transform 0.15s;
+    width: 160px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pc-photo-popup img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.pc-photo:hover .pc-photo-popup {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+}
+
 .pc-right {
     display: flex;
     align-items: center;
@@ -1232,6 +1281,17 @@ input[type="text"]:focus {
     font-family: 'IBM Plex Mono', monospace;
 }
 
+.filter-tag-x {
+    margin-left: 2px;
+    cursor: pointer;
+    opacity: 0.6;
+    font-size: 0.85rem;
+    line-height: 1;
+}
+.filter-tag-x:hover {
+    opacity: 1;
+}
+
 .filter-tag .filter-icon {
     font-size: 0.7rem;
     opacity: 0.7;
@@ -1246,9 +1306,7 @@ input[type="text"]:focus {
 }
 
 .filter-tag.culprit::after {
-    content: '⚠';
-    margin-left: 4px;
-    font-size: 0.7rem;
+    content: '';
 }
 
 .selected-item.culprit {

@@ -182,7 +182,7 @@ def sync_to_mongo(hw_raw, sw_raw):
         hw_updates.append(UpdateOne({"_id": pn}, {"$set": hw}, upsert=True))
 
         hw_sw_series = hw.get("Software Series", "").strip()
-        hw_fw_ver    = hw.get("Fiemware Version", "").strip()
+        hw_fw_ver    = hw.get("Firmware Version", "").strip()
         is_inferred  = False
 
         if not hw_sw_series or not hw_fw_ver:

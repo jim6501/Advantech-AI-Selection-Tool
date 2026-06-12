@@ -60,12 +60,12 @@ def normalize_value(val):
     return val
 
 def fetch_and_parse_sw_sheet(gc):
-    print("讀取分頁: SW Version ...")
+    print("讀取分頁: SW Dead Pool ...")
     try:
-        worksheet = gc.open_by_key(GOOGLE_SHEET_ID).worksheet("SW Version")
+        worksheet = gc.open_by_key(GOOGLE_SHEET_ID).worksheet("SW Dead Pool")
         data = worksheet.get_all_values()
     except Exception as e:
-        print(f"❌ 讀取 SW Version 發生錯誤: {e}")
+        print(f"❌ 讀取 SW Dead Pool 發生錯誤: {e}")
         return []
 
     if len(data) < 15:

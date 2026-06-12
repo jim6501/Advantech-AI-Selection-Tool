@@ -86,4 +86,5 @@ app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
 # 讓根目錄也能直接存取 css/ js/ 等資源（供 Cloudflare Tunnel 直接存取時使用）
 app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
 app.mount("/js", StaticFiles(directory="frontend/js"), name="js")
+app.mount("/data", StaticFiles(directory="frontend/data"), name="data")
 
