@@ -10,14 +10,13 @@
 
 ```mermaid
 graph TD
-    subgraph 1. 資料導入與圖像處理
+    subgraph "1. 資料導入與圖像處理"
         A[Google Sheets 雲端規格] -->|sync_all.py| B[(MongoDB)]
         A -->|sync_all.py| C[sfp_modules.json]
-        D[data/pics 原始圖庫] -->|check_product_pics.py| E[pics_index.json]
-        E -->|copy_pics_to_frontend.py| F[frontend/data/pics]
+        D[手動整理實體照片] -->|型號.png/jpg| F[frontend/data/pics]
     end
 
-    subgraph 2. 後端 API 與 AI 服務 (FastAPI)
+    subgraph "2. 後端 API 與 AI 服務 (FastAPI)"
         B -->|selection.py API| G[FastAPI 後端服務]
         C -->|SFP API/Static| G
         F -->|Static /data| G
@@ -25,7 +24,7 @@ graph TD
         I --> G
     end
 
-    subgraph 3. 前端 UI 呈現 (HTML/CSS/JS)
+    subgraph "3. 前端 UI 呈現 (HTML/CSS/JS)"
         G -->|API 請求 / 靜態資源| J[前端網頁]
         J -->|卡片 & 表格檢視| K[選型主介面]
         J -->|對比 & 匯出 PDF/CSV| L[對比面板]
