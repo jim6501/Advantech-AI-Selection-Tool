@@ -16,8 +16,9 @@ from app.api import report
 from app.llm_gateway import get_gateway
 
 
-PICS_DIR = Path("frontend/data/pics")
-THUMB_DIR = Path("frontend/data/pics_thumb")
+_BASE = Path(__file__).parent.parent  # 專案根目錄（絕對路徑）
+PICS_DIR = _BASE / "frontend/data/pics"
+THUMB_DIR = _BASE / "frontend/data/pics_thumb"
 THUMB_SIZE = (400, 400)
 
 
@@ -121,13 +122,13 @@ def get_pic(model: str, full: bool = Query(False)):
 
 @app.get("/")
 def root():
-    return FileResponse("frontend/index.html")
+    return FileResponse(_BASE / "frontend/index.html")
 
 # 掛載整個 frontend 資料夾作為靜態檔案，允許存取 /frontend/xxx.html (例如開啟其他分頁)
-app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
+app.mount("/frontend", StaticFiles(directory=str(_BASE / "frontend")), name="frontend")
 
 # 讓根目錄也能直接存取 css/ js/ 等資源（供 Cloudflare Tunnel 直接存取時使用）
-app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
-app.mount("/js", StaticFiles(directory="frontend/js"), name="js")
-app.mount("/data", StaticFiles(directory="frontend/data"), name="data")
+app.mount("/css", StaticFiles(directory=str(_BASE / "frontend/css")), name="css")
+app.mount("/js",  StaticFiles(directory=str(_BASE / "frontend/js")),  name="js")
+app.mount("/data", StaticFiles(directory=str(_BASE / "frontend/data")), name="data")
 
