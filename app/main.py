@@ -1,10 +1,9 @@
 from contextlib import asynccontextmanager
-import io
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse, Response, StreamingResponse
+from fastapi.responses import JSONResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 from pymongo.errors import PyMongoError
@@ -17,12 +16,32 @@ from app.api import report
 from app.llm_gateway import get_gateway
 
 
+PICS_DIR = Path("frontend/data/pics")
+THUMB_DIR = Path("frontend/data/pics_thumb")
+THUMB_SIZE = (400, 400)
+
+
+def _build_thumbnails():
+    THUMB_DIR.mkdir(parents=True, exist_ok=True)
+    count = 0
+    for src in PICS_DIR.glob("*.png"):
+        dst = THUMB_DIR / src.name
+        if not dst.exists():
+            img = Image.open(src).convert("RGBA")
+            img.thumbnail(THUMB_SIZE)
+            img.save(dst, format="PNG", optimize=True)
+            count += 1
+    if count:
+        print(f"[PICS] Generated {count} thumbnails")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """App 生命週期管理：啟動時連線 MongoDB，關閉時釋放資源"""
     print("[START] FastAPI App Starting...")
     Database.connect_db()
     get_gateway()  # 預先初始化 LLM Gateway（驗證 API Key 是否設定正確）
+    _build_thumbnails()
     yield
     print("[STOP] FastAPI App Shutting Down...")
     Database.close_db()
@@ -82,19 +101,21 @@ app.include_router(report.router,    prefix="/api", tags=["Report"])
 
 @app.get("/pics/{model}")
 def get_pic(model: str, full: bool = Query(False)):
-    for ext in ("png", "jpg"):
-        path = Path(f"frontend/data/pics/{model}.{ext}")
-        if path.exists():
-            if full:
-                return FileResponse(path, headers={"Cache-Control": "public, max-age=86400"})
-            # 縮圖：長邊限 400px，保留透明背景
-            img = Image.open(path).convert("RGBA")
-            img.thumbnail((400, 400))
-            buf = io.BytesIO()
-            img.save(buf, format="PNG", optimize=True)
-            buf.seek(0)
-            return StreamingResponse(buf, media_type="image/png",
-                                     headers={"Cache-Control": "public, max-age=86400"})
+    cache = {"Cache-Control": "public, max-age=86400"}
+    if full:
+        for ext in ("png", "jpg"):
+            path = PICS_DIR / f"{model}.{ext}"
+            if path.exists():
+                return FileResponse(path, headers=cache)
+    else:
+        thumb = THUMB_DIR / f"{model}.png"
+        if thumb.exists():
+            return FileResponse(thumb, headers=cache)
+        # fallback：原圖尚未產生縮圖（新增圖片時）
+        for ext in ("png", "jpg"):
+            path = PICS_DIR / f"{model}.{ext}"
+            if path.exists():
+                return FileResponse(path, headers=cache)
     raise HTTPException(status_code=404, detail="Photo not found")
 
 
