@@ -1,10 +1,12 @@
 from contextlib import asynccontextmanager
+import io
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse, Response
+from fastapi.responses import JSONResponse, FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from PIL import Image
 from pymongo.errors import PyMongoError
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -79,11 +81,20 @@ app.include_router(report.router,    prefix="/api", tags=["Report"])
 
 
 @app.get("/pics/{model}")
-def get_pic(model: str):
+def get_pic(model: str, full: bool = Query(False)):
     for ext in ("png", "jpg"):
         path = Path(f"frontend/data/pics/{model}.{ext}")
         if path.exists():
-            return FileResponse(path, headers={"Cache-Control": "public, max-age=86400"})
+            if full:
+                return FileResponse(path, headers={"Cache-Control": "public, max-age=86400"})
+            # 縮圖：長邊限 400px，轉 JPEG 壓縮
+            img = Image.open(path).convert("RGB")
+            img.thumbnail((400, 400))
+            buf = io.BytesIO()
+            img.save(buf, format="JPEG", quality=75, optimize=True)
+            buf.seek(0)
+            return StreamingResponse(buf, media_type="image/jpeg",
+                                     headers={"Cache-Control": "public, max-age=86400"})
     raise HTTPException(status_code=404, detail="Photo not found")
 
 

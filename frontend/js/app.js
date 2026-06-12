@@ -770,10 +770,11 @@ function renderProductCards(data_list) {
         const photoHtml = `<div class="pc-photo" onclick="event.stopPropagation()">
                     <img class="pc-photo-thumb"
                          src="${picUrl}"
+                         loading="lazy"
                          onerror="this.closest('.pc-photo').style.display='none'"
                          alt="${item.prod_model}">
                     <div class="pc-photo-popup">
-                        <img src="${picUrl}" alt="${item.prod_model}">
+                        <img src="${picUrl}?full=1" alt="${item.prod_model}">
                     </div>
                 </div>`;
 
