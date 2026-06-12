@@ -766,17 +766,14 @@ function renderProductCards(data_list) {
         // 組合研華官網搜尋 URL（使用 prod_url 欄位，或自動組合）
         const prodUrl = item.prod_url || `https://www.advantech.com/en/search?q=${encodeURIComponent(item.prod_model)}`;
 
-        // 照片 URL（PNG 優先，onerror 嘗試 JPG，再失敗則隱藏區塊）
-        const photoBase = `${API_BASE}/data/pics/${encodeURIComponent(item.prod_model)}`;
+        const picUrl = `${API_BASE}/pics/${encodeURIComponent(item.prod_model)}`;
         const photoHtml = `<div class="pc-photo" onclick="event.stopPropagation()">
                     <img class="pc-photo-thumb"
-                         src="${photoBase}.png"
-                         onerror="this.onerror=null;this.src='${photoBase}.jpg';this.onerror=function(){this.closest('.pc-photo').style.display='none';}"
+                         src="${picUrl}"
+                         onerror="this.closest('.pc-photo').style.display='none'"
                          alt="${item.prod_model}">
                     <div class="pc-photo-popup">
-                        <img src="${photoBase}.png"
-                             onerror="this.onerror=null;this.src='${photoBase}.jpg';this.onerror=null;"
-                             alt="${item.prod_model}">
+                        <img src="${picUrl}" alt="${item.prod_model}">
                     </div>
                 </div>`;
 

@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -74,6 +76,15 @@ async def pymongo_exception_handler(request: Request, exc: PyMongoError):
 app.include_router(selection.router, prefix="/api", tags=["Selection"])
 app.include_router(chat.router,      prefix="/api", tags=["Chatbot"])
 app.include_router(report.router,    prefix="/api", tags=["Report"])
+
+
+@app.get("/pics/{model}")
+def get_pic(model: str):
+    for ext in ("png", "jpg"):
+        path = Path(f"frontend/data/pics/{model}.{ext}")
+        if path.exists():
+            return FileResponse(path, headers={"Cache-Control": "public, max-age=86400"})
+    raise HTTPException(status_code=404, detail="Photo not found")
 
 
 @app.get("/")
