@@ -1581,9 +1581,11 @@ function switchView(view) {
     if (listBtn) listBtn.classList.toggle('active', view === 'list');
     if (tableBtn) tableBtn.classList.toggle('active', view === 'table');
 
-    // Col Picker 只在表格模式顯示
+    // Col Picker / Download 只在表格模式顯示
     const pickerBtn = document.getElementById('tv-col-picker-btn');
     if (pickerBtn) pickerBtn.style.display = view === 'table' ? '' : 'none';
+    const dlBtn = document.getElementById('tv-download-btn');
+    if (dlBtn) dlBtn.style.display = view === 'table' ? '' : 'none';
 
     // 重新渲染
     _renderCurrentView(currentDataList.length > 0
@@ -1874,6 +1876,38 @@ function tvGoPage(p) {
     // scroll to results top
     const lowerPart = document.querySelector('.lower-part.card');
     if (lowerPart) lowerPart.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── CSV 匯出 ───────────────────────────────────
+function tvDownloadCSV() {
+    const list = _getSortedList();
+    if (!list.length) return;
+
+    const cols = TV_ALL_COLS.filter(c => tvActiveCols.has(c.key));
+
+    const escape = v => {
+        const s = (v === null || v === undefined) ? '' : String(v);
+        return s.includes(',') || s.includes('"') || s.includes('\n')
+            ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+
+    const header = ['#', 'Model', ...cols.map(c => c.title || c.label)];
+    const rows = list.map((item, i) => {
+        const cells = cols.map(c => {
+            const v = tvGetVal(item, c.key);
+            return v === '—' ? '' : v;
+        });
+        return [i + 1, item.prod_model, ...cells];
+    });
+
+    const csv = [header, ...rows].map(r => r.map(escape).join(',')).join('\r\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `advantech-switch-selection_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
 }
 
 // ── Compare 橋接 ──────────────────────────────
