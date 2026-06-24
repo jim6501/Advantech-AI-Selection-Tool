@@ -13,6 +13,7 @@ router = APIRouter()
 class ExportReportRequest(BaseModel):
     product_pns: List[str]             # 使用者選擇的產品 PN，例如 ["EKI-7720G-4F-AE"]
     criteria: dict = {}                # SubmitProdRequest 的內容，保留給未來使用
+    ai_summary: str = ""               # 比較面板已生成的 AI Summary，直接帶入 PDF
 
 
 @router.post("/exportReport")
@@ -39,7 +40,7 @@ def export_report(req: ExportReportRequest):
 
     # 產生 PDF
     try:
-        pdf_bytes = generate_selection_report(products, req.criteria)
+        pdf_bytes = generate_selection_report(products, req.criteria, req.ai_summary)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"PDF generation failed: {e}")
 

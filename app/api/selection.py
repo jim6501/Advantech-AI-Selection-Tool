@@ -412,6 +412,8 @@ def submit_product_selection(req: SubmitProdRequest):
             prod_application=str(hw.get("Application") or "").strip(),
             prod_fiber_type=str(hw.get("Fiber Type") or "").strip(),
             prod_fiber_conn=str(hw.get("Fiber Connector") or "").strip(),
+            prod_certifications=str(hw.get("Certifications") or "").strip(),
+            prod_mounting=str(hw.get("Type") or "").strip(),
             prod_url=str(hw.get("prod_url") or hw.get("URL") or "").strip(),
         ))
 

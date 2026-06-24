@@ -71,6 +71,8 @@ class ProductItemResponse(BaseModel):
     prod_application: str = ""  # 應用場景標記（來自 hardware.Application，輔助顯示用）
     prod_fiber_type: str = ""   # 光纖接口類型（SFP / SFP+ / Multi-mode / Single-mode / SC / 空白）
     prod_fiber_conn: str = ""   # 固定接頭規格（SC / ST / 空白）
+    prod_certifications: str = "" # 認證清單（逗號分隔，如 CE, FCC, UL...）
+    prod_mounting: str = ""     # 安裝方式（如 DIN-Rail, Rack Mount...）
     prod_url: str = ""          # 產品頁 URL；空字串時前端自動組合官網搜尋連結
 
 

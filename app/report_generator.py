@@ -1,4 +1,5 @@
 import io
+import re
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import mm
@@ -143,7 +144,7 @@ def port_val(hw: dict, *keys) -> Paragraph:
 
 
 # ── 主要產生函式 ──────────────────────────────────────────────────────
-def generate_selection_report(products: list[dict], criteria: dict) -> bytes:
+def generate_selection_report(products: list[dict], criteria: dict, ai_summary: str = "") -> bytes:
     buffer = io.BytesIO()
 
     doc = BaseDocTemplate(
@@ -175,7 +176,10 @@ def generate_selection_report(products: list[dict], criteria: dict) -> bytes:
     story.append(HRFlowable(width="100%", thickness=1.5,
                              color=BLUE, spaceAfter=6))
 
-    # 管理類型友善顯示
+    items_list = criteria.get("items", [])
+    item_set   = set(items_list)
+
+    # Management Type
     type_map = {
         "all": "All Types",
         "managed": "Managed (L2 + L3)",
@@ -183,28 +187,47 @@ def generate_selection_report(products: list[dict], criteria: dict) -> bytes:
         "l3_managed": "L3 Managed",
         "unmanaged": "Unmanaged",
     }
-    port_display = (f"≥ {criteria.get('portnum')} ports"
-                    if criteria.get("portnum", -1) > 0 else "No limit")
-    app_display  = criteria.get("application", "ALL")
-    if app_display == "ALL":
-        app_display = "All Applications"
-
     raw_type = criteria.get("type", "ALL")
     if isinstance(raw_type, list):
         raw_type = raw_type[0] if raw_type else "ALL"
     req_type = str(raw_type).strip().lower()
-    print(f'[DEBUG] export PDF raw_type={raw_type}, req_type={req_type}', flush=True)
+    formatted_type = type_map.get(req_type) or str(raw_type).replace("_", " ").title()
 
-    formatted_type = type_map.get(req_type)
-    if not formatted_type:
-        formatted_type = str(raw_type).replace("_", " ").title().replace("L2 ", "L2 ").replace("L3 ", "L3 ")
+    # Min Port Count
+    port_display = (f"≥ {criteria.get('portnum')} ports"
+                    if criteria.get("portnum", -1) > 0 else "No limit")
+
+    # Max Port Speed
+    speed_map = {"Speed_100M": "100M", "Speed_GbE": "1G", "Speed_10G": "10G+"}
+    speed_display = next((v for k, v in speed_map.items() if k in item_set), "Any")
+
+    # PoE
+    poe_display = "Required" if "Has_PoE" in item_set else "Not Required"
+
+    # Interface Type
+    iface_parts = []
+    if "Has_RJ-45" in item_set: iface_parts.append("RJ-45")
+    if "Has_Fiber"  in item_set: iface_parts.append("Fiber")
+    iface_display = ", ".join(iface_parts) if iface_parts else "Any"
+
+    # Certifications
+    cert_map = {
+        "Cert_UL": "UL", "Cert_LVD": "LVD", "Cert_IEC61850": "IEC 61850",
+        "Cert_NEMA": "NEMA", "Cert_EN50155": "EN 50155",
+        "Cert_EMark": "E-Mark", "Cert_ITxPT": "ITxPT",
+    }
+    cert_parts = [label for key, label in cert_map.items() if key in item_set]
+    cert_display = ", ".join(cert_parts) if cert_parts else "None"
 
     crit_rows = [
         [Paragraph("<b>Criteria</b>", PS("ch", 8, color=WHITE)),
          Paragraph("<b>Value</b>",    PS("cv", 8, color=WHITE))],
-        ["Management Type", formatted_type],
-        ["Minimum Port Count", port_display],
-        ["Application",        app_display],
+        ["Management Type",   formatted_type],
+        ["Min Port Count",    port_display],
+        ["Max Port Speed",    speed_display],
+        ["PoE Required",      poe_display],
+        ["Interface Type",    iface_display],
+        ["Certifications",    cert_display],
     ]
     crit_tbl = Table(crit_rows, colWidths=[55 * mm, 115 * mm])
     crit_tbl.setStyle(TableStyle([
@@ -221,24 +244,17 @@ def generate_selection_report(products: list[dict], criteria: dict) -> bytes:
     ]))
     story.append(crit_tbl)
 
-    # 已選功能項目：儲存在 itemLabels 中（否則從 items list fallback）
+    # 其他已選功能項目（排除已在表格中顯示的條件）
+    known_keys = set(speed_map) | {"Has_PoE", "Has_RJ-45", "Has_Fiber"} | set(cert_map)
     item_labels = criteria.get("itemLabels", {})
-    items_list  = criteria.get("items", [])
-    if item_labels:
+    extra_labels = [label for k, label in item_labels.items() if k not in known_keys]
+    if extra_labels:
         story.append(Spacer(1, 4))
         story.append(Paragraph("<b>Selected Features:</b>",
                                 PS("sh3", 8, color=GRAY_TX)))
-        for k, label in item_labels.items():
+        for label in extra_labels:
             story.append(Paragraph(f"  • {label}",
-                                    PS(f"sm{hash(k)}", 8, color=GRAY_TX)))
-    elif items_list:
-        story.append(Spacer(1, 4))
-        story.append(Paragraph("<b>Selected Features:</b>",
-                                PS("sh3", 8, color=GRAY_TX)))
-        for item in items_list:
-            label = item.split("|||")[-1] if "|||" in item else item
-            story.append(Paragraph(f"  • {label}",
-                                    PS(f"sm{hash(item)}", 8, color=GRAY_TX)))
+                                    PS(f"sm{hash(label)}", 8, color=GRAY_TX)))
 
     story.append(Spacer(1, 10))
 
@@ -314,11 +330,10 @@ def generate_selection_report(products: list[dict], criteria: dict) -> bytes:
             [V(format_mgmt(hw(i).get("Function", "—"))) for i in range(n)])
     add_row("Temp Grade",
             [V(hw(i).get("Temp Grade", "—")) for i in range(n)])
-    add_row("Operating Temp",
-            [V(hw(i).get("Op Temp Range") or hw(i).get("Temp Grade") or "—")
-             for i in range(n)])
     add_row("Power Input",
             [V(hw(i).get("Input Voltage") or "—") for i in range(n)])
+    add_row("Mounting Type",
+            [V(hw(i).get("Type") or "—") for i in range(n)])
 
     # Ports
     add_sec("Port Configuration")
@@ -377,6 +392,11 @@ def generate_selection_report(products: list[dict], criteria: dict) -> bytes:
     add_row("Fiber Connector",
             [V(hw(i).get("Fiber Connector") or "—") for i in range(n)])
 
+    # Certifications
+    add_sec("Certifications")
+    add_row("Certifications",
+            [V(hw(i).get("Certifications") or "—") for i in range(n)])
+
     # 組成 Table
     spec_tbl = Table(rows, colWidths=col_widths, repeatRows=1)
 
@@ -426,7 +446,36 @@ def generate_selection_report(products: list[dict], criteria: dict) -> bytes:
     story.append(leg)
     story.append(Spacer(1, 10))
 
-    # ── Section 3: 參考連結 ───────────────────────────────────────────
+    # ── Section 3: AI Summary ─────────────────────────────────────────
+    story.append(Paragraph("AI Analysis Summary",
+                            PS("h1", 16, True, NAVY, leading=20)))
+    story.append(HRFlowable(width="100%", thickness=1.5,
+                             color=BLUE, spaceAfter=6))
+
+    ai_text = ai_summary.strip() if ai_summary and ai_summary.strip() else "AI analysis not available."
+
+    def _md_to_rl(text: str) -> str:
+        """Convert markdown bold/italic/code to ReportLab XML markup."""
+        text = re.sub(r'\*\*([^*]+)\*\*', r'<b>\1</b>', text)
+        text = re.sub(r'\*([^*]+)\*', r'\1', text)
+        text = re.sub(r'`([^`]+)`', r'\1', text)
+        return text
+
+    for line in ai_text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            story.append(Spacer(1, 4))
+        elif stripped.startswith("## "):
+            story.append(Paragraph(_md_to_rl(stripped[3:]), PS(f"aih{hash(stripped)}", 10, True, NAVY, leading=14)))
+            story.append(Spacer(1, 2))
+        elif stripped.startswith("- ") or stripped.startswith("* "):
+            story.append(Paragraph(f"  • {_md_to_rl(stripped[2:])}", PS(f"aib{hash(stripped)}", 8.5, color=BLACK, leading=13)))
+        else:
+            story.append(Paragraph(_md_to_rl(stripped), PS(f"aip{hash(stripped)}", 8.5, color=BLACK, leading=13)))
+
+    story.append(Spacer(1, 10))
+
+    # ── Section 4: 參考連結 ───────────────────────────────────────────
     story.append(Paragraph("Product References",
                             PS("h2", 11, True, NAVY, leading=16)))
     story.append(HRFlowable(width="100%", thickness=0.5,

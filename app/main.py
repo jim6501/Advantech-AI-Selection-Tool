@@ -13,6 +13,7 @@ from app.database import Database
 from app.api import selection
 from app.api import chat
 from app.api import report
+from app.api import compare
 from app.llm_gateway import get_gateway
 
 
@@ -98,6 +99,7 @@ async def pymongo_exception_handler(request: Request, exc: PyMongoError):
 app.include_router(selection.router, prefix="/api", tags=["Selection"])
 app.include_router(chat.router,      prefix="/api", tags=["Chatbot"])
 app.include_router(report.router,    prefix="/api", tags=["Report"])
+app.include_router(compare.router,   prefix="/api", tags=["Compare"])
 
 
 @app.get("/pics/{model}")

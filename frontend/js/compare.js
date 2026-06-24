@@ -46,9 +46,8 @@ const CMP_SECTIONS = [
             { id: 'type',        label: 'Management',        type: 'str', extract: i => i.prod_type || '' },
             { id: 'portnum',     label: 'Total Ports',          type: 'num', extract: i => i.prod_portnum || 0 },
             { id: 'temp_grade',  label: 'Temp Grade',        type: 'str', extract: i => (i.prod_w_n || 'Normal').trim() },
-            { id: 'temp_range',  label: 'Operating Temp',    type: 'str', extract: i => (i.prod_temp_range || '—').trim() },
             { id: 'power',       label: 'Power Input',        type: 'str', extract: i => (i.prod_power_input || '—').trim() },
-            { id: 'application', label: 'Application',        type: 'str', extract: i => (i.prod_application || '—').trim() },
+            { id: 'mounting',    label: 'Mounting Type',      type: 'str', extract: i => (i.prod_mounting || '—').trim() },
         ]
     },
     {
@@ -79,8 +78,15 @@ const CMP_SECTIONS = [
             { id: 'fiber_type', label: 'Fiber Slot Type', type: 'str', extract: i => (i.prod_fiber_type || '—').trim() },
             { id: 'fiber_conn', label: 'Fixed Connector', type: 'str', extract: i => (i.prod_fiber_conn || '—').trim() },
         ]
-    }
-    // ─── 未來擴充區（軟體功能規格、認證等）────────────────────
+    },
+    {
+        id: 'certifications',
+        label: 'Certifications',
+        fields: [
+            { id: 'certs', label: 'Certifications', type: 'str', extract: i => (i.prod_certifications || '—').trim() },
+        ]
+    },
+    // ─── 未來擴充區（軟體功能規格等）────────────────────
     // 範例：
     // {
     //     id: 'software',
@@ -96,6 +102,7 @@ const CMP_SECTIONS = [
 // 狀態
 // ─────────────────────────────────────────────
 let _compareSet = new Set();   // pid 集合，如 'pc-0', 'pc-3'
+let _aiSummaryText = '';       // 最近一次 AI summary 的原始 Markdown 文字
 
 // ─────────────────────────────────────────────
 // 公開：切換勾選
@@ -259,10 +266,57 @@ function _buildPanel(items) {
             </div>
         </div>`;
 
+    // ── AI Summary 區塊（表格上方）──
+    const aiSummaryHtml = `
+        <div id="cmp-ai-summary">
+            <div class="cmp-ai-header">
+                <span class="cmp-ai-icon">🤖</span>
+                <span class="cmp-ai-title">AI Analysis</span>
+            </div>
+            <div id="cmp-ai-content" class="cmp-ai-loading">
+                <span class="cmp-ai-dot"></span>
+                <span class="cmp-ai-dot"></span>
+                <span class="cmp-ai-dot"></span>
+            </div>
+        </div>`;
+
     // ── 比較表格 ──
     const tableHtml = _buildTable(items);
 
-    panel.innerHTML = headerHtml + `<div class="cmp-panel-body">${tableHtml}</div>`;
+    panel.innerHTML = headerHtml + `<div class="cmp-panel-body">${aiSummaryHtml}${tableHtml}</div>`;
+
+    // 取得型號 PN 後呼叫 AI 總結
+    const pns = items.map(i => i.prod_name).filter(Boolean);
+    _fetchAiSummary(pns);
+}
+
+async function _fetchAiSummary(pns) {
+    _aiSummaryText = '';
+    const contentEl = document.getElementById('cmp-ai-content');
+    if (!contentEl || !pns.length) return;
+
+    try {
+        const apiBase = typeof API_BASE !== 'undefined' ? API_BASE : '';
+        const resp = await fetch(`${apiBase}/api/compare-summary`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ product_pns: pns }),
+        });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+
+        _aiSummaryText = data.summary;
+        contentEl.classList.remove('cmp-ai-loading');
+        // marked.js 渲染 Markdown（與 Chatbot 共用同一個函式庫）
+        if (typeof marked !== 'undefined') {
+            contentEl.innerHTML = marked.parse(data.summary);
+        } else {
+            contentEl.textContent = data.summary;
+        }
+    } catch (err) {
+        contentEl.classList.remove('cmp-ai-loading');
+        contentEl.innerHTML = `<span style="color:#999;font-size:13px;">⚠️ AI analysis unavailable: ${err.message}</span>`;
+    }
 }
 
 // ─────────────────────────────────────────────
@@ -497,12 +551,15 @@ async function downloadComparePDF() {
 
     try {
         _showToast("Generating PDF, please wait...");
+        const aiSummary = _aiSummaryText || '';
+
         const res = await fetch(`${typeof API_BASE !== 'undefined' ? API_BASE : ''}/api/exportReport`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 product_pns: pns,
-                criteria: criteria
+                criteria: criteria,
+                ai_summary: aiSummary
             })
         });
 
