@@ -71,9 +71,9 @@
 .col-picker-panel {
     background: var(--adv-gray);
     border: 1px solid var(--adv-border);
-    border-radius: var(--radius-sm);
-    padding: 14px 16px;
-    margin-bottom: 14px;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
     display: none;
 }
 
@@ -82,25 +82,187 @@
 }
 
 .col-picker-label {
-    font-size: 0.72rem;
+    font-size: 0.65rem;
     font-family: 'IBM Plex Mono', monospace;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.09em;
     color: var(--text-muted);
     text-transform: uppercase;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
-.col-chips {
+/* ── Picker outer layout ── */
+.col-picker-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    align-items: flex-start;
+    gap: 7px;
 }
 
-.col-chip {
-    padding: 4px 12px;
-    font-size: 0.78rem;
+.col-picker-general {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    align-self: flex-start;
+}
+
+.col-picker-groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+/* ── Group card ── */
+.col-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--adv-border);
+    border-radius: 7px;
+    overflow: hidden;
+    min-width: 135px;
+}
+
+.col-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 4px 8px 4px;
+    border-bottom: 1px solid var(--adv-border);
+    background: var(--adv-gray);
+}
+
+.col-group-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--text-muted);
+}
+
+.col-group-all {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 0px 6px;
     border-radius: 100px;
+    border: 1px solid var(--adv-border);
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    line-height: 1.7;
+}
+
+.col-group-all:hover,
+.col-group-all.all-on {
+    background: var(--adv-light-blue);
+    color: var(--adv-blue);
+    border-color: #85b7eb;
+}
+
+.col-group-items {
+    display: flex;
+    flex-direction: column;
+    padding: 2px 0;
+}
+
+/* ── Row item inside group ── */
+.col-item {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 4px 8px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s;
+}
+
+.col-item:hover {
+    background: var(--adv-gray);
+}
+
+.col-item-check {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    border-radius: 3px;
+    border: 1.5px solid var(--adv-border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 6px;
+    transition: all 0.13s;
+    position: relative;
+}
+
+.col-item.on .col-item-check {
+    background: var(--adv-blue);
+    border-color: var(--adv-blue);
+}
+
+.col-item.on .col-item-check::after {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 3.5px;
+    border-left: 1.5px solid #fff;
+    border-bottom: 1.5px solid #fff;
+    transform: rotate(-45deg) translateY(-0.5px);
+}
+
+.col-item-label {
+    flex: 1;
+    font-size: 0.74rem;
+    font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+    color: var(--text-muted);
+    white-space: nowrap;
+    font-weight: 400;
+}
+
+.col-item.on .col-item-label {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.col-item-speed {
+    font-size: 0.6rem;
+    font-family: 'IBM Plex Mono', monospace;
+    color: #8a96a8;
+    margin-left: 6px;
+}
+
+/* ── Separator between groups and spec fields ── */
+.col-picker-sep {
+    width: 1px;
+    align-self: stretch;
+    background: var(--adv-border);
+    margin: 0 3px;
+}
+
+/* ── Spec fields (independent pills) ── */
+.col-chips-specs {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    align-self: flex-start;
+    min-width: 82px;
+}
+
+/* ── Standalone chip (specs + general) — button with checkbox indicator ── */
+.col-chip {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 4px 9px 4px 7px;
+    font-size: 0.74rem;
+    border-radius: 6px;
     border: 1px solid var(--adv-border);
     cursor: pointer;
     background: var(--surface);
@@ -108,6 +270,8 @@
     transition: all 0.15s;
     user-select: none;
     font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+    white-space: nowrap;
+    font-weight: 400;
 }
 
 .col-chip.on {
@@ -120,6 +284,37 @@
 .col-chip:hover:not(.on) {
     background: var(--adv-gray);
     color: var(--text-main);
+}
+
+/* ── Chip checkbox indicator ── */
+.col-chip-check {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    border-radius: 3px;
+    border: 1.5px solid var(--adv-border);
+    background: var(--surface);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 6px;
+    transition: all 0.13s;
+    position: relative;
+}
+
+.col-chip.on .col-chip-check {
+    background: var(--adv-blue);
+    border-color: var(--adv-blue);
+}
+
+.col-chip.on .col-chip-check::after {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 3.5px;
+    border-left: 1.5px solid #fff;
+    border-bottom: 1.5px solid #fff;
+    transform: rotate(-45deg) translateY(-0.5px);
 }
 
 /* ── Table Wrapper ──────────────────────────────────────── */
@@ -138,7 +333,7 @@
     table-layout: auto;   /* 讓欄寬依內容自適應，超出範圍橫向捲動 */
 }
 
-/* ── Header row ─────────────────────────────────────────── */
+/* ── Header rows ─────────────────────────────────────────── */
 .tv-table thead th {
     background: var(--adv-gray);
     color: var(--text-muted);
@@ -147,7 +342,7 @@
     font-size: 0.7rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    padding: 9px 10px;
+    padding: 7px 10px;
     text-align: left;
     border-bottom: 1px solid var(--adv-border);
     white-space: nowrap;
@@ -157,7 +352,25 @@
     cursor: pointer;
     user-select: none;
     transition: color 0.15s, background 0.15s;
-    min-width: 64px;    /* 數字欄最小寬度 */
+    min-width: 64px;
+}
+
+/* Group header row (row 1) */
+.tv-thead-group th.tv-gh {
+    text-align: center;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    padding: 5px 10px;
+    border-bottom: none;
+    top: 0;
+}
+
+/* Col name row (row 2) */
+.tv-table thead th.tv-col2 {
+    top: 27px; /* height of group row */
+    font-size: 0.68rem;
+    padding: 5px 10px;
+    border-bottom: unset; /* 讓 inline style 的群組顏色底線生效 */
 }
 
 /* 數字 port 欄：統一最小寬度，不壓縮 */
@@ -182,6 +395,13 @@
 .tv-table thead th.tv-col-model:hover {
     color: var(--text-muted);
     background: var(--adv-gray);
+}
+
+/* Group header color: don't turn blue on hover */
+.tv-thead-group th.tv-gh:hover {
+    color: inherit;
+    background: var(--adv-gray);
+    cursor: default;
 }
 
 .tv-sort-icon {
@@ -292,6 +512,25 @@ tr:hover td.tv-sticky-model {
     text-decoration: underline;
 }
 
+.tv-cert-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 4px;
+}
+.tv-cert-badge {
+    font-size: 0.6rem;
+    font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.04em;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: #f0f4f8;
+    color: #4a6080;
+    border: 1px solid #c8d8e8;
+    white-space: nowrap;
+}
+
 .tv-model-sub {
     font-size: 0.72rem;
     color: var(--text-muted);
@@ -325,8 +564,11 @@ tr:hover td.tv-sticky-model {
     white-space: nowrap;
 }
 
-.tv-tag-m   { background: #DBEAFE; color: #1D4ED8; border: 1px solid #BFDBFE; }
-.tv-tag-u   { background: #F3F4F6; color: #374151; border: 1px solid #D1D5DB; }
+.tv-tag-m     { background: #DBEAFE; color: #1D4ED8; border: 1px solid #BFDBFE; }
+.tv-tag-l2    { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+.tv-tag-l3    { background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD; }
+.tv-tag-smart { background: #FEF9C3; color: #854D0E; border: 1px solid #FDE047; }
+.tv-tag-u     { background: #F3F4F6; color: #374151; border: 1px solid #D1D5DB; }
 .tv-tag-w   { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
 .tv-tag-std { background: #F3F4F6; color: #6B7280; border: 1px solid #D1D5DB; }
 .tv-tag-poe { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }

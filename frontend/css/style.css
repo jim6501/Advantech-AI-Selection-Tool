@@ -544,6 +544,15 @@ input[type="text"]:focus {
     border-color: #FAC775;
 }
 
+.pb-cert {
+    background: #f0f4f8;
+    color: #4a6080;
+    border-color: #c8d8e8;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
 /* 場景驗證 badge：產品 DB 標籤符合啟用場景時顯示 */
 .pb-scene-verified {
     background: #D1FAE5;

@@ -756,12 +756,15 @@ function renderProductCards(data_list) {
             return `<span class="pb pb-scene-verified" title="Product spec sheet indicates suitability for ${scene.label} applications">✓ Scene Verified</span>`;
         })();
 
+        const certBadges = (item.prod_certifications || '').split(',').map(s => s.trim()).filter(Boolean)
+            .map(c => `<span class="pb pb-cert">${c}</span>`).join('');
         const badgeHtml =
             `<span class="pb ${isM ? 'pb-type-m' : 'pb-type-u'}">${displayType}</span>` +
             (isW ? '<span class="pb pb-temp">Wide Temp</span>' : '') +
             (poeTotal > 0 ? `<span class="pb" style="background:#FEF3C7;color:#92400E;border-color:#FCD34D">PoE x${poeTotal}</span>` : '') +
             sfpBadge +
-            sceneVerifiedBadge;
+            sceneVerifiedBadge +
+            certBadges;
 
         // 組合研華官網搜尋 URL（使用 prod_url 欄位，或自動組合）
         const prodUrl = item.prod_url || `https://www.advantech.com/en/search?q=${encodeURIComponent(item.prod_model)}`;
@@ -977,21 +980,16 @@ function applySort() {
     };
 
     sortedList.sort((a, b) => {
-        if (sortValue === 'port_asc') {
-            return tvCalcTotalPorts(a) - tvCalcTotalPorts(b);
-        } else if (sortValue === 'port_desc') {
-            return tvCalcTotalPorts(b) - tvCalcTotalPorts(a);
-        } else if (sortValue === 'model_asc') {
-            return (a.prod_model || '').localeCompare(b.prod_model || '');
-        } else if (sortValue === 'model_desc') {
-            return (b.prod_model || '').localeCompare(a.prod_model || '');
-        } else if (sortValue === 'mgmt_asc') {
-            return getMgmtWeight(a.prod_type) - getMgmtWeight(b.prod_type);
-        } else if (sortValue === 'mgmt_desc') {
-            return getMgmtWeight(b.prod_type) - getMgmtWeight(a.prod_type);
-        }
-        return 0; // default
+        if (sortValue === 'port_asc') { const d = tvCalcTotalPorts(a) - tvCalcTotalPorts(b); return d !== 0 ? d : tvDefaultSort(a, b); }
+        if (sortValue === 'port_desc') { const d = tvCalcTotalPorts(b) - tvCalcTotalPorts(a); return d !== 0 ? d : tvDefaultSort(a, b); }
+        if (sortValue === 'model_asc') return (a.prod_model || '').localeCompare(b.prod_model || '');
+        if (sortValue === 'model_desc') return (b.prod_model || '').localeCompare(a.prod_model || '');
+        if (sortValue === 'mgmt_asc') return getMgmtWeight(a.prod_type) - getMgmtWeight(b.prod_type);
+        if (sortValue === 'mgmt_desc') return getMgmtWeight(b.prod_type) - getMgmtWeight(a.prod_type);
+        return tvDefaultSort(a, b);
     });
+
+    console.log('[applySort result]', sortedList.slice(0,20).map(i=>i.prod_model+'/k:'+tvSortKey(i)+'/p'+tvCalcTotalPorts(i)));
 
     // 更新 Chatbot context 使用的順序
     acquiredModels = sortedList.map(item => item.prod_name || item.prod_model);
@@ -1531,44 +1529,60 @@ const TV_PAGE_SIZE = 30;
 
 // 所有可選欄位定義
 const TV_ALL_COLS = [
-    { key: 'totalPorts',  label: 'Total',          title: 'Total Ports',                    default: true,  sortable: true },
-    { key: 'rjGiga',      label: 'RJ45-1G',        title: 'RJ-45 GbE ports',                default: true,  sortable: true },
-    { key: 'rj100',       label: 'RJ45-FE',        title: 'RJ-45 Fast Ethernet ports',      default: true,  sortable: true },
-    { key: 'fiberGiga',   label: 'Fiber-1G',       title: 'Fiber GbE (SFP) ports',          default: true,  sortable: true },
-    { key: 'fiber10g',    label: 'Fiber-10G',      title: 'Fiber 10G (SFP+) ports',         default: true,  sortable: true },
-    { key: 'fiber100',    label: 'Fiber-100M',     title: 'Fiber 100M fixed ports',         default: false, sortable: true },
-    { key: 'fiberCombo',  label: 'Combo',          title: 'GE Combo (RJ45/Fiber shared)',   default: false, sortable: true },
-    { key: 'm12Fe',       label: 'M12-FE',         title: 'M12 D-code 10/100M ports',      default: false, sortable: true },
-    { key: 'm12Giga',     label: 'M12-1G',         title: 'M12 X-code GbE ports',          default: false, sortable: true },
-    { key: 'm12Multi',    label: 'M12-MG',         title: 'M12 Multi-Giga (2.5/5/10G)',    default: false, sortable: true },
-    { key: 'bypassFe',    label: 'M12-Bypass-FE',  title: 'LAN Bypass D-code 100M ports',  default: false, sortable: true },
-    { key: 'bypassGiga',  label: 'M12-Bypass-1G',  title: 'LAN Bypass X-code GbE ports',   default: false, sortable: true },
-    { key: 'poe', label: 'PoE', title: 'PoE port count', default: true, sortable: true },
-    { key: 'mgmt', label: 'Mgmt', title: 'Management type', default: true, sortable: false },
-    { key: 'temp', label: 'Temp', title: 'Temperature grade (Wide / Standard)', default: true, sortable: false },
-    { key: 'power', label: 'Power', title: 'Power input voltage', default: false, sortable: false },
-    { key: 'fiber_type', label: 'F.Type', title: 'Fiber connector type', default: false, sortable: false },
-    { key: 'application', label: 'App', title: 'Application category', default: false, sortable: false },
+    { key: 'totalPorts',  label: 'Total',          title: 'Total Ports',                    default: true,  sortable: true,  group: 'general', speed: null },
+    { key: 'rj100',       label: 'RJ45-FE',        title: 'RJ-45 Fast Ethernet ports',      default: true,  sortable: true,  group: 'rj45',    speed: '100M' },
+    { key: 'rjGiga',      label: 'RJ45-1G',        title: 'RJ-45 GbE ports',                default: true,  sortable: true,  group: 'rj45',    speed: '1G' },
+    { key: 'fiberCombo',  label: 'Combo',          title: 'GE Combo (RJ45/Fiber shared)',   default: false, sortable: true,  group: 'rj45',    speed: '1G' },
+    { key: 'fiber100',    label: 'Fiber-100M',     title: 'Fiber 100M fixed ports',         default: false, sortable: true,  group: 'fiber',   speed: '100M' },
+    { key: 'fiberGiga',   label: 'Fiber-1G',       title: 'Fiber GbE (SFP) ports',          default: true,  sortable: true,  group: 'fiber',   speed: '1G' },
+    { key: 'fiber10g',    label: 'Fiber-10G',      title: 'Fiber 10G (SFP+) ports',         default: true,  sortable: true,  group: 'fiber',   speed: '10G' },
+    { key: 'm12Fe',       label: 'M12-FE',         title: 'M12 D-code 10/100M ports',      default: false, sortable: true,  group: 'm12',     speed: '100M' },
+    { key: 'm12Giga',     label: 'M12-1G',         title: 'M12 X-code GbE ports',          default: false, sortable: true,  group: 'm12',     speed: '1G' },
+    { key: 'm12Multi',    label: 'M12-MG',         title: 'M12 Multi-Giga (2.5/5/10G)',    default: false, sortable: true,  group: 'm12',     speed: 'MG' },
+    { key: 'bypassFe',    label: 'M12-Bypass-FE',  title: 'LAN Bypass D-code 100M ports',  default: false, sortable: true,  group: 'm12',     speed: '100M' },
+    { key: 'bypassGiga',  label: 'M12-Bypass-1G',  title: 'LAN Bypass X-code GbE ports',   default: false, sortable: true,  group: 'm12',     speed: '1G' },
+    { key: 'poe',         label: 'PoE',            title: 'PoE port count',                 default: true,  sortable: true,  group: 'specs',   speed: null },
+    { key: 'temp',        label: 'Temp',           title: 'Temperature grade (Wide / Standard)', default: true, sortable: false, group: 'specs', speed: null },
+    { key: 'power',       label: 'Power',          title: 'Power input voltage',            default: false, sortable: false, group: 'specs',   speed: null },
+    { key: 'fiber_type',  label: 'F.Type',         title: 'Fiber connector type',           default: false, sortable: false, group: 'specs',   speed: null },
+    { key: 'application', label: 'App',            title: 'Application category',           default: false, sortable: false, group: 'specs',   speed: null },
+];
+
+const TV_COL_GROUPS = [
+    { id: 'general', label: null,    color: null },
+    { id: 'rj45',   label: 'RJ-45', color: '#1d6fa4' },
+    { id: 'fiber',  label: 'Fiber',  color: '#2a8a4a' },
+    { id: 'm12',    label: 'M12',    color: '#b56a00' },
+    { id: 'specs',  label: null,    color: null },
 ];
 
 let tvActiveCols = new Set(TV_ALL_COLS.filter(c => c.default).map(c => c.key));
 
 function autoAdjustTableCols(list) {
     const hasRj      = list.some(i => (i.prod_rj_giga||0)+(i.prod_rj_100||0)+(i.prod_poe_rj_giga||0)+(i.prod_poe_rj_100||0) > 0);
+    const hasCombo   = list.some(i => (i.prod_fiber_ge_combo||0)+(i.prod_rj_100_combo||0) > 0);
+    const hasFib100  = list.some(i => (i.prod_fiber_100||0) > 0);
+    const hasFibGiga = list.some(i => (i.prod_fiber_giga||0) > 0);
+    const hasFib10g  = list.some(i => (i.prod_fiber_10g||0) > 0);
+    console.log('[autoAdjustTableCols] fiber:', {hasFib100, hasFibGiga, hasFib10g, hasCombo});
     const hasM12Fe   = list.some(i => (i.prod_m12_100||0)+(i.prod_poe_m12_100||0) > 0);
     const hasM12G    = list.some(i => (i.prod_m12_giga||0)+(i.prod_poe_m12_giga||0) > 0);
     const hasM12MG   = list.some(i => (i.prod_m12_multi_giga||0) > 0);
     const hasBypFe   = list.some(i => (i.prod_bypass_m12_100||0) > 0);
     const hasBypGiga = list.some(i => (i.prod_bypass_m12_giga||0) > 0);
 
-    if (hasRj)    { tvActiveCols.add('rjGiga');    tvActiveCols.add('rj100'); }
-    else          { tvActiveCols.delete('rjGiga');  tvActiveCols.delete('rj100'); }
+    if (hasRj)      { tvActiveCols.add('rjGiga');    tvActiveCols.add('rj100'); }
+    else            { tvActiveCols.delete('rjGiga');  tvActiveCols.delete('rj100'); }
 
-    if (hasM12Fe)   tvActiveCols.add('m12Fe');     else tvActiveCols.delete('m12Fe');
-    if (hasM12G)    tvActiveCols.add('m12Giga');   else tvActiveCols.delete('m12Giga');
-    if (hasM12MG)   tvActiveCols.add('m12Multi');  else tvActiveCols.delete('m12Multi');
-    if (hasBypFe)   tvActiveCols.add('bypassFe');  else tvActiveCols.delete('bypassFe');
-    if (hasBypGiga) tvActiveCols.add('bypassGiga');else tvActiveCols.delete('bypassGiga');
+    if (hasCombo)   tvActiveCols.add('fiberCombo');  else tvActiveCols.delete('fiberCombo');
+    if (hasFib100)  tvActiveCols.add('fiber100');    else tvActiveCols.delete('fiber100');
+    if (hasFibGiga) tvActiveCols.add('fiberGiga');   else tvActiveCols.delete('fiberGiga');
+    if (hasFib10g)  tvActiveCols.add('fiber10g');    else tvActiveCols.delete('fiber10g');
+    if (hasM12Fe)   tvActiveCols.add('m12Fe');       else tvActiveCols.delete('m12Fe');
+    if (hasM12G)    tvActiveCols.add('m12Giga');     else tvActiveCols.delete('m12Giga');
+    if (hasM12MG)   tvActiveCols.add('m12Multi');    else tvActiveCols.delete('m12Multi');
+    if (hasBypFe)   tvActiveCols.add('bypassFe');    else tvActiveCols.delete('bypassFe');
+    if (hasBypGiga) tvActiveCols.add('bypassGiga');  else tvActiveCols.delete('bypassGiga');
 }
 
 // ── 視圖切換入口 ───────────────────────────────
@@ -1593,8 +1607,68 @@ function switchView(view) {
         : []);
 }
 
+// ── 介面層級分類（Table 預設排序用）────────────
+function tvGetTier(item) {
+    const hasRj  = (item.prod_rj_giga||0)+(item.prod_rj_100||0)+(item.prod_poe_rj_giga||0)+(item.prod_poe_rj_100||0) > 0;
+    const hasFib = (item.prod_fiber_giga||0)+(item.prod_fiber_10g||0)+(item.prod_fiber_100||0) > 0;
+    const hasM12 = (item.prod_m12_giga||0)+(item.prod_m12_100||0)+(item.prod_poe_m12_giga||0)+
+                   (item.prod_poe_m12_100||0)+(item.prod_m12_multi_giga||0)+
+                   (item.prod_bypass_m12_100||0)+(item.prod_bypass_m12_giga||0) > 0;
+    if ( hasRj && !hasFib && !hasM12) return 1; // RJ-45 only
+    if ( hasRj &&  hasFib && !hasM12) return 2; // RJ-45 + Fiber
+    if ( hasRj && !hasFib &&  hasM12) return 3; // RJ-45 + M12
+    if ( hasRj &&  hasFib &&  hasM12) return 4; // RJ-45 + Fiber + M12
+    if (!hasRj &&  hasFib && !hasM12) return 5; // Fiber only
+    return 6; // others (M12 only, etc.)
+}
+
+const TV_TIER_LABELS = {
+    1: 'RJ-45 only',
+    2: 'RJ-45 + Fiber',
+    3: 'RJ-45 + M12',
+    4: 'RJ-45 + Fiber + M12',
+    5: 'Fiber only',
+    6: 'Other',
+};
+
+function _m12SpeedDebug(i) {
+    if ((i.prod_bypass_m12_giga||0) > 0) return 5;
+    if ((i.prod_bypass_m12_100||0) > 0) return 4;
+    if ((i.prod_m12_multi_giga||0) > 0) return 3;
+    if ((i.prod_m12_giga||0)+(i.prod_poe_m12_giga||0) > 0) return 2;
+    if ((i.prod_m12_100||0)+(i.prod_poe_m12_100||0) > 0) return 1;
+    return 0;
+}
+window._debugTierSort = (modelList) => {
+    modelList.forEach(m => {
+        const i = currentDataList.find(x => x.prod_model === m);
+        if (!i) return;
+        console.log(m, 'tier:', tvGetTier(i), 'm12speed:', _m12SpeedDebug(i),
+            'm12_100:', i.prod_m12_100, 'poe_m12_100:', i.prod_poe_m12_100,
+            'm12g:', i.prod_m12_giga, 'poe_m12g:', i.prod_poe_m12_giga);
+    });
+};
+function tvSortKey(item) {
+    const tier = tvGetTier(item);
+    const rjS = ((item.prod_rj_giga||0)+(item.prod_poe_rj_giga||0)) > 0 ? 1 : 0;
+    const fibS = (item.prod_fiber_10g||0) > 0 ? 3
+               : (item.prod_fiber_giga||0) > 0 ? 2
+               : (item.prod_fiber_100||0) > 0 ? 1 : 0;
+    const m12S = (item.prod_bypass_m12_giga||0) > 0 ? 5
+               : (item.prod_bypass_m12_100||0) > 0 ? 4
+               : (item.prod_m12_multi_giga||0) > 0 ? 3
+               : (item.prod_m12_giga||0)+(item.prod_poe_m12_giga||0) > 0 ? 2
+               : (item.prod_m12_100||0)+(item.prod_poe_m12_100||0) > 0 ? 1 : 0;
+    const model = item.prod_model || '';
+    return `${tier}-${rjS}-${fibS}-${m12S}-${model}`;
+}
+
+function tvDefaultSort(a, b) {
+    const ka = tvSortKey(a), kb = tvSortKey(b);
+    return ka < kb ? -1 : ka > kb ? 1 : 0;
+}
+
 function _getSortedList() {
-    // 借用 applySort 的排序邏輯取得已排序清單
     const sortSelect = document.getElementById('sortSelect');
     const sortValue = sortSelect ? sortSelect.value : 'default';
     let list = [...currentDataList];
@@ -1610,13 +1684,13 @@ function _getSortedList() {
     };
 
     list.sort((a, b) => {
-        if (sortValue === 'port_asc') return tvCalcTotalPorts(a) - tvCalcTotalPorts(b);
-        if (sortValue === 'port_desc') return tvCalcTotalPorts(b) - tvCalcTotalPorts(a);
+        if (sortValue === 'port_asc') { const d = tvCalcTotalPorts(a) - tvCalcTotalPorts(b); return d !== 0 ? d : tvDefaultSort(a, b); }
+        if (sortValue === 'port_desc') { const d = tvCalcTotalPorts(b) - tvCalcTotalPorts(a); return d !== 0 ? d : tvDefaultSort(a, b); }
         if (sortValue === 'model_asc') return (a.prod_model || '').localeCompare(b.prod_model || '');
         if (sortValue === 'model_desc') return (b.prod_model || '').localeCompare(a.prod_model || '');
         if (sortValue === 'mgmt_asc') return getMgmtWeight(a.prod_type) - getMgmtWeight(b.prod_type);
         if (sortValue === 'mgmt_desc') return getMgmtWeight(b.prod_type) - getMgmtWeight(a.prod_type);
-        return 0;
+        return tvDefaultSort(a, b);
     });
     return list;
 }
@@ -1727,17 +1801,48 @@ function renderProductTable(data_list) {
         return;
     }
 
-    const cols = TV_ALL_COLS.filter(c => tvActiveCols.has(c.key));
+    const cols = TV_ALL_COLS.filter(c => tvActiveCols.has(c.key) && c.key !== 'mgmt');
 
     // ── Col Picker UI ──
+    const _pickerGroupHtml = (g) => {
+        const gCols = TV_ALL_COLS.filter(c => c.group === g.id);
+        const allOn = gCols.every(c => tvActiveCols.has(c.key));
+        const items = gCols.map(c => {
+            const on = tvActiveCols.has(c.key);
+            return `<div class="col-item ${on ? 'on' : ''}" onclick="tvToggleCol('${c.key}',this)">
+                <span class="col-item-check"></span>
+                <span class="col-item-label">${c.label}</span>
+                ${c.speed ? `<span class="col-item-speed">${c.speed}</span>` : ''}
+            </div>`;
+        }).join('');
+        return `<div class="col-group" data-group="${g.id}">
+            <div class="col-group-header" style="border-left:3px solid ${g.color}">
+                <span class="col-group-label">${g.label}</span>
+                <button class="col-group-all ${allOn ? 'all-on' : ''}" onclick="tvToggleGroupAll('${g.id}',this)">all</button>
+            </div>
+            <div class="col-group-items">${items}</div>
+        </div>`;
+    };
+    const _pickerSpecsHtml = TV_ALL_COLS.filter(c => c.group === 'specs').map(c =>
+        `<div class="col-chip ${tvActiveCols.has(c.key) ? 'on' : ''}" onclick="tvToggleCol('${c.key}',this)">
+            <span class="col-chip-check"></span>${c.label}
+        </div>`
+    ).join('');
+    const _pickerGeneralHtml = TV_ALL_COLS.filter(c => c.group === 'general').map(c =>
+        `<div class="col-chip ${tvActiveCols.has(c.key) ? 'on' : ''}" onclick="tvToggleCol('${c.key}',this)">
+            <span class="col-chip-check"></span>${c.label}
+        </div>`
+    ).join('');
     let pickerHtml = `
     <div class="col-picker-panel" id="tv-col-panel">
         <div class="col-picker-label">Select columns to display</div>
-        <div class="col-chips" id="tv-col-chips">
-        ${TV_ALL_COLS.map(c => `
-            <div class="col-chip ${tvActiveCols.has(c.key) ? 'on' : ''}"
-                 onclick="tvToggleCol('${c.key}',this)">${c.label}</div>
-        `).join('')}
+        <div class="col-picker-row" id="tv-col-chips">
+            <div class="col-picker-general">${_pickerGeneralHtml}</div>
+            <div class="col-picker-groups">
+                ${TV_COL_GROUPS.filter(g=>g.label).map(_pickerGroupHtml).join('')}
+            </div>
+            <div class="col-picker-sep"></div>
+            <div class="col-chips-specs">${_pickerSpecsHtml}</div>
         </div>
     </div>`;
 
@@ -1752,34 +1857,77 @@ function renderProductTable(data_list) {
         return `<span class="tv-sort-icon">${tvSortDir > 0 ? '↑' : '↓'}</span>`;
     };
 
-    let thead = `<tr>
-        <th style="position:sticky;left:0;z-index:4;background:var(--adv-gray);width:36px;min-width:36px;text-align:center;padding:9px 6px;border-right:1px solid var(--adv-border);font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--adv-border);">#</th>
-        <th style="position:sticky;left:37px;z-index:4;background:var(--adv-gray);min-width:160px;box-shadow:3px 0 8px -3px rgba(0,51,102,0.10);cursor:default;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--adv-border);">Model</th>
-        ${cols.map(c => `
-        <th class="${c.sortable ? '' : 'tv-unsortable'} ${tvSortCol === c.key ? 'tv-sorted' : ''}"
-            title="${c.title || c.label}"
-            ${c.sortable ? `onclick="tvDoSort('${c.key}')"` : ''}>
-            ${c.label}${c.sortable ? sortIconFor(c.key) : ''}
-        </th>`).join('')}
-        <th style="width:54px;text-align:center;" title="Add to compare panel">Cmp</th>
+    // Build two-row thead: row1=group spans, row2=col names
+    const LABELED_GROUPS = TV_COL_GROUPS.filter(g => g.label);
+    // For each labeled group, count active cols
+    const groupColCounts = {};
+    LABELED_GROUPS.forEach(g => { groupColCounts[g.id] = cols.filter(c => c.group === g.id).length; });
+    // Determine which col is first in its group (for left border styling)
+    const groupFirstSeen = new Set();
+    const colIsGroupFirst = cols.map(c => {
+        if (!c.group || c.group === 'general' || c.group === 'specs') return false;
+        if (!groupFirstSeen.has(c.group)) { groupFirstSeen.add(c.group); return true; }
+        return false;
+    });
+
+    const stickyNumTh  = `position:sticky;left:0;z-index:4;background:var(--adv-gray);width:36px;min-width:36px;text-align:center;padding:9px 6px;border-right:1px solid var(--adv-border);font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--adv-border);`;
+    const stickyModTh  = `position:sticky;left:37px;z-index:4;background:var(--adv-gray);min-width:160px;cursor:default;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--adv-border);`;
+    const stickyMgmtTh = `position:sticky;left:197px;z-index:4;background:var(--adv-gray);min-width:90px;box-shadow:3px 0 8px -3px rgba(0,51,102,0.10);cursor:default;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--adv-border);`;
+
+    // Row 1 — group headers
+    let theadRow1 = `<tr class="tv-thead-group">
+        <th rowspan="2" style="${stickyNumTh}">#</th>
+        <th rowspan="2" style="${stickyModTh}">Model</th>
+        ${cols.filter(c => c.group === 'general').map(c => `
+        <th rowspan="2" class="${c.sortable?'':'tv-unsortable'} ${tvSortCol===c.key?'tv-sorted':''}"
+            title="${c.title||c.label}" ${c.sortable?`onclick="tvDoSort('${c.key}')"`:''}>${c.label}${c.sortable?sortIconFor(c.key):''}</th>`).join('')}
+        ${LABELED_GROUPS.filter(g => groupColCounts[g.id] > 0).map(g => `
+        <th colspan="${groupColCounts[g.id]}" class="tv-gh tv-gh-${g.id}" style="border-left:3px solid ${g.color};color:${g.color}">${g.label}</th>`).join('')}
+        ${cols.filter(c => c.group === 'specs').map(c => `
+        <th rowspan="2" class="${c.sortable?'':'tv-unsortable'} ${tvSortCol===c.key?'tv-sorted':''}"
+            title="${c.title||c.label}" ${c.sortable?`onclick="tvDoSort('${c.key}')"`:''}>${c.label}${c.sortable?sortIconFor(c.key):''}</th>`).join('')}
+        <th rowspan="2" class="tv-unsortable" style="width:54px;text-align:center;" title="Add to compare panel">Cmp</th>
     </tr>`;
 
+    // Row 2 — individual col names for labeled groups only
+    const row2Cols = cols.filter(c => c.group !== 'general' && c.group !== 'specs');
+    let theadRow2 = row2Cols.length ? `<tr class="tv-thead-cols">
+        ${row2Cols.map((c, i) => {
+            const isFirst = colIsGroupFirst[cols.indexOf(c)];
+            const grp = TV_COL_GROUPS.find(g => g.id === c.group);
+            const borderStyle = (isFirst && grp ? `border-left:3px solid ${grp.color};` : '')
+                + (grp && grp.color ? `border-bottom:2px solid ${grp.color};` : '');
+            return `<th class="${c.sortable?'':'tv-unsortable'} ${tvSortCol===c.key?'tv-sorted':''} tv-col2"
+                style="${borderStyle}" title="${c.title||c.label}"
+                ${c.sortable?`onclick="tvDoSort('${c.key}')"`:''}>${c.label}${c.sortable?sortIconFor(c.key):''}</th>`;
+        }).join('')}
+    </tr>` : '';
+
+    let thead = theadRow1 + theadRow2;
+
     // ── Table rows ──
+    const sortSelect = document.getElementById('sortSelect');
+    const isDefaultSort = !sortSelect || sortSelect.value === 'default';
+    const colSpan = 2 + cols.length + 1;
+
+    let lastTier = null;
     let tbody = pageData.map((item, idx) => {
         const globalIdx = (tvPage - 1) * TV_PAGE_SIZE + idx;
         const pid = `pc-${globalIdx}`;
         const prodUrl = item.prod_url || `https://www.advantech.com/en/search?q=${encodeURIComponent(item.prod_model)}`;
 
-        const totalRj = Math.max(item.prod_rj_giga || 0, item.prod_poe_rj_giga || 0) +
-            Math.max(item.prod_rj_100 || 0, item.prod_poe_rj_100 || 0);
+        const totalRj = (item.prod_rj_giga || 0) + (item.prod_poe_rj_giga || 0) +
+            (item.prod_rj_100 || 0) + (item.prod_poe_rj_100 || 0);
         const totalFib = (item.prod_fiber_giga || 0) + (item.prod_fiber_10g || 0) + (item.prod_fiber_100 || 0);
-        const totalM12 = Math.max(item.prod_m12_giga || 0, item.prod_poe_m12_giga || 0) +
-            Math.max(item.prod_m12_100 || 0, item.prod_poe_m12_100 || 0) +
+        const totalM12 = (item.prod_m12_giga || 0) + (item.prod_poe_m12_giga || 0) +
+            (item.prod_m12_100 || 0) + (item.prod_poe_m12_100 || 0) +
             (item.prod_m12_multi_giga || 0);
+        const mgmtLabel = item.prod_type || '';
         const subParts = [
             totalRj > 0 ? `${totalRj}×RJ45` : '',
             totalFib > 0 ? `${totalFib}×Fiber` : '',
             totalM12 > 0 ? `${totalM12}×M12` : '',
+            mgmtLabel || '',
         ].filter(Boolean).join(' · ');
 
         // 同步 compare bar 的 active 狀態
@@ -1787,7 +1935,22 @@ function renderProductTable(data_list) {
 
         const rowBg = (globalIdx % 2 === 1) ? '#eef1f6' : '#ffffff';
         const hoverBg = '#ddeaf8';
-        return `<tr
+
+        let separatorRow = '';
+        if (isDefaultSort) {
+            const tier = tvGetTier(item);
+            if (tier !== lastTier) {
+                lastTier = tier;
+                const label = TV_TIER_LABELS[tier] || '';
+                separatorRow = `<tr class="tv-tier-sep">
+                    <td colspan="${colSpan}" style="padding:3px 12px;background:#dce9f5;color:#2a5280;font-size:0.62rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;border-top:2px solid #b0cce8;border-bottom:1px solid #b0cce8;position:relative;z-index:5;">
+                        層級 ${tier}・${label}
+                    </td>
+                </tr>`;
+            }
+        }
+
+        return separatorRow + `<tr
             onmouseenter="this.querySelectorAll('.tv-s').forEach(c=>c.style.background='${hoverBg}')"
             onmouseleave="this.querySelectorAll('.tv-s').forEach(c=>c.style.background='${rowBg}')">
             <td class="tv-s" style="position:sticky;left:0;z-index:2;background:${rowBg};width:36px;min-width:36px;text-align:center;font-size:0.72rem;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);padding:9px 6px;border-right:1px solid var(--adv-border);box-shadow:2px 0 6px -2px rgba(0,51,102,0.08);">
@@ -1799,8 +1962,18 @@ function renderProductTable(data_list) {
                        title="View on Advantech website">${item.prod_model} <span style="font-size:9px;opacity:0.7">↗</span></a>
                 </div>
                 ${subParts ? `<div class="tv-model-sub">${subParts}</div>` : ''}
+                ${(() => {
+                    const certs = (item.prod_certifications || '').split(',').map(s => s.trim()).filter(Boolean);
+                    if (!certs.length) return '';
+                    return `<div class="tv-cert-row">${certs.map(c => `<span class="tv-cert-badge">${c}</span>`).join('')}</div>`;
+                })()}
             </td>
-            ${cols.map(c => `<td>${tvRenderCell(item, c.key)}</td>`).join('')}
+            ${cols.map((c, ci) => {
+                const isFirst = colIsGroupFirst[ci];
+                const grp = TV_COL_GROUPS.find(g => g.id === c.group);
+                const borderStyle = isFirst && grp && grp.color ? `border-left:3px solid ${grp.color};` : '';
+                return `<td style="${borderStyle}">${tvRenderCell(item, c.key)}</td>`;
+            }).join('')}
             <td class="tv-cmp-cell">
                 <button class="tv-cmp-btn ${isCmpActive ? 'selected' : ''}"
                     id="tv-cmp-${pid}"
@@ -1836,16 +2009,28 @@ function renderProductTable(data_list) {
 }
 
 // ── Col 開關 ──────────────────────────────────
-function tvToggleCol(key, chipEl) {
+function tvToggleGroupAll(groupId, btnEl) {
+    const gCols = TV_ALL_COLS.filter(c => c.group === groupId);
+    const allOn = gCols.every(c => tvActiveCols.has(c.key));
+    gCols.forEach(c => {
+        if (allOn) tvActiveCols.delete(c.key);
+        else tvActiveCols.add(c.key);
+    });
+    // ensure at least one col remains
+    if (tvActiveCols.size === 0) tvActiveCols.add(gCols[0].key);
+    renderProductTable(_getSortedList());
+    const panel = document.getElementById('tv-col-panel');
+    if (panel) panel.classList.add('open');
+}
+
+function tvToggleCol(key, el) {
     if (tvActiveCols.has(key)) {
-        if (tvActiveCols.size <= 1) return; // 至少保留一欄
+        if (tvActiveCols.size <= 1) return;
         tvActiveCols.delete(key);
     } else {
         tvActiveCols.add(key);
     }
-    chipEl.classList.toggle('on', tvActiveCols.has(key));
     renderProductTable(_getSortedList());
-    // 保持 panel 展開
     const panel = document.getElementById('tv-col-panel');
     if (panel) panel.classList.add('open');
 }
