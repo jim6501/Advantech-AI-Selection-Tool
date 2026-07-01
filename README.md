@@ -164,8 +164,8 @@ uv run uvicorn app.main:app --reload --host 0.0.0.0
 * **衝突條件警告 (Culprit Items)**：當選取的特徵組合導致無任何產品符合時，系統以紅色標示出造成無結果的「元凶條件」，降低認知負擔。
 
 ### 2. 雙維度切換：卡片清單與表格檢視
-* **卡片檢視 (List View)**：Glassmorphism 視覺風格，卡片會動態生成關鍵 Badges（網管類型、工作溫度、PoE 總數、SFP 模組引導、場景驗證 ✓）。
-* **表格檢視 (Table View)**：方便橫向掃描規格。支援動態選取欲顯示的欄位（Column Picker）、前端資料快速排序、以及分頁（Pagination）機制。序號與產品型號在水平滾動時會自動固定（Sticky）。
+* **卡片檢視 (List View)**：Glassmorphism 視覺風格，卡片會動態生成關鍵 Badges（網管類型、工作溫度、PoE 總數、SFP 模組引導、場景驗證 ✓、認證標章 CE/FCC 等）。
+* **表格檢視 (Table View)**：方便橫向掃描規格。支援動態選取欲顯示的欄位（Column Picker），欄位依介面類型分群顯示（RJ-45 藍、Fiber 綠、M12 橙色標），並依產品介面組合（RJ-45 / RJ+Fiber / RJ+M12 等）自動分層排序（Tier Sort）。序號與產品型號在水平滾動時自動固定（Sticky）。
 
 ### 3. SFP 光纖選型導航面板 (SFP Selector)
 * 卡片上設有 SFP 可選型捷徑，切換至 SFP 頁籤時會動態推導該設備的光口速度（100M/1G/10G），並拉取靜態資料推薦相容的 SFP 模組清單。
@@ -173,7 +173,8 @@ uv run uvicorn app.main:app --reload --host 0.0.0.0
 
 ### 4. 產品多台規格對比與 PDF/CSV 匯出
 * **產品對比 (Product Compare)**：可勾選 1 至 5 台產品拉出側拉面板進行橫向比對，並以橘黃色底色**高亮規格差異欄位**。
-* **多格式報表**：對比面板內整合 CSV 規格下載與呼叫後端 API 動態生成的 PDF 規格書報表。單台設備亦可直接匯出。
+* **AI 對比摘要**：對比面板整合 RAG AI 摘要（`compare_summary.py`），自動生成各機型關鍵差異分析與場景推薦建議。
+* **多格式報表**：對比面板內整合 CSV 規格下載與呼叫後端 API 動態生成的 PDF 規格書報表（含 AI 摘要段落）。單台設備亦可直接匯出。
 
 ### 5. 官方產品連結導流與實體照片 Hover 預覽
 * **研華官網直達**：卡片型號旁、展開卡片底部 CTA 及 SFP 推薦晶片上，均設有外部連結圖示 `↗`，點擊即可直達官網（支援以型號自動拼湊搜尋連結的 Fallback 機制）。
@@ -192,9 +193,9 @@ uv run uvicorn app.main:app --reload --host 0.0.0.0
 ├── .github/workflows/
 │   └── deploy-pages.yml  # GitHub Actions 自動部署至 GitHub Pages 工作流
 ├── app/
-│   ├── api/           # API 端點 (selection:選型, chat:AI對話, report:PDF/CSV匯出)
+│   ├── api/           # API 端點 (selection:選型, chat:AI對話, compare:對比, report:PDF/CSV匯出)
 │   ├── models/        # Pydantic 資料模型定義
-│   ├── rag/           # RAG 三階段核心管線 (意圖解析、動態條件過濾、LLM報告生成)
+│   ├── rag/           # RAG 核心管線 (意圖解析、動態條件過濾、LLM報告生成、compare_summary:AI對比摘要)
 │   ├── database.py    # MongoDB 連線封裝
 │   ├── llm_gateway.py # LLM 統一閘道器（具 RPM 限流防護與 Retry 機制）
 │   └── main.py        # FastAPI 入口（含前端靜態檔案無快取控制中間件）
@@ -211,8 +212,8 @@ uv run uvicorn app.main:app --reload --host 0.0.0.0
 │   │   ├── pics/      # [NEW] 產品照片目錄，需依型號命名放置於此 (提供網頁展示，例如 EKI-7710G.png)
 │   │   └── sfp_modules.json # 從雲端 SFP Sheet 同步下來的相容模組清單
 │   ├── js/            # 前端 JavaScript 邏輯模組
-│   │   ├── app.js     # 前端主控制邏輯（包含 API 連線判定與表格視圖）
-│   │   ├── compare.js # 產品對比與底部 padding 動態計算邏輯
+│   │   ├── app.js     # 前端主控制邏輯（含 Table View 欄位群組、Tier 排序、Fiber 自動顯示）
+│   │   ├── compare.js # 產品對比、AI 摘要顯示與底部 padding 動態計算邏輯
 │   │   ├── config.js  # Cloudflare Tunnel API 終端設定
 │   │   ├── feature-selector.js # 進階功能選擇器 (Feature Selector) 控制
 │   │   ├── scenes.js  # 應用場景模板定義

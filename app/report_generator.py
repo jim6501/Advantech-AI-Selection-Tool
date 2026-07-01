@@ -294,15 +294,22 @@ def generate_selection_report(products: list[dict], criteria: dict, ai_summary: 
     def make_row(label: str, vals: list) -> list:
         return [L(label)] + vals
 
+    def get_text(p) -> str:
+        """取出 Paragraph 的純文字（用於比較）"""
+        if hasattr(p, "text"):
+            return p.text or ""
+        return str(p)
+
     def diff_indices(vals: list) -> bool:
-        """判斷這一行是否有差異（用於標色）"""
-        texts = [p.text if hasattr(p, "text") else str(p) for p in vals]
+        """判斷這一行是否有差異"""
+        texts = [get_text(p) for p in vals]
         return len(set(texts)) > 1
 
     # 所有資料列
     rows = [header_row]
-    sec_row_indices  = set()
-    diff_row_indices = set()
+    sec_row_indices = set()
+    # diff_cells: list of (row_idx, col_idx) to highlight
+    diff_cells: list = []
 
     def add_sec(label):
         sec_row_indices.add(len(rows))
@@ -310,9 +317,25 @@ def generate_selection_report(products: list[dict], criteria: dict, ai_summary: 
         for _ in range(n): sec_r.append("")
         rows.append(sec_r)
 
+    def has_any_value(vals):
+        """至少一欄有非零/非空值才加入表格（與網頁比較表邏輯一致）"""
+        for p in vals:
+            txt = get_text(p)
+            if txt and txt != "—":
+                return True
+        return False
+
     def add_row(label, vals):
+        if not has_any_value(vals):
+            return
+        row_idx = len(rows)
         if diff_indices(vals):
-            diff_row_indices.add(len(rows))
+            texts = [get_text(p) for p in vals]
+            base = texts[0]
+            for col, txt in enumerate(texts):
+                if txt != base:
+                    # col 0 = label col, product cols start at 1
+                    diff_cells.append((row_idx, col + 1))
         rows.append(make_row(label, vals))
 
     def format_mgmt(val):
@@ -324,72 +347,61 @@ def generate_selection_report(products: list[dict], criteria: dict, ai_summary: 
         if v in ("managed", "manage"): return "Managed (L2 + L3)"
         return str(val).replace("_", " ").title()
 
-    # Basic
+    # Basic Information
     add_sec("Basic Information")
     add_row("Management Type",
             [V(format_mgmt(hw(i).get("Function", "—"))) for i in range(n)])
-    add_row("Temp Grade",
-            [V(hw(i).get("Temp Grade", "—")) for i in range(n)])
+    add_row("Total Ports",
+            [V(hw(i).get("Port Numbers", "—"), True) for i in range(n)])
+    add_row("Temp Range",
+            [V(hw(i).get("Op Temp Range") or hw(i).get("Temp Grade") or "—") for i in range(n)])
     add_row("Power Input",
             [V(hw(i).get("Input Voltage") or "—") for i in range(n)])
     add_row("Mounting Type",
             [V(hw(i).get("Type") or "—") for i in range(n)])
 
-    # Ports
-    add_sec("Port Configuration")
-    add_row("Total Ports",
-            [V(hw(i).get("Port Numbers", "—"), True) for i in range(n)])
-    add_row("RJ-45 GbE",
-            [port_val(hw(i), "RJ-45 Gigabit") for i in range(n)])
+    # Port Specification
+    add_sec("Port Specification")
     add_row("RJ-45 10/100M",
             [port_val(hw(i), "RJ-45 10/100M") for i in range(n)])
-    add_row("RJ-45 Combo",
-            [port_val(hw(i), "RJ-45 Combo") for i in range(n)])
+    add_row("RJ-45 GbE",
+            [port_val(hw(i), "RJ-45 Gigabit") for i in range(n)])
+    add_row("PoE RJ-45 100M",
+            [port_val(hw(i), "PoE RJ-45 100M") for i in range(n)])
+    add_row("PoE RJ-45 GbE",
+            [port_val(hw(i), "PoE RJ-45 GbE") for i in range(n)])
+    add_row("Fiber 100M",
+            [port_val(hw(i), "Fiber 100M") for i in range(n)])
     add_row("Fiber GbE (SFP)",
             [port_val(hw(i), "Fiber Gigabit", "Fiber GE Combo") for i in range(n)])
     add_row("Fiber 10G (SFP+)",
             [port_val(hw(i), "Fiber 10G") for i in range(n)])
-    add_row("PoE RJ-45 GbE",
-            [port_val(hw(i), "PoE RJ-45 GbE") for i in range(n)])
+    add_row("RJ-45 / SFP Combo",
+            [port_val(hw(i), "RJ-45 Combo") for i in range(n)])
+    add_row("M12 D-code 100M",
+            [port_val(hw(i), "Eth 10/100M (D-code)") for i in range(n)])
+    add_row("M12 X-code GbE",
+            [port_val(hw(i), "Eth Gigabit (X-code)") for i in range(n)])
+    add_row("M12 X-code Multi-Giga",
+            [port_val(hw(i), "Eth Multi-Giga (X-code)") for i in range(n)])
+    add_row("PoE M12 D-code",
+            [port_val(hw(i), "PoE (D-code)") for i in range(n)])
+    add_row("PoE M12 X-code",
+            [port_val(hw(i), "PoE (X-code)") for i in range(n)])
     add_row("PoE Standard",
             [V(hw(i).get("PoE Standard") or "—") for i in range(n)])
     add_row("PoE Budget (W)",
             [V(hw(i).get("Power Budget (W)") or "—") for i in range(n)])
+    add_row("LAN Bypass D-code",
+            [port_val(hw(i), "LAN Bypass 10/100M (D-code)") for i in range(n)])
+    add_row("LAN Bypass X-code",
+            [port_val(hw(i), "LAN Bypass Gigabit (X-code)") for i in range(n)])
 
-    # Redundancy
-    add_sec("Redundancy / Ring")
-    add_row("X-Ring Elite",
-            [sw_val(i, "X-Ring Elite", "Multiple Ring") for i in range(n)])
-    add_row("X-Ring Pro",
-            [sw_val(i, "X-Ring Pro", "Multiple Ring") for i in range(n)])
-    add_row("RSTP (802.1w)",
-            [sw_val(i, "Spanning Tree", "IEEE 802.1w RSTP") for i in range(n)])
-    add_row("MSTP (802.1s)",
-            [sw_val(i, "Spanning Tree", "IEEE 802.1s MSTP") for i in range(n)])
-    add_row("ERPS (G.8032)",
-            [sw_val(i, "ERPS(G.8032)", "G.8032 ERPS") for i in range(n)])
-    add_row("MRP (IEC 62439-2)",
-            [sw_val(i, "IEC 62439-2 MRP", "MRM") for i in range(n)])
-
-    # Industrial
-    add_sec("Industrial Protocols")
-    add_row("PROFINET",
-            [sw_val(i, "Industrial Protocol - Modbus TCP", "PROFINET")
-             for i in range(n)])
-    add_row("EtherNet/IP",
-            [sw_val(i, "Industrial Protocol - Modbus TCP", "EtherNet")
-             for i in range(n)])
-    add_row("Modbus TCP",
-            [sw_val(i, "Industrial Protocol - Modbus TCP", "Modbus TCP")
-             for i in range(n)])
-    add_row("IEEE 1588v2 PTP",
-            [sw_val(i, "IEEE 1588v2", "E2E Boundary Clock") for i in range(n)])
-
-    # SFP
-    add_sec("SFP Options")
-    add_row("Fiber Type",
+    # Fiber Specification
+    add_sec("Fiber Specification")
+    add_row("Fiber Slot Type",
             [V(hw(i).get("Fiber Type") or "—") for i in range(n)])
-    add_row("Fiber Connector",
+    add_row("Fixed Connector",
             [V(hw(i).get("Fiber Connector") or "—") for i in range(n)])
 
     # Certifications
@@ -415,14 +427,11 @@ def generate_selection_report(products: list[dict], criteria: dict, ai_summary: 
     ]
     for r in sec_row_indices:
         style_cmds += [
-            ("BACKGROUND", (0, r), (-1, r),
-             colors.HexColor("#D6E4F0")),
+            ("BACKGROUND", (0, r), (-1, r), colors.HexColor("#D6E4F0")),
             ("SPAN",       (0, r), (-1, r)),
         ]
-    for r in diff_row_indices:
-        style_cmds.append(
-            ("BACKGROUND", (1, r), (-1, r), DIFF_BG)
-        )
+    for (r, c) in diff_cells:
+        style_cmds.append(("BACKGROUND", (c, r), (c, r), DIFF_BG))
 
     spec_tbl.setStyle(TableStyle(style_cmds))
     story.append(spec_tbl)

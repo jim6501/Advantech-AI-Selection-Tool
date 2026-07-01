@@ -66,6 +66,8 @@ class ProductItemResponse(BaseModel):
     prod_poe_m12_giga: int = 0  # PoE (X-code) 埠數
     prod_bypass_m12_100: int = 0 # LAN Bypass 10/100M (D-code)
     prod_bypass_m12_giga: int = 0 # LAN Bypass Gigabit (X-code)
+    prod_poe_standard: str = ""  # PoE 標準（如 IEEE 802.3af/at/bt）
+    prod_poe_budget: str = ""    # PoE 總功率預算（如 "240W"）
     prod_power_input: str = "—" # 電源輸入電壓範圍 (如 12-48VDC)
     prod_temp_range: str = "—"  # 工作溫度範圍 (如 -40 ~ 75C)
     prod_application: str = ""  # 應用場景標記（來自 hardware.Application，輔助顯示用）
@@ -74,6 +76,7 @@ class ProductItemResponse(BaseModel):
     prod_certifications: str = "" # 認證清單（逗號分隔，如 CE, FCC, UL...）
     prod_mounting: str = ""     # 安裝方式（如 DIN-Rail, Rack Mount...）
     prod_url: str = ""          # 產品頁 URL；空字串時前端自動組合官網搜尋連結
+    prod_description: str = "" # 產品描述（DB Description 欄位）
 
 
 class SubmitProdResponse(BaseModel):

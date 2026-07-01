@@ -1750,6 +1750,7 @@ function tvGetVal(item, key) {
         case 'power': return item.prod_power_input || '—';
         case 'fiber_type': return item.prod_fiber_type || '—';
         case 'application': return item.prod_application || '—';
+        case 'description': return item.prod_description || '—';
         default: return '—';
     }
 }
@@ -1787,6 +1788,10 @@ function tvRenderCell(item, key) {
     if (key === 'application') {
         if (!v || v === '—') return `<span class="tv-dash">—</span>`;
         return `<span class="tv-tag tv-tag-app">${v}</span>`;
+    }
+    if (key === 'description') {
+        if (!v || v === '—') return `<span class="tv-dash">—</span>`;
+        return `<span class="tv-desc-cell" title="${v.replace(/"/g, '&quot;')}">${v}</span>`;
     }
     return `<span>${v}</span>`;
 }
@@ -2068,7 +2073,7 @@ function tvDownloadCSV() {
     const list = _getSortedList();
     if (!list.length) return;
 
-    const cols = TV_ALL_COLS.filter(c => tvActiveCols.has(c.key));
+    const cols = TV_ALL_COLS.filter(c => tvActiveCols.has(c.key) && c.key !== 'description');
 
     const escape = v => {
         const s = (v === null || v === undefined) ? '' : String(v);
@@ -2076,13 +2081,13 @@ function tvDownloadCSV() {
             ? `"${s.replace(/"/g, '""')}"` : s;
     };
 
-    const header = ['#', 'Model', ...cols.map(c => c.title || c.label)];
+    const header = ['#', 'Model', 'Description', ...cols.map(c => c.title || c.label)];
     const rows = list.map((item, i) => {
         const cells = cols.map(c => {
             const v = tvGetVal(item, c.key);
             return v === '—' ? '' : v;
         });
-        return [i + 1, item.prod_model, ...cells];
+        return [i + 1, item.prod_model, item.prod_description || '', ...cells];
     });
 
     const csv = [header, ...rows].map(r => r.map(escape).join(',')).join('\r\n');

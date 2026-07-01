@@ -407,6 +407,8 @@ def submit_product_selection(req: SubmitProdRequest):
             prod_poe_m12_giga=safe_int(hw.get("PoE (X-code)")),
             prod_bypass_m12_100=safe_int(hw.get("LAN Bypass 10/100M (D-code)")),
             prod_bypass_m12_giga=safe_int(hw.get("LAN Bypass Gigabit (X-code)")),
+            prod_poe_standard=str(hw.get("PoE Standard") or "").strip(),
+            prod_poe_budget=str(hw.get("Power Budget (W)") or "").strip(),
             prod_power_input=str(hw.get("Input Voltage") or "—").strip(),
             prod_temp_range=str(hw.get("Op Temp Range") or hw.get("Temp Grade") or "—").strip(),
             prod_application=str(hw.get("Application") or "").strip(),
@@ -415,6 +417,7 @@ def submit_product_selection(req: SubmitProdRequest):
             prod_certifications=str(hw.get("Certifications") or "").strip(),
             prod_mounting=str(hw.get("Type") or "").strip(),
             prod_url=str(hw.get("prod_url") or hw.get("URL") or "").strip(),
+            prod_description=str(hw.get("Description") or "").strip(),
         ))
 
     return SubmitProdResponse(products=response_items)

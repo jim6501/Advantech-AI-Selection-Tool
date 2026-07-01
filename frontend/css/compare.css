@@ -407,7 +407,7 @@
 
 /* 標頭行（型號列） */
 .cmp-header-row {
-    background: #1E3A5F;
+    background: #fff;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -415,7 +415,7 @@
 
 .cmp-header-row th {
     padding: 0;
-    border-bottom: 2px solid #0f2440;
+    border-bottom: 1px solid #e0e0dc;
     font-weight: 600;
 }
 
@@ -425,71 +425,100 @@
     left: 0;
     background: inherit;
     z-index: 5;
-    min-width: 130px;
-    max-width: 150px;
+    width: 160px;
+    min-width: 160px;
 }
 
-/* 表頭的第一欄需更高 z-index，避免被資料列蓋住 */
-.cmp-th-sticky {
+/* 表頭的第一欄 — 提高優先級以覆蓋 .cmp-header-row th { padding: 0 } */
+.cmp-header-row .cmp-th-sticky {
     z-index: 15 !important;
-    background: #1E3A5F;
-    padding: 10px 12px;
+    background: #fff;
+    padding: 10px 14px;
     font-size: 10px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.6);
+    font-weight: 500;
+    color: #aaa;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     font-family: 'IBM Plex Mono', monospace;
+    text-align: left;
+    vertical-align: middle;
 }
 
-/* 產品欄標頭（所有欄同一深藍底） */
+/* 產品欄標頭（可點擊切換基準） */
 .cmp-prod-col {
     min-width: 150px;
     padding: 10px 14px;
-    border-left: 1px solid rgba(255,255,255,0.1);
-    vertical-align: middle;
+    border-left: 1px solid #e0e0dc;
+    vertical-align: bottom;
     text-align: center;
-    background: #1E3A5F;
+    background: #fff;
+    cursor: pointer;
+    transition: background 0.15s;
 }
 
-/* 移除第一欄特殊顏色，所有欄一致 */
-.cmp-prod-first {
-    background: #1E3A5F;
+.cmp-prod-col:hover {
+    background: #f5f5f3;
+}
+
+/* 基準欄：底部藍線標示 */
+.cmp-prod-col.cmp-prod-baseline {
+    background: #f0f6ff;
+    border-bottom: 2px solid #185fa5;
+}
+
+.cmp-baseline-label {
+    display: inline-block;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 99px;
+    background: #185fa5;
+    color: #fff;
+    font-weight: 700;
+    margin-top: 5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
 .cmp-prod-header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
 }
 
 .cmp-prod-name {
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 600;
     font-family: 'IBM Plex Mono', monospace;
-    color: #fff;
+    color: #185fa5;
     text-decoration: none;
     display: inline-block;
+    transition: color 0.15s;
+}
+
+.cmp-prod-name:hover {
+    color: #0d3d75;
+    text-decoration: underline;
 }
 
 .cmp-prod-pn {
     font-size: 11px;
-    color: rgba(255,255,255,0.7);
-    font-weight: 500;
+    color: #aaa;
+    font-weight: 400;
     font-family: 'IBM Plex Mono', monospace;
 }
 
 .cmp-prod-link {
     font-size: 11px;
-    color: #7dd3fc;
+    color: #185fa5;
     text-decoration: none;
     margin-top: 2px;
     transition: color 0.15s;
 }
 
 .cmp-prod-link:hover {
-    color: #bae6fd;
+    color: #0d3d75;
+    text-decoration: underline;
 }
 
 .cmp-ext-icon {
@@ -499,19 +528,20 @@
 
 /* Section 標題列 */
 .cmp-section-row td {
-    background: linear-gradient(135deg, var(--adv-blue) 0%, #004d99 100%);
-    color: rgba(255,255,255,0.92);
+    background: #f8f8f6;
+    color: #aaa;
     font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
+    font-weight: 600;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
-    padding: 6px 12px;
-    font-family: 'IBM Plex Mono', monospace;
+    padding: 7px 14px;
+    border-top: 1px solid #e0e0dc;
+    border-bottom: 1px solid #e0e0dc;
 }
 
 /* Section 標題的第一欄 sticky */
 .cmp-section-row .cmp-label-col {
-    background: linear-gradient(135deg, var(--adv-blue) 0%, #004d99 100%);
+    background: #f8f8f6;
     z-index: 6;
 }
 
@@ -538,13 +568,18 @@
     opacity: 0.8;
 }
 
+/* 只看差異模式下隱藏相同列 */
+.cmp-row-hidden {
+    display: none;
+}
+
 /* 規格項目標籤（第一欄） */
 .cmp-field-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    padding: 7px 12px;
-    background: var(--surface);
-    border-right: 1px solid var(--adv-border);
+    font-size: 12px;
+    color: #666;
+    padding: 7px 14px;
+    background: #fff;
+    border-right: 1px solid #e0e0dc;
     white-space: nowrap;
 }
 
@@ -557,14 +592,34 @@
     transition: background 0.15s;
 }
 
-/* 差異高亮格 */
-.cmp-data-cell.cmp-cell-diff {
-    background: #FFF8EB;
+/* 三色語意：最優值（綠） */
+.cmp-data-cell.cmp-cell-best {
+    background: #dff0cc;
+}
+.cmp-data-cell.cmp-cell-best .cmp-val-num,
+.cmp-data-cell.cmp-cell-best .cmp-val-str {
+    color: #1a3d06;
+    font-weight: 700;
 }
 
+/* 三色語意：較低值（橙） */
+.cmp-data-cell.cmp-cell-low {
+    background: #fde8c4;
+}
+.cmp-data-cell.cmp-cell-low .cmp-val-num,
+.cmp-data-cell.cmp-cell-low .cmp-val-str {
+    color: #5c2a00;
+    font-weight: 600;
+}
+
+/* 三色語意：與基準不同（藍） */
+.cmp-data-cell.cmp-cell-diff {
+    background: #d9eaf8;
+}
 .cmp-data-cell.cmp-cell-diff .cmp-val-num,
 .cmp-data-cell.cmp-cell-diff .cmp-val-str {
-    color: #92400E;
+    color: #083468;
+    font-weight: 600;
 }
 
 /* 格內數值樣式 */
@@ -597,6 +652,51 @@
 }
 
 /* ─────────────────────────────────────────────
+   Toolbar（只看差異 + 差異計數）
+───────────────────────────────────────────── */
+.cmp-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.cmp-diff-btn {
+    font-size: 11px;
+    padding: 5px 11px;
+    border-radius: 6px;
+    border: 1px solid var(--adv-border);
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.12s;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500;
+}
+
+.cmp-diff-btn:hover {
+    background: #f0f6ff;
+    border-color: var(--adv-accent);
+    color: var(--adv-accent);
+}
+
+.cmp-diff-btn.active {
+    background: #e6f1fb;
+    border-color: var(--adv-accent);
+    color: var(--adv-accent);
+}
+
+.cmp-diff-count {
+    font-size: 11px;
+    background: #e6f1fb;
+    color: #185fa5;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-weight: 500;
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+/* ─────────────────────────────────────────────
    表格下方圖例說明
 ───────────────────────────────────────────── */
 .cmp-legend {
@@ -605,34 +705,29 @@
     color: var(--text-muted);
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 14px;
     padding: 0 2px;
+    flex-wrap: wrap;
 }
 
-.cmp-legend-diff {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    background: #FFF8EB;
-    border: 1px solid #FCD34D;
-    border-radius: 2px;
-    vertical-align: middle;
+.cmp-leg-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
-.cmp-legend-same {
-    display: inline-block;
+.cmp-leg-dot {
     width: 10px;
     height: 10px;
-    background: #f0f2f5;
-    border: 1px solid #dde1e7;
     border-radius: 2px;
-    vertical-align: middle;
-    opacity: 0.55;
-    text-align: center;
-    font-size: 8px;
-    line-height: 10px;
-    color: #aaa;
+    flex-shrink: 0;
 }
+
+.cmp-leg-best { background: #eaf3de; border: 1px solid #c0dd97; }
+.cmp-leg-low  { background: #faeeda; border: 1px solid #fac775; }
+.cmp-leg-diff { background: #e6f1fb; border: 1px solid #b5d4f4; }
+.cmp-leg-same { background: #f0f2f5; border: 1px solid #dde1e7; opacity: 0.55; }
+.cmp-leg-same-item { opacity: 0.6; }
 
 /* ─────────────────────────────────────────────
    Toast 提示訊息

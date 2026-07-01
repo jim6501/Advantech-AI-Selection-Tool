@@ -12,9 +12,11 @@
    └─────────────────────────────────────────────────────────┘
 
    公開介面（供 app.js 使用）：
-   - compareToggle(pid)       → 勾選/取消勾選一台產品
-   - compareReset()           → 清除全部比較狀態（Reset All 時呼叫）
-   - compareOnNewResults()    → 搜尋新結果時重置（因卡片 DOM 重建）
+   - compareToggle(pid)         → 勾選/取消勾選一台產品
+   - compareReset()             → 清除全部比較狀態（Reset All 時呼叫）
+   - compareOnNewResults()      → 搜尋新結果時重置（因卡片 DOM 重建）
+   - setCompareBaseline(idx)    → 設定基準欄（onclick 用）
+   - toggleCompareDiff()        → 切換「只看差異」模式（onclick 用）
    ═══════════════════════════════════════════════════════════ */
 
 
@@ -27,16 +29,6 @@ const CMP_MAX = 5;    // 最多同時比較幾台
 // ─────────────────────────────────────────────
 // 規格欄位定義（可擴充的核心設定）
 // ─────────────────────────────────────────────
-// 每個 section：{ id, label, fields[] }
-// 每個 field：  { id, label, extract(item) → string|number, type: 'num'|'str' }
-//
-// type='num'：  顯示時 0 以 '—' 替代，非 0 以粗體數字顯示
-// type='str'：  原樣顯示，空字串以 '—' 替代
-//
-// 未來擴充範例（軟體功能）：
-//   只需在 CMP_SECTIONS 末尾 push 一個新的 section object：
-//   { id: 'software', label: '軟體功能', fields: [ { id:'vlan', label:'VLAN', extract: item => item.sw_vlan, type:'str' }, ... ] }
-// ─────────────────────────────────────────────
 const CMP_SECTIONS = [
     {
         id: 'basic',
@@ -45,7 +37,7 @@ const CMP_SECTIONS = [
             { id: 'model',       label: 'Model Name',           type: 'str', extract: i => i.prod_model || '' },
             { id: 'type',        label: 'Management',        type: 'str', extract: i => i.prod_type || '' },
             { id: 'portnum',     label: 'Total Ports',          type: 'num', extract: i => i.prod_portnum || 0 },
-            { id: 'temp_grade',  label: 'Temp Grade',        type: 'str', extract: i => (i.prod_w_n || 'Normal').trim() },
+            { id: 'temp_range',  label: 'Temp Range',         type: 'str', extract: i => (i.prod_temp_range || '—').trim() },
             { id: 'power',       label: 'Power Input',        type: 'str', extract: i => (i.prod_power_input || '—').trim() },
             { id: 'mounting',    label: 'Mounting Type',      type: 'str', extract: i => (i.prod_mounting || '—').trim() },
         ]
@@ -67,6 +59,8 @@ const CMP_SECTIONS = [
             { id: 'm12_multi',      label: 'M12 X-code Multi-Giga',  type: 'num', extract: i => i.prod_m12_multi_giga || 0 },
             { id: 'poe_m12_100',    label: 'PoE M12 D-code',         type: 'num', extract: i => i.prod_poe_m12_100 || 0 },
             { id: 'poe_m12_giga',   label: 'PoE M12 X-code',         type: 'num', extract: i => i.prod_poe_m12_giga || 0 },
+            { id: 'poe_standard',   label: 'PoE Standard',            type: 'str', extract: i => (i.prod_poe_standard || '—').trim() },
+            { id: 'poe_budget',     label: 'PoE Budget (W)',          type: 'str', extract: i => (i.prod_poe_budget || '—').trim() },
             { id: 'bypass_100',     label: 'LAN Bypass D-code',       type: 'num', extract: i => i.prod_bypass_m12_100 || 0 },
             { id: 'bypass_giga',    label: 'LAN Bypass X-code',       type: 'num', extract: i => i.prod_bypass_m12_giga || 0 },
         ]
@@ -86,16 +80,6 @@ const CMP_SECTIONS = [
             { id: 'certs', label: 'Certifications', type: 'str', extract: i => (i.prod_certifications || '—').trim() },
         ]
     },
-    // ─── 未來擴充區（軟體功能規格等）────────────────────
-    // 範例：
-    // {
-    //     id: 'software',
-    //     label: '軟體功能',
-    //     fields: [
-    //         { id: 'vlan', label: 'VLAN', type: 'str', extract: i => i.sw_vlan || '—' },
-    //         ...
-    //     ]
-    // }
 ];
 
 // ─────────────────────────────────────────────
@@ -103,6 +87,8 @@ const CMP_SECTIONS = [
 // ─────────────────────────────────────────────
 let _compareSet = new Set();   // pid 集合，如 'pc-0', 'pc-3'
 let _aiSummaryText = '';       // 最近一次 AI summary 的原始 Markdown 文字
+let _baselineIdx = 0;          // 目前基準欄的 index
+let _diffOnly = false;         // 是否只顯示差異列
 
 // ─────────────────────────────────────────────
 // 公開：切換勾選
@@ -113,7 +99,6 @@ function compareToggle(pid) {
     } else {
         if (_compareSet.size >= CMP_MAX) {
             _showToast(`Can compare up to ${CMP_MAX} products`);
-            // 讓 checkbox 視覺維持未勾選
             const cb = document.getElementById(`cmp-cb-${pid}`);
             if (cb) cb.checked = false;
             return;
@@ -136,7 +121,8 @@ function compareIsSelected(pid) {
 // ─────────────────────────────────────────────
 function compareReset() {
     _compareSet.clear();
-    // 重置所有卡片上的比較按鈕視覺
+    _baselineIdx = 0;
+    _diffOnly = false;
     document.querySelectorAll('.cmp-cb-wrap.checked').forEach(btn => btn.classList.remove('checked'));
     _renderBar();
     _closePanel();
@@ -147,9 +133,34 @@ function compareReset() {
 // ─────────────────────────────────────────────
 function compareOnNewResults() {
     _compareSet.clear();
-    // DOM 重建後舊按鈕已不存在，只需清狀態
+    _baselineIdx = 0;
+    _diffOnly = false;
     _renderBar();
     _closePanel();
+}
+
+// ─────────────────────────────────────────────
+// 公開：設定基準欄（產品標頭點擊時呼叫）
+// ─────────────────────────────────────────────
+function setCompareBaseline(idx) {
+    _baselineIdx = idx;
+    const items = [..._compareSet].map(pid =>
+        window._sfpItemCache && window._sfpItemCache[pid]
+    ).filter(Boolean);
+    if (items.length < 1) return;
+    _rebuildTable(items);
+}
+
+// ─────────────────────────────────────────────
+// 公開：切換「只看差異」模式
+// ─────────────────────────────────────────────
+function toggleCompareDiff() {
+    _diffOnly = !_diffOnly;
+    const btn = document.getElementById('cmp-diff-btn');
+    if (btn) btn.classList.toggle('active', _diffOnly);
+    document.querySelectorAll('#cmp-panel .cmp-row-same').forEach(tr => {
+        tr.classList.toggle('cmp-row-hidden', _diffOnly);
+    });
 }
 
 // ─────────────────────────────────────────────
@@ -177,7 +188,6 @@ function _renderBar() {
         return;
     }
 
-    // 收集已選產品的型號名稱
     const chips = [..._compareSet].map(pid => {
         const item = window._sfpItemCache && window._sfpItemCache[pid];
         const label = item ? item.prod_model : pid;
@@ -185,8 +195,6 @@ function _renderBar() {
                     <span class="cmp-bar-chip-x" onclick="compareToggle('${pid}')">×</span>
                 </span>`;
     }).join('');
-
-    const canCompare = count >= 1;
 
     bar.innerHTML = `
         <div class="cmp-bar-inner">
@@ -196,7 +204,7 @@ function _renderBar() {
             <div class="cmp-bar-chips">${chips}</div>
             <div class="cmp-bar-actions">
                 <button class="cmp-bar-btn" onclick="openComparePanel()"
-                    ${canCompare ? '' : 'disabled'} title="${canCompare ? 'View / Compare' : 'Select at least 1 product'}">
+                    title="View / Compare">
                     ⇄ View / Compare
                 </button>
                 <button class="cmp-bar-clear" onclick="compareReset()">Clear</button>
@@ -213,7 +221,6 @@ function _renderBar() {
 function openComparePanel() {
     if (_compareSet.size < 1) return;
 
-    // 取得所選產品的資料
     const items = [..._compareSet].map(pid =>
         window._sfpItemCache && window._sfpItemCache[pid]
     ).filter(Boolean);
@@ -222,6 +229,10 @@ function openComparePanel() {
         _showToast('Products not found, please search again');
         return;
     }
+
+    // 重置面板狀態
+    _baselineIdx = 0;
+    _diffOnly = false;
 
     _buildPanel(items);
 
@@ -237,27 +248,23 @@ function _closePanel() {
     if (panel) panel.classList.remove('open');
 }
 
-// 公開，讓 HTML onclick 可以呼叫
 function closeComparePanel() {
     _closePanel();
 }
 
 // ─────────────────────────────────────────────
-// 核心：建立比較面板內容
+// 核心：建立比較面板完整內容
 // ─────────────────────────────────────────────
 function _buildPanel(items) {
     const panel = document.getElementById('cmp-panel');
     if (!panel) return;
 
-    const colCount = items.length;
-
-    // ── 標頭 ──
     const headerHtml = `
         <div class="cmp-panel-header">
             <div class="cmp-panel-title">
                 <span class="cmp-panel-icon">⇄</span>
                 Compare Specs
-                <span class="cmp-panel-count">${colCount} items</span>
+                <span class="cmp-panel-count">${items.length} items</span>
             </div>
             <div class="cmp-panel-actions">
                 <button class="cmp-panel-dl" onclick="downloadCompareCSV()" title="Download CSV">📥 CSV</button>
@@ -266,7 +273,6 @@ function _buildPanel(items) {
             </div>
         </div>`;
 
-    // ── AI Summary 區塊（表格上方）──
     const aiSummaryHtml = `
         <div id="cmp-ai-summary">
             <div class="cmp-ai-header">
@@ -280,16 +286,50 @@ function _buildPanel(items) {
             </div>
         </div>`;
 
-    // ── 比較表格 ──
-    const tableHtml = _buildTable(items);
+    const { html: tableHtml, diffCount } = _buildTable(items);
 
-    panel.innerHTML = headerHtml + `<div class="cmp-panel-body">${aiSummaryHtml}${tableHtml}</div>`;
+    const toolbarHtml = `
+        <div class="cmp-toolbar">
+            <button class="cmp-diff-btn" id="cmp-diff-btn" onclick="toggleCompareDiff()">
+                ⊟ Differences only
+            </button>
+            <span class="cmp-diff-count" id="cmp-diff-count">${diffCount} difference${diffCount !== 1 ? 's' : ''}</span>
+        </div>`;
 
-    // 取得型號 PN 後呼叫 AI 總結
+    panel.innerHTML = headerHtml + `
+        <div class="cmp-panel-body">
+            ${aiSummaryHtml}
+            ${toolbarHtml}
+            <div id="cmp-table-container">${tableHtml}</div>
+        </div>`;
+
     const pns = items.map(i => i.prod_name).filter(Boolean);
     _fetchAiSummary(pns);
 }
 
+// ─────────────────────────────────────────────
+// 只重建表格區（切換基準欄時使用）
+// ─────────────────────────────────────────────
+function _rebuildTable(items) {
+    const container = document.getElementById('cmp-table-container');
+    if (!container) return;
+    const { html, diffCount } = _buildTable(items);
+    container.innerHTML = html;
+
+    const countEl = document.getElementById('cmp-diff-count');
+    if (countEl) countEl.textContent = `${diffCount} difference${diffCount !== 1 ? 's' : ''}`;
+
+    // 恢復 diff-only 狀態
+    if (_diffOnly) {
+        document.querySelectorAll('#cmp-panel .cmp-row-same').forEach(tr => {
+            tr.classList.add('cmp-row-hidden');
+        });
+    }
+}
+
+// ─────────────────────────────────────────────
+// AI Summary 取得
+// ─────────────────────────────────────────────
 async function _fetchAiSummary(pns) {
     _aiSummaryText = '';
     const contentEl = document.getElementById('cmp-ai-content');
@@ -307,7 +347,6 @@ async function _fetchAiSummary(pns) {
 
         _aiSummaryText = data.summary;
         contentEl.classList.remove('cmp-ai-loading');
-        // marked.js 渲染 Markdown（與 Chatbot 共用同一個函式庫）
         if (typeof marked !== 'undefined') {
             contentEl.innerHTML = marked.parse(data.summary);
         } else {
@@ -320,26 +359,31 @@ async function _fetchAiSummary(pns) {
 }
 
 // ─────────────────────────────────────────────
-// 核心：建立比較表格 HTML
+// 核心：建立比較表格 HTML，回傳 { html, diffCount }
 // ─────────────────────────────────────────────
 function _buildTable(items) {
     const colCount = items.length;
+    let diffCount = 0;
 
-    // ── 產品型號標頭列 ──
+    // ── 產品型號標頭列（可點擊切換基準）──
     let headerRow = `<tr class="cmp-header-row">
         <th class="cmp-label-col cmp-th-sticky">Specs</th>`;
     items.forEach((item, idx) => {
         const prodUrl = item.prod_url ||
             `https://www.advantech.com/en/search?q=${encodeURIComponent(item.prod_model)}`;
-        // 將第一台（左側）加上獨立的 css 類別，供可能的特殊上色使用
-        headerRow += `<th class="cmp-prod-col ${idx === 0 ? 'cmp-prod-first' : ''}">
+        const isBaseline = idx === _baselineIdx;
+        headerRow += `
+        <th class="cmp-prod-col ${isBaseline ? 'cmp-prod-baseline' : ''}"
+            onclick="setCompareBaseline(${idx})"
+            title="Click to set as baseline">
             <div class="cmp-prod-header">
-                <div class="cmp-prod-name">${item.prod_model}</div>
-                <div class="cmp-prod-pn">${item.prod_name || ''}</div>
-                <a class="cmp-prod-link" href="${prodUrl}" target="_blank" rel="noopener noreferrer"
-                   title="View on Advantech website: ${item.prod_model}">
-                    Advantech Page <span class="cmp-ext-icon">↗</span>
+                <a class="cmp-prod-name" href="${prodUrl}" target="_blank" rel="noopener noreferrer"
+                   onclick="event.stopPropagation()"
+                   title="View on Advantech website">
+                    ${item.prod_model} <span class="cmp-ext-icon">↗</span>
                 </a>
+                <div class="cmp-prod-pn">${item.prod_name || ''}</div>
+                ${isBaseline ? '<div class="cmp-baseline-label">Baseline</div>' : ''}
             </div>
         </th>`;
     });
@@ -349,29 +393,24 @@ function _buildTable(items) {
     let bodyRows = '';
 
     CMP_SECTIONS.forEach(section => {
-        // 篩選出「至少有一台產品有值」的欄位（0 或 '—' 的全部相同則隱藏）
         const visibleFields = section.fields.filter(field => {
             const vals = items.map(item => field.extract(item));
-            if (field.type === 'num') {
-                return vals.some(v => v > 0);
-            } else {
-                return vals.some(v => v && v !== '—' && v !== '');
-            }
+            if (field.type === 'num') return vals.some(v => v > 0);
+            else return vals.some(v => v && v !== '—' && v !== '');
         });
 
-        if (visibleFields.length === 0) return; // 整個 section 都沒有值，跳過
+        if (visibleFields.length === 0) return;
 
-        // Section 標頭列
         bodyRows += `<tr class="cmp-section-row">
             <td class="cmp-section-label cmp-label-col" colspan="${colCount + 1}">
                 ${section.label}
             </td>
         </tr>`;
 
-        // 各規格欄位列
         visibleFields.forEach(field => {
             const vals = items.map(item => field.extract(item));
             const isDiff = _hasDiff(vals, field.type);
+            if (isDiff) diffCount++;
 
             let rowClass = 'cmp-data-row';
             if (!isDiff) rowClass += ' cmp-row-same';
@@ -379,17 +418,16 @@ function _buildTable(items) {
             bodyRows += `<tr class="${rowClass}">
                 <td class="cmp-label-col cmp-field-label">${field.label}</td>`;
 
-            vals.forEach(v => {
-                const { display, highlight } = _formatCell(v, field.type, vals, isDiff);
-                const cellClass = 'cmp-data-cell' + (highlight ? ' cmp-cell-diff' : '');
-                bodyRows += `<td class="${cellClass}">${display}</td>`;
+            vals.forEach((v, colIdx) => {
+                const { display, cellClass } = _formatCell(v, field.type, vals, isDiff, colIdx);
+                bodyRows += `<td class="cmp-data-cell ${cellClass}">${display}</td>`;
             });
 
             bodyRows += '</tr>';
         });
     });
 
-    return `
+    const html = `
         <div class="cmp-table-wrap">
             <table class="cmp-table">
                 <thead>${headerRow}</thead>
@@ -397,10 +435,13 @@ function _buildTable(items) {
             </table>
         </div>
         <div class="cmp-legend">
-            <span class="cmp-legend-diff">▪</span> Highlight = Difference
-            &nbsp;&nbsp;
-            <span class="cmp-legend-same">—</span> Dim = Same
+            <span class="cmp-leg-item"><span class="cmp-leg-dot cmp-leg-best"></span>Best value</span>
+            <span class="cmp-leg-item"><span class="cmp-leg-dot cmp-leg-low"></span>Lower value</span>
+            <span class="cmp-leg-item"><span class="cmp-leg-dot cmp-leg-diff"></span>Differs from baseline</span>
+            <span class="cmp-leg-item cmp-leg-same-item"><span class="cmp-leg-dot cmp-leg-same"></span>Same</span>
         </div>`;
+
+    return { html, diffCount };
 }
 
 // ─────────────────────────────────────────────
@@ -415,23 +456,32 @@ function _hasDiff(vals, type) {
 }
 
 // ─────────────────────────────────────────────
-// 工具：格式化單一格顯示與是否高亮
+// 工具：格式化單一格，回傳 { display, cellClass }
+//   三色語意：
+//   - 數字：最高值 → cmp-cell-best（綠）；低於最高 → cmp-cell-low（橙）
+//   - 字串：與基準不同 → cmp-cell-diff（藍）
+//   - 基準欄本身永遠不加色
 // ─────────────────────────────────────────────
-function _formatCell(val, type, allVals, isDiff) {
+function _formatCell(val, type, allVals, isDiff, colIdx) {
+    const isBaseline = colIdx === _baselineIdx;
+
     if (type === 'num') {
         const n = val || 0;
         const display = n === 0
             ? '<span class="cmp-val-zero">—</span>'
             : `<span class="cmp-val-num">${n}</span>`;
 
-        // 高亮：與其他值不同（只在有差異的列中高亮「不是最多的那些」）
-        const maxVal = Math.max(...allVals.map(v => v || 0));
-        const highlight = isDiff && n < maxVal;
-        return { display, highlight };
+        let cellClass = '';
+        if (isDiff && !isBaseline && n > 0) {
+            const maxVal = Math.max(...allVals.map(v => v || 0));
+            cellClass = n === maxVal ? 'cmp-cell-best' : 'cmp-cell-low';
+        }
+        return { display, cellClass };
+
     } else {
         const s = String(val || '—').trim();
         let display = '';
-        
+
         if (s === '—' || s === '') {
             display = '<span class="cmp-val-zero">—</span>';
         } else if (s === '✓' || s === 'V') {
@@ -442,15 +492,17 @@ function _formatCell(val, type, allVals, isDiff) {
             display = `<span class="cmp-val-str">${s}</span>`;
         }
 
-        // 字串：與第一台不同即高亮
-        const base = String(allVals[0] || '—').trim().toLowerCase();
-        const highlight = isDiff && s.toLowerCase() !== base;
-        return { display, highlight };
+        let cellClass = '';
+        if (isDiff && !isBaseline) {
+            const baseVal = String(allVals[_baselineIdx] || '—').trim().toLowerCase();
+            if (s.toLowerCase() !== baseVal) cellClass = 'cmp-cell-diff';
+        }
+        return { display, cellClass };
     }
 }
 
 // ─────────────────────────────────────────────
-// Toast 提示（輕量替代 alert）
+// Toast 提示
 // ─────────────────────────────────────────────
 function _showToast(msg) {
     let toast = document.getElementById('cmp-toast');
@@ -474,7 +526,7 @@ function downloadCompareCSV() {
     ).filter(Boolean);
     if (items.length === 0) return;
 
-    let csv = '\uFEFF'; // BOM
+    let csv = '﻿';
     const headers = ['Specification', ...items.map(i => i.prod_model)];
     csv += headers.map(h => `"${h}"`).join(',') + '\n';
 
@@ -486,9 +538,7 @@ function downloadCompareCSV() {
         });
         if (visibleFields.length === 0) return;
 
-        // Section header
         csv += `"${section.label}"\n`;
-
         visibleFields.forEach(field => {
             const row = [field.label];
             items.forEach(item => {
@@ -520,8 +570,7 @@ async function downloadComparePDF() {
         _showToast("No product selected");
         return;
     }
-    
-    // 從 _sfpItemCache 取出對應的 PN
+
     const pns = [..._compareSet].map(pid => {
         const item = window._sfpItemCache && window._sfpItemCache[pid];
         return item ? item.prod_name : null;
@@ -531,11 +580,9 @@ async function downloadComparePDF() {
         _showToast("Corresponding product PN not found, please search again");
         return;
     }
-    
-    // 如果有全域保存條件 (例如 currentCriteria) 可以傳入，否則傳空 {}
+
     let criteria = window.currentCriteria ? JSON.parse(JSON.stringify(window.currentCriteria)) : {};
-    
-    // 確保 l2_managed 和 l3_managed 等傳給後端時顯示為友善名稱
+
     if (criteria.type) {
         let t = criteria.type.toLowerCase();
         if (t === "l2_managed" || t === "l2 managed") {
@@ -563,22 +610,16 @@ async function downloadComparePDF() {
             })
         });
 
-        if (!res.ok) {
-            throw new Error(`Server error: ${res.status}`);
-        }
-        
-        // 取得 blob 並觸發下載（明確指定 type，用 setAttribute 確保副檔名正確）
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
         const rawBlob = await res.blob();
-        const url = URL.createObjectURL(
-            new Blob([rawBlob], { type: 'application/pdf' })
-        );
+        const url = URL.createObjectURL(new Blob([rawBlob], { type: 'application/pdf' }));
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
         a.setAttribute('download', 'selection_report.pdf');
         document.body.appendChild(a);
         a.click();
-        // 延遲清理，確保下載已觸發
         setTimeout(() => {
             URL.revokeObjectURL(url);
             document.body.removeChild(a);
