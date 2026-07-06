@@ -892,7 +892,14 @@ function submitItems() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody)
     })
-        .then(res => res.json())
+        .then(res => res.text().then(text => {
+            try {
+                return JSON.parse(text);
+            } catch {
+                // 後端回傳非 JSON（例如 Cloudflare Tunnel 錯誤頁或伺服器重啟中）
+                throw new Error(`收到非 JSON 回應 (HTTP ${res.status} ${res.statusText})：${text.slice(0, 200) || '(空白回應)'}`);
+            }
+        }))
         .then(data => {
             if (data.detail && !data.products) {
                 alert('API Error: ' + JSON.stringify(data.detail));
@@ -949,7 +956,10 @@ function submitItems() {
         })
         .catch(err => {
             console.error(err);
-            alert('Error communicating with backend!');
+            const detail = err instanceof TypeError
+                ? `網路層錯誤：${err.message}（連不上後端，可能是 Cloudflare Tunnel 斷線或伺服器重啟中）`
+                : err.message;
+            alert('Error communicating with backend!\n\n' + detail);
         });
 }
 

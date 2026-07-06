@@ -14,10 +14,18 @@ def fetch_hardware_data(gc, tab_name):
     try:
         worksheet = gc.open_by_key(GOOGLE_SHEET_ID).worksheet(tab_name)
         data = worksheet.get_all_values()
-        if len(data) < 4:
-            return pd.DataFrame()
-        # Header is at index 3 (Row 4 in Excel)
-        headers = data[3]
+        # Find header index dynamically by looking for 'Model Name' and 'Product PN'
+        header_idx = -1
+        for i, row in enumerate(data):
+            if "Model Name" in row and "Product PN" in row:
+                header_idx = i
+                break
+        
+        if header_idx == -1:
+            print(f"⚠️ 找不到 {tab_name} 的表頭，預設使用 index 3")
+            header_idx = 3
+            
+        headers = data[header_idx]
         
         # Make headers unique to avoid pandas warnings
         seen = {}
@@ -34,7 +42,7 @@ def fetch_hardware_data(gc, tab_name):
                 seen[h] = 0
                 unique_headers.append(h)
                 
-        df = pd.DataFrame(data[4:], columns=unique_headers)
+        df = pd.DataFrame(data[header_idx + 1:], columns=unique_headers)
         
         # Drop rows where 'Product PN' is empty
         if 'Product PN' in df.columns:
