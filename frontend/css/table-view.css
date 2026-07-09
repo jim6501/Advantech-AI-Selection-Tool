@@ -380,10 +380,10 @@
     font-weight: 700;
 }
 
-/* ── 從 Total 欄開始置中（# 跟 Model 兩欄維持靠左）──────── */
-.tv-thead-group th:nth-child(n+3),
+/* ── 從 Total 欄開始置中（Cmp / # / Model 三欄維持靠左或置中按鈕）──────── */
+.tv-thead-group th:nth-child(n+4),
 .tv-thead-cols th,
-.tv-table tbody tr td:nth-child(n+3) {
+.tv-table tbody tr td:nth-child(n+4) {
     text-align: center;
 }
 

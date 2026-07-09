@@ -1898,11 +1898,13 @@ function renderProductTable(data_list) {
     const groupColCounts = {};
     LABELED_GROUPS.forEach(g => { groupColCounts[g.id] = cols.filter(c => c.group === g.id).length; });
 
-    const stickyNumTh  = `position:sticky;left:0;z-index:4;background:var(--adv-gray);width:36px;min-width:36px;text-align:center;padding:5px 6px;border-right:1px solid var(--adv-border);font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--adv-border);`;
-    const stickyModTh  = `position:sticky;left:37px;z-index:4;background:var(--adv-gray);width:170px;min-width:170px;max-width:170px;cursor:default;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;padding:5px 10px;border-bottom:1px solid var(--adv-border);`;
+    const stickyCmpTh  = `position:sticky;left:0;z-index:4;background:var(--adv-gray);width:54px;min-width:54px;text-align:center;padding:5px 6px;border-right:1px solid var(--adv-border);font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--adv-border);`;
+    const stickyNumTh  = `position:sticky;left:55px;z-index:4;background:var(--adv-gray);width:36px;min-width:36px;text-align:center;padding:5px 6px;border-right:1px solid var(--adv-border);font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--adv-border);`;
+    const stickyModTh  = `position:sticky;left:92px;z-index:4;background:var(--adv-gray);width:170px;min-width:170px;max-width:170px;cursor:default;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;padding:5px 10px;border-bottom:1px solid var(--adv-border);`;
 
     // Row 1 — group headers
     let theadRow1 = `<tr class="tv-thead-group">
+        <th rowspan="2" class="tv-unsortable" style="${stickyCmpTh}" title="Add to compare panel">Cmp</th>
         <th rowspan="2" style="${stickyNumTh}">#</th>
         <th rowspan="2" style="${stickyModTh}">Model</th>
         ${cols.filter(c => c.group === 'general').map(c => `
@@ -1913,7 +1915,6 @@ function renderProductTable(data_list) {
         ${cols.filter(c => c.group === 'specs').map(c => `
         <th rowspan="2" class="${c.sortable?'':'tv-unsortable'} ${tvSortCol===c.key?'tv-sorted':''}"
             title="${c.title||c.label}" ${c.sortable?`onclick="tvDoSort('${c.key}')"`:''}>${c.label}${c.sortable?sortIconFor(c.key):''}</th>`).join('')}
-        <th rowspan="2" class="tv-unsortable" style="width:54px;text-align:center;" title="Add to compare panel">Cmp</th>
     </tr>`;
 
     // Row 2 — individual col names for labeled groups only
@@ -1961,10 +1962,17 @@ function renderProductTable(data_list) {
         return separatorRow + `<tr
             onmouseenter="this.querySelectorAll('.tv-s').forEach(c=>c.style.background='${hoverBg}')"
             onmouseleave="this.querySelectorAll('.tv-s').forEach(c=>c.style.background='${rowBg}')">
-            <td class="tv-s" style="position:sticky;left:0;z-index:2;background:${rowBg};width:36px;min-width:36px;text-align:center;font-size:0.7rem;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);padding:3px 6px;border-right:1px solid var(--adv-border);box-shadow:2px 0 6px -2px rgba(0,51,102,0.08);">
+            <td class="tv-s tv-cmp-cell" style="position:sticky;left:0;z-index:2;background:${rowBg};width:54px;min-width:54px;border-right:1px solid var(--adv-border);">
+                <button class="tv-cmp-btn ${isCmpActive ? 'selected' : ''}"
+                    id="tv-cmp-${pid}"
+                    onclick="tvToggleCompare('${pid}',${globalIdx})">
+                    ${isCmpActive ? '✓' : '+'}
+                </button>
+            </td>
+            <td class="tv-s" style="position:sticky;left:55px;z-index:2;background:${rowBg};width:36px;min-width:36px;text-align:center;font-size:0.7rem;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);padding:3px 6px;border-right:1px solid var(--adv-border);">
                 ${globalIdx + 1}
             </td>
-            <td class="tv-s" style="position:sticky;left:37px;z-index:2;background:${rowBg};width:170px;min-width:170px;max-width:170px;overflow:hidden;box-shadow:3px 0 8px -3px rgba(0,51,102,0.10);padding:3px 10px;">
+            <td class="tv-s" style="position:sticky;left:92px;z-index:2;background:${rowBg};width:170px;min-width:170px;max-width:170px;overflow:hidden;box-shadow:3px 0 8px -3px rgba(0,51,102,0.10);padding:3px 10px;">
                 <div class="tv-model-name">
                     <a href="${prodUrl}" target="_blank" rel="noopener noreferrer"
                        title="View on Advantech website">${item.prod_model} <span style="font-size:9px;opacity:0.7">↗</span></a>
@@ -1975,13 +1983,6 @@ function renderProductTable(data_list) {
                 const grpClass = ['rj45','fiber','m12'].includes(c.group) ? `tv-grp-${c.group}` : '';
                 return `<td class="${grpClass}">${tvRenderCell(item, c.key)}</td>`;
             }).join('')}
-            <td class="tv-cmp-cell">
-                <button class="tv-cmp-btn ${isCmpActive ? 'selected' : ''}"
-                    id="tv-cmp-${pid}"
-                    onclick="tvToggleCompare('${pid}',${globalIdx})">
-                    ${isCmpActive ? '✓' : '+'}
-                </button>
-            </td>
         </tr>`;
     }).join('');
 
