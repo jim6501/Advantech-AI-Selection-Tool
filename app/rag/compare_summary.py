@@ -29,9 +29,6 @@ Based ONLY on the specification data below, provide a concise comparison summary
 ## Key Differences
 Summarize the most important specification differences in 3-5 bullet points. Focus on port count, PoE support, temperature grade, management type, and certifications.
 
-## Best Fit Scenarios
-For each model, describe in one sentence which application or scenario it is best suited for.
-
 ## Recommendation
 Give a clear recommendation. If the models serve different needs, explain when to choose each one. If one is clearly superior for general use, recommend it with reasons.
 

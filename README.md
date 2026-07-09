@@ -2,6 +2,8 @@
 
 這是一個專為 Advantech 工業交換機設計的智慧型選型工具。結合了**多維度條件式篩選**、**產品規格對比**、**SFP 模組推薦**、**實體照片預覽**與 **RAG (Retrieval-Augmented Generation) AI 助手**，協助業務與客戶從數百種型號中精確找出符合需求的產品。
 
+> 版本異動歷史請參閱 [CHANGELOG.md](CHANGELOG.md)。
+
 ---
 
 ## 🚀 專案核心流程與架構
@@ -159,13 +161,20 @@ uv run uvicorn app.main:app --reload --host 0.0.0.0
 ## 🌟 系統核心功能介紹
 
 ### 1. 智慧選型與多維度篩選
-* **動態關鍵字搜尋 (Search Inventory)**：即時模糊掃描資料庫中 200+ 項軟硬體特徵（如 Private VLAN, ERPS 等），支援自動優先顯示「開頭匹配」型號。
+* **動態關鍵字搜尋 (Search Inventory)**：即時模糊掃描資料庫中的硬體特徵（Power Input / Connector Type / Port
+  Feature / Hardware Feature / Certifications），支援自動優先顯示「開頭匹配」型號。
+  > [!NOTE]
+  > 軟體規格資料（VLAN、Spanning Tree、SNMP 等）尚未確認完成，目前暫時不納入 Search Inventory 與 Advanced
+  > Filter，詳見 [CHANGELOG.md](CHANGELOG.md)。
+* **進階功能篩選 (Advanced Filter)**：以卡片分類瀏覽硬體條件——Port Type / Connector、Power Input、
+  Certifications、Hardware Specs，避免與左側 Wizard 既有步驟（PoE Required、Interface Type、Max Port Speed）
+  重複。
 * **應用場景快速引導 (Scene Templates)**：內建鐵路車載 (EN 50155)、電力系統 (IEC 61850) 等四大情境。提供必選與建議條件的分級載入，支援一鍵還原。
 * **衝突條件警告 (Culprit Items)**：當選取的特徵組合導致無任何產品符合時，系統以紅色標示出造成無結果的「元凶條件」，降低認知負擔。
 
 ### 2. 雙維度切換：卡片清單與表格檢視
 * **卡片檢視 (List View)**：Glassmorphism 視覺風格，卡片會動態生成關鍵 Badges（網管類型、工作溫度、PoE 總數、SFP 模組引導、場景驗證 ✓、認證標章 CE/FCC 等）。
-* **表格檢視 (Table View)**：方便橫向掃描規格。支援動態選取欲顯示的欄位（Column Picker），欄位依介面類型分群顯示（RJ-45 藍、Fiber 綠、M12 橙色標），並依產品介面組合（RJ-45 / RJ+Fiber / RJ+M12 等）自動分層排序（Tier Sort）。序號與產品型號在水平滾動時自動固定（Sticky）。
+* **表格檢視 (Table View)**：方便橫向掃描規格。支援動態選取欲顯示的欄位（Column Picker），欄位依介面類型分群顯示（RJ-45 藍、Fiber 綠、M12 橙色底色），並依產品介面組合（RJ-45 / RJ+Fiber / RJ+M12 等）自動分層排序（Tier Sort）。序號、產品型號在水平滾動時自動固定（Sticky），表頭亦採凍結表頭 + 內部捲動設計，搭配壓縮列高，一屏可瀏覽更多筆資料。管理類型以縮寫徽章（U/L2/L3...）顯示於型號旁，Certifications 為獨立可開關欄位。
 
 ### 3. SFP 光纖選型導航面板 (SFP Selector)
 * 卡片上設有 SFP 可選型捷徑，切換至 SFP 頁籤時會動態推導該設備的光口速度（100M/1G/10G），並拉取靜態資料推薦相容的 SFP 模組清單。
@@ -173,7 +182,8 @@ uv run uvicorn app.main:app --reload --host 0.0.0.0
 
 ### 4. 產品多台規格對比與 PDF/CSV 匯出
 * **產品對比 (Product Compare)**：可勾選 1 至 5 台產品拉出側拉面板進行橫向比對，並以橘黃色底色**高亮規格差異欄位**。
-* **AI 對比摘要**：對比面板整合 RAG AI 摘要（`compare_summary.py`），自動生成各機型關鍵差異分析與場景推薦建議。
+* **AI 對比摘要**：對比面板整合 RAG AI 摘要（`compare_summary.py`），自動生成各機型關鍵差異分析（Key
+  Differences）與整體選型建議（Recommendation）。
 * **多格式報表**：對比面板內整合 CSV 規格下載與呼叫後端 API 動態生成的 PDF 規格書報表（含 AI 摘要段落）。單台設備亦可直接匯出。
 
 ### 5. 官方產品連結導流與實體照片 Hover 預覽

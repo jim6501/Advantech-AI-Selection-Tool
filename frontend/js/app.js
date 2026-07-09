@@ -994,8 +994,8 @@ function applySort() {
         if (sortValue === 'port_desc') { const d = tvCalcTotalPorts(b) - tvCalcTotalPorts(a); return d !== 0 ? d : tvDefaultSort(a, b); }
         if (sortValue === 'model_asc') return (a.prod_model || '').localeCompare(b.prod_model || '');
         if (sortValue === 'model_desc') return (b.prod_model || '').localeCompare(a.prod_model || '');
-        if (sortValue === 'mgmt_asc') return getMgmtWeight(a.prod_type) - getMgmtWeight(b.prod_type);
-        if (sortValue === 'mgmt_desc') return getMgmtWeight(b.prod_type) - getMgmtWeight(a.prod_type);
+        if (sortValue === 'mgmt_asc') { const d = getMgmtWeight(a.prod_type) - getMgmtWeight(b.prod_type); return d !== 0 ? d : tvDefaultSort(a, b); }
+        if (sortValue === 'mgmt_desc') { const d = getMgmtWeight(b.prod_type) - getMgmtWeight(a.prod_type); return d !== 0 ? d : tvDefaultSort(a, b); }
         return tvDefaultSort(a, b);
     });
 
@@ -1540,22 +1540,23 @@ const TV_PAGE_SIZE = 30;
 // 所有可選欄位定義
 const TV_ALL_COLS = [
     { key: 'totalPorts',  label: 'Total',          title: 'Total Ports',                    default: true,  sortable: true,  group: 'general', speed: null },
-    { key: 'rj100',       label: 'RJ45-FE',        title: 'RJ-45 Fast Ethernet ports',      default: true,  sortable: true,  group: 'rj45',    speed: '100M' },
-    { key: 'rjGiga',      label: 'RJ45-1G',        title: 'RJ-45 GbE ports',                default: true,  sortable: true,  group: 'rj45',    speed: '1G' },
+    { key: 'rj100',       label: 'RJ45-FE',        shortLabel: 'FE',         title: 'RJ-45 Fast Ethernet ports',      default: true,  sortable: true,  group: 'rj45',    speed: '100M' },
+    { key: 'rjGiga',      label: 'RJ45-1G',        shortLabel: '1G',         title: 'RJ-45 GbE ports',                default: true,  sortable: true,  group: 'rj45',    speed: '1G' },
     { key: 'fiberCombo',  label: 'Combo',          title: 'GE Combo (RJ45/Fiber shared)',   default: false, sortable: true,  group: 'rj45',    speed: '1G' },
-    { key: 'fiber100',    label: 'Fiber-100M',     title: 'Fiber 100M fixed ports',         default: false, sortable: true,  group: 'fiber',   speed: '100M' },
-    { key: 'fiberGiga',   label: 'Fiber-1G',       title: 'Fiber GbE (SFP) ports',          default: true,  sortable: true,  group: 'fiber',   speed: '1G' },
-    { key: 'fiber10g',    label: 'Fiber-10G',      title: 'Fiber 10G (SFP+) ports',         default: true,  sortable: true,  group: 'fiber',   speed: '10G' },
-    { key: 'm12Fe',       label: 'M12-FE',         title: 'M12 D-code 10/100M ports',      default: false, sortable: true,  group: 'm12',     speed: '100M' },
-    { key: 'm12Giga',     label: 'M12-1G',         title: 'M12 X-code GbE ports',          default: false, sortable: true,  group: 'm12',     speed: '1G' },
-    { key: 'm12Multi',    label: 'M12-MG',         title: 'M12 Multi-Giga (2.5/5/10G)',    default: false, sortable: true,  group: 'm12',     speed: 'MG' },
-    { key: 'bypassFe',    label: 'M12-Bypass-FE',  title: 'LAN Bypass D-code 100M ports',  default: false, sortable: true,  group: 'm12',     speed: '100M' },
-    { key: 'bypassGiga',  label: 'M12-Bypass-1G',  title: 'LAN Bypass X-code GbE ports',   default: false, sortable: true,  group: 'm12',     speed: '1G' },
+    { key: 'fiber100',    label: 'Fiber-100M',     shortLabel: '100M',       title: 'Fiber 100M fixed ports',         default: false, sortable: true,  group: 'fiber',   speed: '100M' },
+    { key: 'fiberGiga',   label: 'Fiber-1G',       shortLabel: '1G',         title: 'Fiber GbE (SFP) ports',          default: true,  sortable: true,  group: 'fiber',   speed: '1G' },
+    { key: 'fiber10g',    label: 'Fiber-10G',      shortLabel: '10G',        title: 'Fiber 10G (SFP+) ports',         default: true,  sortable: true,  group: 'fiber',   speed: '10G' },
+    { key: 'm12Fe',       label: 'M12-FE',         shortLabel: 'FE',         title: 'M12 D-code 10/100M ports',      default: false, sortable: true,  group: 'm12',     speed: '100M' },
+    { key: 'm12Giga',     label: 'M12-1G',         shortLabel: '1G',         title: 'M12 X-code GbE ports',          default: false, sortable: true,  group: 'm12',     speed: '1G' },
+    { key: 'm12Multi',    label: 'M12-MG',         shortLabel: 'MG',         title: 'M12 Multi-Giga (2.5/5/10G)',    default: false, sortable: true,  group: 'm12',     speed: 'MG' },
+    { key: 'bypassFe',    label: 'M12-Bypass-FE',  shortLabel: 'Bypass-FE',  title: 'LAN Bypass D-code 100M ports',  default: false, sortable: true,  group: 'm12',     speed: '100M' },
+    { key: 'bypassGiga',  label: 'M12-Bypass-1G',  shortLabel: 'Bypass-1G',  title: 'LAN Bypass X-code GbE ports',   default: false, sortable: true,  group: 'm12',     speed: '1G' },
     { key: 'poe',         label: 'PoE',            title: 'PoE port count',                 default: true,  sortable: true,  group: 'specs',   speed: null },
+    { key: 'mgmt',        label: 'Mgmt',           title: 'Management type',                default: true,  sortable: false, group: 'specs',   speed: null },
     { key: 'temp',        label: 'Temp',           title: 'Temperature grade (Wide / Standard)', default: true, sortable: false, group: 'specs', speed: null },
     { key: 'power',       label: 'Power',          title: 'Power input voltage',            default: false, sortable: false, group: 'specs',   speed: null },
     { key: 'fiber_type',  label: 'F.Type',         title: 'Fiber connector type',           default: false, sortable: false, group: 'specs',   speed: null },
-    { key: 'application', label: 'App',            title: 'Application category',           default: false, sortable: false, group: 'specs',   speed: null },
+    { key: 'certifications', label: 'Cert',        title: 'Certifications',                 default: false, sortable: false, group: 'specs',   speed: null },
 ];
 
 const TV_COL_GROUPS = [
@@ -1698,8 +1699,8 @@ function _getSortedList() {
         if (sortValue === 'port_desc') { const d = tvCalcTotalPorts(b) - tvCalcTotalPorts(a); return d !== 0 ? d : tvDefaultSort(a, b); }
         if (sortValue === 'model_asc') return (a.prod_model || '').localeCompare(b.prod_model || '');
         if (sortValue === 'model_desc') return (b.prod_model || '').localeCompare(a.prod_model || '');
-        if (sortValue === 'mgmt_asc') return getMgmtWeight(a.prod_type) - getMgmtWeight(b.prod_type);
-        if (sortValue === 'mgmt_desc') return getMgmtWeight(b.prod_type) - getMgmtWeight(a.prod_type);
+        if (sortValue === 'mgmt_asc') { const d = getMgmtWeight(a.prod_type) - getMgmtWeight(b.prod_type); return d !== 0 ? d : tvDefaultSort(a, b); }
+        if (sortValue === 'mgmt_desc') { const d = getMgmtWeight(b.prod_type) - getMgmtWeight(a.prod_type); return d !== 0 ? d : tvDefaultSort(a, b); }
         return tvDefaultSort(a, b);
     });
     return list;
@@ -1759,10 +1760,31 @@ function tvGetVal(item, key) {
         case 'temp': return (item.prod_w_n || '').toLowerCase() === 'wide' ? 'Wide' : 'Standard';
         case 'power': return item.prod_power_input || '—';
         case 'fiber_type': return item.prod_fiber_type || '—';
-        case 'application': return item.prod_application || '—';
+        case 'certifications': return item.prod_certifications || '';
         case 'description': return item.prod_description || '—';
         default: return '—';
     }
+}
+
+// ── MGMT 管理類型縮寫：全名 → {abbr, cls} ─────
+const TV_MGMT_ABBR_RULES = [
+    { test: t => t.includes('unmanage'),                    abbr: 'U',    cls: 'tv-mgmt-u' },
+    { test: t => t.includes('l3') && t.includes('modular'),  abbr: 'L3-M', cls: 'tv-mgmt-l3m' },
+    { test: t => t.includes('l3'),                           abbr: 'L3',   cls: 'tv-mgmt-l3' },
+    { test: t => t.includes('l2') && t.includes('modular'),  abbr: 'L2-M', cls: 'tv-mgmt-l2m' },
+    { test: t => t.includes('l2'),                           abbr: 'L2',   cls: 'tv-mgmt-l2' },
+    { test: t => t.includes('manage'),                       abbr: 'L2',   cls: 'tv-mgmt-l2' },
+];
+function tvMgmtAbbrev(raw) {
+    const full = raw || '—';
+    const t = full.toLowerCase();
+    const hit = TV_MGMT_ABBR_RULES.find(r => r.test(t));
+    return hit ? { abbr: hit.abbr, cls: hit.cls, full } : { abbr: full, cls: 'tv-mgmt-u', full };
+}
+function tvRenderMgmtBadge(raw) {
+    if (!raw) return '';
+    const { abbr, cls, full } = tvMgmtAbbrev(raw);
+    return `<span class="tv-mgmt-badge ${cls}" title="${full.replace(/"/g, '&quot;')}">${abbr}</span>`;
 }
 
 // ── 產生欄位的 HTML（格式化）─────────────────
@@ -1771,33 +1793,31 @@ function tvRenderCell(item, key) {
     if (['totalPorts','rjGiga','rj100','fiberGiga','fiber10g','fiber100',
          'fiberCombo','m12Fe','m12Giga','m12Multi','bypassFe','bypassGiga'].includes(key)) {
         if (v === 0) return `<span class="tv-dash">—</span>`;
-        const labelMap = {
-            totalPorts:'total',     rjGiga:'RJ45-1G',   rj100:'RJ45-FE',
-            fiberGiga:'Fiber-1G',   fiber10g:'Fiber-10G', fiber100:'Fiber-100M',
-            fiberCombo:'Combo',     m12Fe:'M12-FE',     m12Giga:'M12-1G',
-            m12Multi:'M12-MG',      bypassFe:'Bypass-FE', bypassGiga:'Bypass-1G'
-        };
-        return `<span class="tv-port-num">${v}</span><span class="tv-port-label">${labelMap[key] || ''}</span>`;
+        return `<span class="tv-port-num">${v}</span>`;
     }
     if (key === 'poe') {
         if (v === 0) return `<span class="tv-dash">—</span>`;
         return `<span class="tv-tag tv-tag-poe">PoE ×${v}</span>`;
     }
     if (key === 'mgmt') {
-        const isM = v.toLowerCase().includes('manage') && !v.toLowerCase().includes('unmanage');
-        return `<span class="tv-tag ${isM ? 'tv-tag-m' : 'tv-tag-u'}">${v || '—'}</span>`;
+        return v ? tvRenderMgmtBadge(v) : `<span class="tv-dash">—</span>`;
+    }
+    if (key === 'certifications') {
+        const certs = (v || '').split(',').map(s => s.trim()).filter(Boolean);
+        if (!certs.length) return `<span class="tv-dash">—</span>`;
+        return `<div class="tv-cert-row">${certs.map(c => `<span class="tv-cert-badge">${c}</span>`).join('')}</div>`;
     }
     if (key === 'temp') {
         if (v === 'Wide') return `<span class="tv-tag tv-tag-w">Wide Temp</span>`;
         return `<span class="tv-tag tv-tag-std">Standard</span>`;
     }
+    if (key === 'power') {
+        if (!v || v === '—') return `<span class="tv-dash">—</span>`;
+        return `<span class="tv-tag tv-tag-power">${v}</span>`;
+    }
     if (key === 'fiber_type') {
         if (!v || v === '—') return `<span class="tv-dash">—</span>`;
         return `<span class="tv-tag tv-tag-sfp">${v}</span>`;
-    }
-    if (key === 'application') {
-        if (!v || v === '—') return `<span class="tv-dash">—</span>`;
-        return `<span class="tv-tag tv-tag-app">${v}</span>`;
     }
     if (key === 'description') {
         if (!v || v === '—') return `<span class="tv-dash">—</span>`;
@@ -1877,17 +1897,9 @@ function renderProductTable(data_list) {
     // For each labeled group, count active cols
     const groupColCounts = {};
     LABELED_GROUPS.forEach(g => { groupColCounts[g.id] = cols.filter(c => c.group === g.id).length; });
-    // Determine which col is first in its group (for left border styling)
-    const groupFirstSeen = new Set();
-    const colIsGroupFirst = cols.map(c => {
-        if (!c.group || c.group === 'general' || c.group === 'specs') return false;
-        if (!groupFirstSeen.has(c.group)) { groupFirstSeen.add(c.group); return true; }
-        return false;
-    });
 
-    const stickyNumTh  = `position:sticky;left:0;z-index:4;background:var(--adv-gray);width:36px;min-width:36px;text-align:center;padding:9px 6px;border-right:1px solid var(--adv-border);font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--adv-border);`;
-    const stickyModTh  = `position:sticky;left:37px;z-index:4;background:var(--adv-gray);min-width:160px;cursor:default;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--adv-border);`;
-    const stickyMgmtTh = `position:sticky;left:197px;z-index:4;background:var(--adv-gray);min-width:90px;box-shadow:3px 0 8px -3px rgba(0,51,102,0.10);cursor:default;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;padding:9px 10px;border-bottom:1px solid var(--adv-border);`;
+    const stickyNumTh  = `position:sticky;left:0;z-index:4;background:var(--adv-gray);width:36px;min-width:36px;text-align:center;padding:5px 6px;border-right:1px solid var(--adv-border);font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--adv-border);`;
+    const stickyModTh  = `position:sticky;left:37px;z-index:4;background:var(--adv-gray);width:170px;min-width:170px;max-width:170px;cursor:default;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);font-weight:600;padding:5px 10px;border-bottom:1px solid var(--adv-border);`;
 
     // Row 1 — group headers
     let theadRow1 = `<tr class="tv-thead-group">
@@ -1897,7 +1909,7 @@ function renderProductTable(data_list) {
         <th rowspan="2" class="${c.sortable?'':'tv-unsortable'} ${tvSortCol===c.key?'tv-sorted':''}"
             title="${c.title||c.label}" ${c.sortable?`onclick="tvDoSort('${c.key}')"`:''}>${c.label}${c.sortable?sortIconFor(c.key):''}</th>`).join('')}
         ${LABELED_GROUPS.filter(g => groupColCounts[g.id] > 0).map(g => `
-        <th colspan="${groupColCounts[g.id]}" class="tv-gh tv-gh-${g.id}" style="border-left:3px solid ${g.color};color:${g.color}">${g.label}</th>`).join('')}
+        <th colspan="${groupColCounts[g.id]}" class="tv-gh tv-gh-${g.id}">${g.label}</th>`).join('')}
         ${cols.filter(c => c.group === 'specs').map(c => `
         <th rowspan="2" class="${c.sortable?'':'tv-unsortable'} ${tvSortCol===c.key?'tv-sorted':''}"
             title="${c.title||c.label}" ${c.sortable?`onclick="tvDoSort('${c.key}')"`:''}>${c.label}${c.sortable?sortIconFor(c.key):''}</th>`).join('')}
@@ -1907,14 +1919,10 @@ function renderProductTable(data_list) {
     // Row 2 — individual col names for labeled groups only
     const row2Cols = cols.filter(c => c.group !== 'general' && c.group !== 'specs');
     let theadRow2 = row2Cols.length ? `<tr class="tv-thead-cols">
-        ${row2Cols.map((c, i) => {
-            const isFirst = colIsGroupFirst[cols.indexOf(c)];
-            const grp = TV_COL_GROUPS.find(g => g.id === c.group);
-            const borderStyle = (isFirst && grp ? `border-left:3px solid ${grp.color};` : '')
-                + (grp && grp.color ? `border-bottom:2px solid ${grp.color};` : '');
-            return `<th class="${c.sortable?'':'tv-unsortable'} ${tvSortCol===c.key?'tv-sorted':''} tv-col2"
-                style="${borderStyle}" title="${c.title||c.label}"
-                ${c.sortable?`onclick="tvDoSort('${c.key}')"`:''}>${c.label}${c.sortable?sortIconFor(c.key):''}</th>`;
+        ${row2Cols.map((c) => {
+            return `<th class="${c.sortable?'':'tv-unsortable'} ${tvSortCol===c.key?'tv-sorted':''} tv-col2 tv-grp-${c.group}"
+                title="${c.title||c.label}"
+                ${c.sortable?`onclick="tvDoSort('${c.key}')"`:''}>${c.shortLabel||c.label}${c.sortable?sortIconFor(c.key):''}</th>`;
         }).join('')}
     </tr>` : '';
 
@@ -1930,20 +1938,7 @@ function renderProductTable(data_list) {
         const globalIdx = (tvPage - 1) * TV_PAGE_SIZE + idx;
         const pid = `pc-${globalIdx}`;
         const prodUrl = item.prod_url || `https://www.advantech.com/en/search?q=${encodeURIComponent(item.prod_model)}`;
-
-        const totalRj = (item.prod_rj_giga || 0) + (item.prod_poe_rj_giga || 0) +
-            (item.prod_rj_100 || 0) + (item.prod_poe_rj_100 || 0);
-        const totalFib = (item.prod_fiber_giga || 0) + (item.prod_fiber_10g || 0) + (item.prod_fiber_100 || 0);
-        const totalM12 = (item.prod_m12_giga || 0) + (item.prod_poe_m12_giga || 0) +
-            (item.prod_m12_100 || 0) + (item.prod_poe_m12_100 || 0) +
-            (item.prod_m12_multi_giga || 0);
-        const mgmtLabel = item.prod_type || '';
-        const subParts = [
-            totalRj > 0 ? `${totalRj}×RJ45` : '',
-            totalFib > 0 ? `${totalFib}×Fiber` : '',
-            totalM12 > 0 ? `${totalM12}×M12` : '',
-            mgmtLabel || '',
-        ].filter(Boolean).join(' · ');
+        const mgmtBadge = tvActiveCols.has('mgmt') ? tvRenderMgmtBadge(item.prod_type) : '';
 
         // 同步 compare bar 的 active 狀態
         const isCmpActive = typeof compareIsSelected === 'function' && compareIsSelected(pid);
@@ -1958,9 +1953,7 @@ function renderProductTable(data_list) {
                 lastTier = tier;
                 const label = TV_TIER_LABELS[tier] || '';
                 separatorRow = `<tr class="tv-tier-sep">
-                    <td colspan="${colSpan}" style="padding:3px 12px;background:#dce9f5;color:#2a5280;font-size:0.62rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;border-top:2px solid #b0cce8;border-bottom:1px solid #b0cce8;position:relative;z-index:5;">
-                        層級 ${tier}・${label}
-                    </td>
+                    <td colspan="${colSpan}">層級 ${tier}・${label}</td>
                 </tr>`;
             }
         }
@@ -1968,26 +1961,19 @@ function renderProductTable(data_list) {
         return separatorRow + `<tr
             onmouseenter="this.querySelectorAll('.tv-s').forEach(c=>c.style.background='${hoverBg}')"
             onmouseleave="this.querySelectorAll('.tv-s').forEach(c=>c.style.background='${rowBg}')">
-            <td class="tv-s" style="position:sticky;left:0;z-index:2;background:${rowBg};width:36px;min-width:36px;text-align:center;font-size:0.72rem;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);padding:9px 6px;border-right:1px solid var(--adv-border);box-shadow:2px 0 6px -2px rgba(0,51,102,0.08);">
+            <td class="tv-s" style="position:sticky;left:0;z-index:2;background:${rowBg};width:36px;min-width:36px;text-align:center;font-size:0.7rem;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);padding:3px 6px;border-right:1px solid var(--adv-border);box-shadow:2px 0 6px -2px rgba(0,51,102,0.08);">
                 ${globalIdx + 1}
             </td>
-            <td class="tv-s" style="position:sticky;left:37px;z-index:2;background:${rowBg};min-width:160px;max-width:210px;box-shadow:3px 0 8px -3px rgba(0,51,102,0.10);padding:9px 10px;">
+            <td class="tv-s" style="position:sticky;left:37px;z-index:2;background:${rowBg};width:170px;min-width:170px;max-width:170px;overflow:hidden;box-shadow:3px 0 8px -3px rgba(0,51,102,0.10);padding:3px 10px;">
                 <div class="tv-model-name">
                     <a href="${prodUrl}" target="_blank" rel="noopener noreferrer"
                        title="View on Advantech website">${item.prod_model} <span style="font-size:9px;opacity:0.7">↗</span></a>
+                    ${mgmtBadge}
                 </div>
-                ${subParts ? `<div class="tv-model-sub">${subParts}</div>` : ''}
-                ${(() => {
-                    const certs = (item.prod_certifications || '').split(',').map(s => s.trim()).filter(Boolean);
-                    if (!certs.length) return '';
-                    return `<div class="tv-cert-row">${certs.map(c => `<span class="tv-cert-badge">${c}</span>`).join('')}</div>`;
-                })()}
             </td>
-            ${cols.map((c, ci) => {
-                const isFirst = colIsGroupFirst[ci];
-                const grp = TV_COL_GROUPS.find(g => g.id === c.group);
-                const borderStyle = isFirst && grp && grp.color ? `border-left:3px solid ${grp.color};` : '';
-                return `<td style="${borderStyle}">${tvRenderCell(item, c.key)}</td>`;
+            ${cols.map((c) => {
+                const grpClass = ['rj45','fiber','m12'].includes(c.group) ? `tv-grp-${c.group}` : '';
+                return `<td class="${grpClass}">${tvRenderCell(item, c.key)}</td>`;
             }).join('')}
             <td class="tv-cmp-cell">
                 <button class="tv-cmp-btn ${isCmpActive ? 'selected' : ''}"

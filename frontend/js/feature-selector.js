@@ -143,32 +143,59 @@ const FS_GROUPS = [
         ]
     },
     {
-        id: 'portspeed', label: 'Port Type / Speed', icon: '⚡', color: '#06b6d4',
+        // Port_RJ45_GbE/100M、Port_Fiber_GbE/10G、Port_M12_GbE、Port_MultiGiga（特定接頭+特定速度組合）
+        // 與 Wizard 的 Max Port Speed 概念重疊，透過 FS_HIDDEN_FEATURES 隱藏；Has_PoE/Has_Fiber/Has_RJ-45
+        // 雖然跟 Wizard 的 PoE Required / Interface Type 是同一個 key，但保留在此卡片方便一次瀏覽。
+        // 隱藏後這張卡不再涉及「速度」，改名為 Port Type / Connector。
+        id: 'portspeed', label: 'Port Type / Connector', icon: '⚡', color: '#06b6d4',
         dbCategories: [
-            'Port Feature',  // Has_PoE, Has_Fiber, Has_RJ-45
-            'Port Speed'     // Port_RJ45_GbE, Port_RJ45_100M, Port_Fiber_GbE, Port_Fiber_10G, Port_M12_Any, Port_M12_GbE, Port_MultiGiga, Port_Bypass
+            'Port Feature',    // Has_PoE, Has_Fiber, Has_RJ-45
+            'Connector Type'   // 隱藏速度組合後，實際為 Port_M12_Any（M12 Connector）, Port_Bypass（LAN Bypass）
         ]
     },
     {
+        id: 'power', label: 'Power Input', icon: '⏻', color: '#f59e0b',
+        dbCategories: [
+            'Power Input'  // Pwr_DC, Pwr_AC, Pwr_12V, Pwr_24V, Pwr_High_Voltage
+        ]
+    },
+    {
+        id: 'certifications', label: 'Certifications', icon: '🛡', color: '#22c55e',
+        dbCategories: [
+            'Certifications'  // Cert_UL, Cert_LVD, Cert_IEC61850, Cert_NEMA, Cert_EN50155, Cert_EMark, Cert_ITxPT
+        ]
+    },
+    {
+        // Speed_100M/GbE/10G 已隱藏（與 Wizard 的 Max Port Speed 重複），目前只剩 Temp_Wide。
         id: 'hw', label: 'Hardware Specs', icon: '◈', color: '#64748b',
         dbCategories: [
-            'Hardware Feature', // Temp_Wide
-            'Power Input'       // Pwr_DC, Pwr_AC, Pwr_12V, Pwr_24V, Pwr_High_Voltage
+            'Hardware Feature'  // Temp_Wide
         ]
     },
-    {
-        id: 'application', label: 'Application', icon: '◉', color: '#0ea5e9',
-        dbCategories: [
-            'Application'        // 應用場景（動態載入）
-        ]
-    }
     // ── 未來新增大分類，在此加入 object ──
 ];
 
+// TODO(暫時): 軟體規格資料尚未確認完成，Advanced Filter 先只顯示硬體相關卡片。
+// 待軟體規格資料確認無誤後，把 FS_SOFTWARE_HIDDEN 改回 false 即可恢復顯示所有卡片。
+// 注意：這裡只影響「卡片顯示」與「模態框內搜尋」，不影響 FS_GROUPS 本身或資料載入/分類邏輯。
+const FS_SOFTWARE_HIDDEN = true;
+const FS_HARDWARE_GROUP_IDS = new Set(['portspeed', 'power', 'certifications', 'hw']);
+const FS_VISIBLE_GROUPS = FS_SOFTWARE_HIDDEN
+    ? FS_GROUPS.filter(g => FS_HARDWARE_GROUP_IDS.has(g.id))
+    : FS_GROUPS;
+
 // ================================================================
 // FS_HIDDEN_FEATURES — 不在選擇器中顯示的功能（簡化 UI 用）
+// Port_RJ45_*/Port_Fiber_*/Port_M12_GbE/Port_MultiGiga（特定接頭+特定速度組合）與
+// Speed_100M/GbE/10G（整機最大速度）皆與左側 Wizard 的「Max Port Speed」概念重複，
+// 在 Advanced Filter 中重複出現只會造成混淆，故隱藏（後端查詢邏輯不受影響，Wizard 仍可正常送出這些 key）。
+// Port Type / Connector 卡片因此只保留 M12 Connector 與 LAN Bypass 兩種「連接器類型」。
 // ================================================================
-const FS_HIDDEN_FEATURES = new Set([]);
+const FS_HIDDEN_FEATURES = new Set([
+    'Port_RJ45_GbE', 'Port_RJ45_100M', 'Port_Fiber_GbE', 'Port_Fiber_10G',
+    'Port_M12_GbE', 'Port_MultiGiga',
+    'Speed_100M', 'Speed_GbE', 'Speed_10G'
+]);
 
 // ── 運作邏輯 ────────────────────────────────────────────────────
 
@@ -423,7 +450,7 @@ function fsRenderGrid() {
     if (!el) return;
     el.style.display = 'grid';
 
-    const allGroups = [...FS_GROUPS];
+    const allGroups = [...FS_VISIBLE_GROUPS];
     const hasOther = Object.values(fsData['other'] || {}).some(arr => arr.length > 0);
 
     el.innerHTML = allGroups.map(g => {
@@ -562,7 +589,7 @@ function fsRenderSearch() {
     let hasAny = false;
 
     const searchTargets = [
-        ...FS_GROUPS.map(g => ({ g, data: fsData[g.id] || {} })),
+        ...FS_VISIBLE_GROUPS.map(g => ({ g, data: fsData[g.id] || {} })),
         { g: { id: 'other', label: 'Other (Uncategorized)', color: '#aab', icon: '⚠' }, data: fsData['other'] || {} }
     ];
 

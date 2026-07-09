@@ -110,16 +110,21 @@ def main():
         
         # --- 測試階段自動抓最新版回退邏輯 ---
         is_inferred = False
+        no_series_match = False
         if not hw_sw_series or not hw_fw_ver:
             # 推導系列
             hw_sw_series = infer_series_from_pn(pn)
-            
-            # 檢查推導出來的系列是否存在於軟體清單中，如果沒有，依照要求預設 fallback 到 EKI-5500
+
+            # 檢查推導出來的系列是否存在於軟體清單中。
+            # 注意：這裡故意不 fallback 到其他無關系列（例如 EKI-5500）－
+            # 曾經這樣做會把不相關系列的 managed 功能表（VLAN/SNMP/CLI...）
+            # 誤植到本來是 Unmanaged 的產品上，造成 hardware.Function 和
+            # software 欄位自相矛盾。找不到真正對應的系列時，寧可讓
+            # software 留空，也不要塞入猜測、不相關的資料。
             available_series = [s["software_series"] for s in sw_raw]
             if hw_sw_series not in available_series:
-                hw_sw_series = "EKI-5500"
-                
-            if hw_sw_series:
+                no_series_match = True
+            elif hw_sw_series:
                 # 尋找這個系列所有的軟體規格
                 matching_sws = [s for s in sw_raw if s["software_series"] == hw_sw_series]
                 if matching_sws:
@@ -129,32 +134,36 @@ def main():
                     is_inferred = True
 
         # 根據鎖定的 hw_sw_series 和 hw_fw_ver 去找規格
-        matched_sw = next((s for s in sw_raw if s["software_series"] == hw_sw_series and s["firmware_ver"] == hw_fw_ver), None)
-        
+        matched_sw = None if no_series_match else next(
+            (s for s in sw_raw if s["software_series"] == hw_sw_series and s["firmware_ver"] == hw_fw_ver), None
+        )
+
+        # 無論是否配對到軟體規格，硬體資料都應該被寫入 product_specs，
+        # 只是配對不到時 software 留空，避免產品在選型工具中消失。
+        product_doc = {
+            "_id": pn,
+            "product_pn": pn,
+            "model_name": hw.get("Model Name", ""),
+            "software_mapped_series": hw_sw_series if matched_sw else "",
+            "software_mapped_fw": hw_fw_ver if matched_sw else "",
+            "is_inferred": is_inferred,
+            "hardware": hw,
+            "software": matched_sw.get("software", {}) if matched_sw else {}
+        }
+        product_inserts.append(UpdateOne(
+            {"_id": pn},
+            {"$set": product_doc},
+            upsert=True
+        ))
+
         if matched_sw:
-            # 建立統合物件
-            product_doc = {
-                "_id": pn,
-                "product_pn": pn,
-                "model_name": hw.get("Model Name", ""),
-                "software_mapped_series": hw_sw_series,
-                "software_mapped_fw": hw_fw_ver,
-                "is_inferred": is_inferred,
-                "hardware": hw,
-                "software": matched_sw.get("software", {})
-            }
-            product_inserts.append(UpdateOne(
-                {"_id": pn},
-                {"$set": product_doc},
-                upsert=True
-            ))
             validation_report["success_merges"].append(pn)
         else:
             validation_report["failed_merges"].append({
                 "pn": pn,
                 "tried_series": hw_sw_series,
                 "tried_fw": hw_fw_ver,
-                "reason": "SW specifications not found"
+                "reason": "SW specifications not found; software left empty"
             })
             
     if hw_updates:

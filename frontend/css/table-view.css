@@ -246,13 +246,15 @@
     margin: 0 3px;
 }
 
-/* ── Spec fields (independent pills) ── */
+/* ── Spec fields (independent pills) ──
+   排成 2 欄多列的網格，避免項目一多就把整排面板拉得比群組框都高 */
 .col-chips-specs {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(78px, auto));
+    grid-template-rows: repeat(4, auto);
+    grid-auto-flow: column;
+    gap: 3px 6px;
     align-self: flex-start;
-    min-width: 82px;
 }
 
 /* ── Standalone chip (specs + general) — button with checkbox indicator ── */
@@ -319,7 +321,10 @@
 
 /* ── Table Wrapper ──────────────────────────────────────── */
 .tv-wrap {
-    overflow-x: auto;
+    overflow: auto;
+    /* 設定固定高度讓表格內部捲動，凍結表頭（position:sticky）才有意義；
+       約可顯示 15-17 筆緊湊列（每列 ~28px）*/
+    max-height: 540px;
     border: 1px solid var(--adv-border);
     border-radius: var(--radius-sm);
     /* top border が card::before に被らないよう */
@@ -327,8 +332,13 @@
 }
 
 .tv-table {
+    /* 撐滿 .tv-wrap 寬度：欄位少時多出來的空間會分配給其他（無固定寬度的）欄位；
+       Model 欄因為 width/min-width/max-width 三者鎖死在同一個值，不受影響 */
     width: 100%;
-    border-collapse: collapse;
+    /* position:sticky 在 th/td 上與 border-collapse:collapse 互斥（Chromium 會直接失效），
+       改用 separate + spacing:0 才能讓凍結表頭生效 */
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 0.8rem;
     table-layout: auto;   /* 讓欄寬依內容自適應，超出範圍橫向捲動 */
 }
@@ -342,7 +352,7 @@
     font-size: 0.7rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    padding: 7px 10px;
+    padding: 4px 10px;
     text-align: left;
     border-bottom: 1px solid var(--adv-border);
     white-space: nowrap;
@@ -355,23 +365,55 @@
     min-width: 64px;
 }
 
-/* Group header row (row 1) */
+/* Group header row (row 1)
+   高度強制固定為 24px（box-sizing:border-box），需與下面 .tv-col2 的
+   top:24px 完全對齊，否則兩個 sticky row 之間會露出縫隙，捲動時資料列會從中透出 */
 .tv-thead-group th.tv-gh {
+    box-sizing: border-box;
+    height: 24px;
     text-align: center;
-    font-size: 0.68rem;
+    font-size: 0.66rem;
     letter-spacing: 0.1em;
-    padding: 5px 10px;
+    padding: 0 10px;
     border-bottom: none;
     top: 0;
+    font-weight: 700;
+}
+
+/* ── 從 Total 欄開始置中（# 跟 Model 兩欄維持靠左）──────── */
+.tv-thead-group th:nth-child(n+3),
+.tv-thead-cols th,
+.tv-table tbody tr td:nth-child(n+3) {
+    text-align: center;
 }
 
 /* Col name row (row 2) */
 .tv-table thead th.tv-col2 {
-    top: 27px; /* height of group row */
+    top: 24px; /* height of group row */
     font-size: 0.68rem;
-    padding: 5px 10px;
-    border-bottom: unset; /* 讓 inline style 的群組顏色底線生效 */
+    padding: 3px 10px;
 }
+
+/* ── Group background tints — RJ-45 (blue) / Fiber (green) / M12 (amber) ── */
+.tv-thead-group th.tv-gh-rj45   { background: #DCEBFA; color: #1d6fa4; }
+.tv-thead-group th.tv-gh-fiber  { background: #DCF3E2; color: #2a8a4a; }
+.tv-thead-group th.tv-gh-m12    { background: #FBE9CC; color: #b56a00; }
+
+.tv-table thead th.tv-col2.tv-grp-rj45   { background: #EAF3FC; }
+.tv-table thead th.tv-col2.tv-grp-fiber  { background: #EAF7EE; }
+.tv-table thead th.tv-col2.tv-grp-m12    { background: #FDF3E3; }
+
+.tv-table tbody td.tv-grp-rj45   { background: #EAF3FC; }
+.tv-table tbody td.tv-grp-fiber  { background: #EAF7EE; }
+.tv-table tbody td.tv-grp-m12    { background: #FDF3E3; }
+
+.tv-table tbody tr:nth-child(even) td.tv-grp-rj45   { background: #DCEBFA; }
+.tv-table tbody tr:nth-child(even) td.tv-grp-fiber  { background: #DCF3E2; }
+.tv-table tbody tr:nth-child(even) td.tv-grp-m12    { background: #FBE9CC; }
+
+.tv-table tbody tr:hover td.tv-grp-rj45   { background: #C3DEF6 !important; }
+.tv-table tbody tr:hover td.tv-grp-fiber  { background: #C4E9CE !important; }
+.tv-table tbody tr:hover td.tv-grp-m12    { background: #F5DBA8 !important; }
 
 /* 數字 port 欄：統一最小寬度，不壓縮 */
 .tv-table thead th:not(.tv-col-model):not(.tv-unsortable) {
@@ -419,10 +461,14 @@
 /* ── Body rows ──────────────────────────────────────────── */
 .tv-table tbody tr {
     transition: background 0.12s;
+}
+
+/* border-collapse:separate 下 <tr> 本身不會畫出邊框，改畫在 <td> 上 */
+.tv-table tbody tr td {
     border-bottom: 1px solid var(--adv-border);
 }
 
-.tv-table tbody tr:last-child {
+.tv-table tbody tr:last-child td {
     border-bottom: none;
 }
 
@@ -435,9 +481,27 @@
 }
 
 .tv-table tbody td {
-    padding: 9px 10px;
+    padding: 4px 10px;
     color: var(--text-main);
     vertical-align: middle;
+    /* 禁止換行，欄位改用寬度撐開（配合 .tv-wrap 的水平捲動），避免列高被撐高 */
+    white-space: nowrap;
+}
+
+/* ── Tier separator row ─────────────────────────────────── */
+.tv-table tbody tr.tv-tier-sep td {
+    padding: 1px 12px;
+    background: #dce9f5;
+    color: #2a5280;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    border-top: 2px solid #b0cce8;
+    border-bottom: 1px solid #b0cce8;
+    position: relative;
+    /* 必須低於 thead 的 sticky z-index（2/4），否則往上捲動時層級列會蓋到凍結表頭 */
+    z-index: 1;
 }
 
 /* ── Sticky # column ────────────────────────────────────── */
@@ -496,8 +560,12 @@ tr:hover td.tv-sticky-model {
 /* ── Model cell ─────────────────────────────────────────── */
 .tv-model-name {
     font-weight: 600;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     color: var(--adv-blue);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
 }
 
 .tv-model-name a {
@@ -506,17 +574,45 @@ tr:hover td.tv-sticky-model {
     display: inline-flex;
     align-items: center;
     gap: 3px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tv-mgmt-badge {
+    flex-shrink: 0;
 }
 
 .tv-model-name a:hover {
     text-decoration: underline;
 }
 
+/* ── MGMT abbreviation badge (next to model name) ─────────── */
+.tv-mgmt-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.6rem;
+    font-weight: 700;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.03em;
+    padding: 1px 5px;
+    border-radius: 4px;
+    line-height: 1.5;
+    white-space: nowrap;
+    cursor: default;
+}
+.tv-mgmt-u   { background: #F3F4F6; color: #374151; border: 1px solid #D1D5DB; }
+.tv-mgmt-l2  { background: #DBEAFE; color: #1D4ED8; border: 1px solid #BFDBFE; }
+.tv-mgmt-l3  { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+.tv-mgmt-l2m { background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD; }
+.tv-mgmt-l3m { background: #CCFBF1; color: #0F766E; border: 1px solid #5EEAD4; }
+
 .tv-cert-row {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    justify-content: center;
     gap: 3px;
-    margin-top: 4px;
 }
 .tv-cert-badge {
     font-size: 0.6rem;
@@ -531,36 +627,22 @@ tr:hover td.tv-sticky-model {
     white-space: nowrap;
 }
 
-.tv-model-sub {
-    font-size: 0.72rem;
-    color: var(--text-muted);
-    margin-top: 2px;
-    line-height: 1.4;
-}
-
 /* ── Numeric port cell ──────────────────────────────────── */
 .tv-port-num {
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: 700;
     font-family: 'IBM Plex Mono', monospace;
     color: var(--adv-blue);
-    display: block;
-}
-
-.tv-port-label {
-    font-size: 0.68rem;
-    color: var(--text-muted);
-    margin-top: 1px;
 }
 
 /* ── Tags inside cells ──────────────────────────────────── */
 .tv-tag {
     display: inline-block;
     font-size: 0.7rem;
-    padding: 2px 8px;
+    padding: 1px 8px;
     border-radius: 100px;
-    margin: 2px 2px 0 0;
-    line-height: 1.6;
+    margin: 0 2px 0 0;
+    line-height: 1.4;
     white-space: nowrap;
 }
 
@@ -569,11 +651,12 @@ tr:hover td.tv-sticky-model {
 .tv-tag-l3    { background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD; }
 .tv-tag-smart { background: #FEF9C3; color: #854D0E; border: 1px solid #FDE047; }
 .tv-tag-u     { background: #F3F4F6; color: #374151; border: 1px solid #D1D5DB; }
-.tv-tag-w   { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+.tv-tag-w   { background: #FFE4E6; color: #BE123C; border: 1px solid #FDA4AF; }
 .tv-tag-std { background: #F3F4F6; color: #6B7280; border: 1px solid #D1D5DB; }
 .tv-tag-poe { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
 .tv-tag-sfp { background: #E6F1FB; color: #185FA5; border: 1px solid #B3CFE8; }
 .tv-tag-app { background: #F0FDF4; color: #166534; border: 1px solid #A7F3D0; }
+.tv-tag-power { background: #F1F0EE; color: #57534E; border: 1px solid #D6D3D1; font-family: 'IBM Plex Mono', monospace; }
 
 /* ── Description cell ───────────────────────────────────── */
 .tv-desc-cell {
@@ -594,8 +677,8 @@ tr:hover td.tv-sticky-model {
 }
 
 .tv-cmp-btn {
-    padding: 4px 8px;
-    font-size: 0.72rem;
+    padding: 1px 8px;
+    font-size: 0.7rem;
     font-family: 'IBM Plex Mono', monospace;
     border: 1px solid var(--adv-border);
     border-radius: 6px;

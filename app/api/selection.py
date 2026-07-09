@@ -207,6 +207,15 @@ def load_dynamic_mappings_if_needed():
         "Has_Fiber":      "Has Fiber Port",
         "Has_RJ-45":      "Has RJ-45 Port"
     }
+    CERT_KEY_LABELS = {
+        "Cert_UL":       "UL",
+        "Cert_LVD":      "LVD",
+        "Cert_IEC61850": "IEC 61850",
+        "Cert_NEMA":     "NEMA",
+        "Cert_EN50155":  "EN 50155",
+        "Cert_EMark":    "E-Mark",
+        "Cert_ITxPT":    "ITxPT",
+    }
 
     for hd_key in base_hardware_mappings.keys():
         if hd_key in POWER_KEY_LABELS:
@@ -219,7 +228,7 @@ def load_dynamic_mappings_if_needed():
             SEARCHABLE_ITEMS.append(SearchFeatureItem(
                 label=PORT_SPEED_KEY_LABELS[hd_key],
                 key=hd_key,
-                category="Port Speed"
+                category="Connector Type"
             ))
         elif hd_key in PORT_FEATURE_KEY_LABELS:
             SEARCHABLE_ITEMS.append(SearchFeatureItem(
@@ -227,21 +236,17 @@ def load_dynamic_mappings_if_needed():
                 key=hd_key,
                 category="Port Feature"
             ))
+        elif hd_key in CERT_KEY_LABELS:
+            SEARCHABLE_ITEMS.append(SearchFeatureItem(
+                label=CERT_KEY_LABELS[hd_key],
+                key=hd_key,
+                category="Certifications"
+            ))
         else:
             SEARCHABLE_ITEMS.append(SearchFeatureItem(
                 label=hd_key.replace("_", " "),
                 key=hd_key,
                 category="Hardware Feature"
-            ))
-
-    # 動態取得所有硬體 Application，也放到模糊篩選選項
-    distinct_apps = db.product_specs.distinct("hardware.Application")
-    for app_val in distinct_apps:
-        if app_val and isinstance(app_val, str) and app_val.strip() != "None":
-            SEARCHABLE_ITEMS.append(SearchFeatureItem(
-                label=app_val,
-                key=f"application|||{app_val}",
-                category="Application"
             ))
 
     # 動態展開所有軟體功能：
@@ -268,6 +273,12 @@ def load_dynamic_mappings_if_needed():
             ))
 
 
+# TODO(暫時): 軟體規格資料尚未確認完成，Search Inventory 快速搜尋先只顯示硬體特徵。
+# 待軟體規格資料確認無誤後，把下面 SEARCH_INVENTORY_HARDWARE_ONLY 改回 False（或直接刪除相關判斷）即可恢復。
+SEARCH_INVENTORY_HARDWARE_ONLY = True
+HARDWARE_ONLY_CATEGORIES = {"Power Input", "Connector Type", "Port Feature", "Hardware Feature", "Certifications"}
+
+
 @router.get("/searchProdType", response_model=List[SearchFeatureItem])
 def search_product_features(q: str = ""):
     """
@@ -278,14 +289,16 @@ def search_product_features(q: str = ""):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB mapping init error: {str(e)}")
 
-    # 空白查詢：回傳全部（Feature Selector 初始化用，一次載入後前端自行過濾）
+    # 空白查詢：回傳全部（Feature Selector / Advanced Filter 初始化用，一次載入後前端自行過濾）
+    # 注意：Advanced Filter 走的是這個分支，不受下方硬體限定影響。
     if not q:
         return SEARCHABLE_ITEMS
 
     query_lower = q.lower()
     results = [
         item for item in SEARCHABLE_ITEMS
-        if query_lower in item.label.lower() or query_lower in item.category.lower()
+        if (not SEARCH_INVENTORY_HARDWARE_ONLY or item.category in HARDWARE_ONLY_CATEGORIES)
+        and (query_lower in item.label.lower() or query_lower in item.category.lower())
     ]
     return results[:20]
 
@@ -355,10 +368,6 @@ def submit_product_selection(req: SubmitProdRequest):
             # 2. 使用 $expr + $getField 避開 MongoDB dot-notation 對特殊字元的限制。
             mapping = DYNAMIC_SW_MAPPINGS[requested_key]
             and_conditions.append(make_sw_expr_query(mapping["category"], mapping["feat_key"]))
-        elif requested_key.startswith("application|||"):
-            # 動態 Application 處理
-            app_val = requested_key.split("|||")[1]
-            and_conditions.append({"hardware.Application": app_val})
         elif requested_key in base_hardware_mappings:
             # 硬體進階條件：直接用 dict 合併
             and_conditions.append(base_hardware_mappings[requested_key]())

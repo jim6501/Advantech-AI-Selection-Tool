@@ -110,6 +110,11 @@ body {
     overflow: visible;
 }
 
+/* lower-part 內的表格需要 sticky thead；overflow:hidden 的祖先會讓 position:sticky 失效 */
+.lower-part.card {
+    overflow: visible;
+}
+
 .card::before {
     content: '';
     position: absolute;
