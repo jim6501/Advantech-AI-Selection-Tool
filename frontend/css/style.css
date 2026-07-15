@@ -975,25 +975,31 @@ input[type="text"]:focus {
     box-shadow: 0 10px 28px rgba(0, 51, 102, 0.4);
 }
 
-/* ── CHAT PANEL ──────────────────────────────── */
+/* ── CHAT PANEL（浮動視窗：可拖曳 / 可縮放）─────── */
 #chatPanel {
     position: fixed;
-    bottom: 0;
-    right: 0;
-    width: var(--chat-width);
-    height: 100vh;
+    width: 860px;
+    height: 640px;
+    min-width: 560px;
+    min-height: 400px;
     background: var(--chat-bg);
-    border-left: 1px solid var(--adv-border);
-    box-shadow: -6px 0 32px rgba(0, 51, 102, 0.12);
+    border: 1px solid var(--adv-border);
+    border-radius: 14px;
+    box-shadow: 0 16px 48px rgba(0, 51, 102, 0.22);
     display: flex;
     flex-direction: column;
     z-index: 999;
-    transform: translateX(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    transform: scale(0.96);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    overflow: hidden;
 }
 
 #chatPanel.open {
-    transform: translateX(0);
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
 }
 
 #chatHeader {
@@ -1004,6 +1010,137 @@ input[type="text"]:focus {
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
+    cursor: move;
+    user-select: none;
+}
+
+/* ── CHAT BODY：左側對話 / 右側參考 chunk 並排 ──── */
+#chatBody {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#chatMain {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ── 左右欄拖曳分隔線（JS 控制 #chatSourcesPanel 寬度）──── */
+#chatColResizer {
+    flex: 0 0 6px;
+    cursor: col-resize;
+    background: transparent;
+    position: relative;
+    z-index: 4;
+}
+
+#chatColResizer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 2px;
+    width: 2px;
+    background: var(--adv-border);
+    transition: background 0.15s;
+}
+
+#chatColResizer:hover::after,
+#chatColResizer.resizing::after {
+    background: var(--adv-accent);
+}
+
+#chatSourcesPanel {
+    /* 預設寬度，開啟面板時會被 JS 讀取的記憶寬度覆寫（inline style） */
+    flex: 0 0 320px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background: #f7f9fc;
+    overflow: hidden;
+}
+
+#chatSourcesHeader {
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--adv-blue);
+    border-bottom: 1px solid var(--adv-border);
+    background: #eef4fb;
+    flex-shrink: 0;
+}
+
+#chatSourcesBody {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    font-size: 0.78rem;
+    line-height: 1.55;
+}
+
+.chat-sources-empty {
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 12px 4px;
+}
+
+.source-chunk-card {
+    background: #fff;
+    border: 1px solid var(--adv-border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+}
+
+.source-chunk-card .src-model-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.source-chunk-card .src-model {
+    font-weight: 700;
+    color: var(--adv-blue);
+    font-size: 0.8rem;
+}
+
+.source-chunk-card .src-score {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.source-chunk-card .src-content {
+    margin-top: 4px;
+    color: var(--text-main);
+    white-space: pre-wrap;
+}
+
+/* ── RESIZE HANDLE ───────────────────────────── */
+#chatResizeHandle {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 18px;
+    height: 18px;
+    cursor: nwse-resize;
+    z-index: 5;
+}
+
+#chatResizeHandle::before {
+    content: '';
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--adv-border);
+    border-bottom: 2px solid var(--adv-border);
 }
 
 .chat-header-title {
@@ -1044,6 +1181,7 @@ input[type="text"]:focus {
     gap: 4px;
 }
 
+#chatSourcesToggleBtn,
 #chatClearBtn,
 #chatCloseBtn {
     background: rgba(255, 255, 255, 0.12);
@@ -1053,13 +1191,18 @@ input[type="text"]:focus {
     cursor: pointer;
     padding: 5px 8px;
     border-radius: 6px;
-    transition: background 0.15s;
+    transition: background 0.15s, opacity 0.15s;
     line-height: 1;
 }
 
+#chatSourcesToggleBtn:hover,
 #chatClearBtn:hover,
 #chatCloseBtn:hover {
     background: rgba(255, 255, 255, 0.22);
+}
+
+#chatSourcesToggleBtn.toggled-off {
+    opacity: 0.5;
 }
 
 #contextBar {

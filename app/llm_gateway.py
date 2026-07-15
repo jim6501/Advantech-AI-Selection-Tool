@@ -102,7 +102,11 @@ class LLMGateway:
                     contents=prompt,
                     config=types.GenerateContentConfig(
                         temperature=0.2,
-                        max_output_tokens=4096,
+                        max_output_tokens=8192,
+                        # gemini-2.5-flash 的思考 token 跟輸出 token 共用 max_output_tokens 額度，
+                        # 型號/context 一多，思考會把額度吃光導致答案被硬截斷（MAX_TOKENS）。
+                        # 這裡是整理已知事實成 Markdown 的任務，不需要深度推理，關閉思考模式。
+                        thinking_config=types.ThinkingConfig(thinking_budget=0),
                     )
                 )
                 result = response.text

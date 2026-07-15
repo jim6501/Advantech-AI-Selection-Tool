@@ -1067,7 +1067,10 @@ function toggleChat() {
     chatOpen = !chatOpen;
     document.getElementById('chatPanel').classList.toggle('open', chatOpen);
     document.getElementById('chatFab').style.display = chatOpen ? 'none' : 'flex';
-    if (chatOpen) updateContextBar();
+    if (chatOpen) {
+        applyChatPanelGeometry();
+        updateContextBar();
+    }
 }
 
 // ── 清除對話 ──────────────────────────────────
@@ -1078,6 +1081,275 @@ function clearChat() {
             您好！我是 Advantech 工業交換機選型 AI 助手。<br>
             對話歷史已清除。請先在左側選擇型號後再詢問，或直接描述您的應用需求。
         </div>`;
+    renderSourcesPanel([]);
+}
+
+// ═══════════════════════════════════════════════
+// Chatbot — 浮動視窗：拖曳 / 縮放 / 位置與大小記憶
+// ═══════════════════════════════════════════════
+const CHAT_POS_KEY = 'chatPanelPos';
+const CHAT_SIZE_KEY = 'chatPanelSize';
+const CHAT_DEFAULT_SIZE = { width: 860, height: 640 };
+const CHAT_MIN_SIZE = { width: 560, height: 400 };
+const CHAT_SOURCES_WIDTH_KEY = 'chatSourcesWidth';
+const CHAT_SOURCES_DEFAULT_WIDTH = 320;
+const CHAT_SOURCES_MIN_WIDTH = 200;
+const CHAT_MAIN_MIN_WIDTH = 300;
+const CHAT_COL_RESIZER_WIDTH = 6;
+const CHAT_SOURCES_COLLAPSED_KEY = 'chatSourcesCollapsed';
+
+function readStoredJSON(key) {
+    try {
+        return JSON.parse(localStorage.getItem(key) || 'null');
+    } catch (e) {
+        return null;
+    }
+}
+
+// ── 套用視窗大小/位置（開啟時呼叫，讀取上次拖曳/縮放的結果）──
+function applyChatPanelGeometry() {
+    const panel = document.getElementById('chatPanel');
+    const savedSize = readStoredJSON(CHAT_SIZE_KEY) || CHAT_DEFAULT_SIZE;
+    const width = Math.max(CHAT_MIN_SIZE.width, Math.min(savedSize.width, window.innerWidth - 40));
+    const height = Math.max(CHAT_MIN_SIZE.height, Math.min(savedSize.height, window.innerHeight - 40));
+    panel.style.width = width + 'px';
+    panel.style.height = height + 'px';
+
+    const savedPos = readStoredJSON(CHAT_POS_KEY);
+    const pos = savedPos || {
+        left: window.innerWidth - width - 32,
+        top: window.innerHeight - height - 32,
+    };
+    pos.left = Math.min(Math.max(pos.left, 0), window.innerWidth - 80);
+    pos.top = Math.min(Math.max(pos.top, 0), window.innerHeight - 60);
+    panel.style.left = pos.left + 'px';
+    panel.style.top = pos.top + 'px';
+
+    applySourcesPanelCollapsedState();
+    applyChatSourcesWidth();
+}
+
+// ── 完全收起 / 展開參考片段區 ───────────────────
+function isSourcesPanelCollapsed() {
+    return localStorage.getItem(CHAT_SOURCES_COLLAPSED_KEY) === 'true';
+}
+
+function applySourcesPanelCollapsedState() {
+    const collapsed = isSourcesPanelCollapsed();
+    const sourcesPanel = document.getElementById('chatSourcesPanel');
+    const resizer = document.getElementById('chatColResizer');
+    const toggleBtn = document.getElementById('chatSourcesToggleBtn');
+    sourcesPanel.style.display = collapsed ? 'none' : 'flex';
+    resizer.style.display = collapsed ? 'none' : 'block';
+    toggleBtn.classList.toggle('toggled-off', collapsed);
+    toggleBtn.title = collapsed ? '顯示參考片段' : '隱藏參考片段';
+}
+
+function toggleSourcesPanel() {
+    const wasCollapsed = isSourcesPanelCollapsed();
+    localStorage.setItem(CHAT_SOURCES_COLLAPSED_KEY, String(!wasCollapsed));
+    applySourcesPanelCollapsedState();
+    if (wasCollapsed) {
+        // 從收起狀態展開 → 重新套用記憶寬度（避免展開時寬度跑掉）
+        applyChatSourcesWidth();
+    }
+}
+
+// ── 左右欄比例：夾住「參考片段區」寬度，確保左側對話區至少保留 CHAT_MAIN_MIN_WIDTH ──
+function clampSourcesPanelWidth(desiredWidth) {
+    const panel = document.getElementById('chatPanel');
+    const sourcesPanel = document.getElementById('chatSourcesPanel');
+    const panelWidth = panel.getBoundingClientRect().width || CHAT_DEFAULT_SIZE.width;
+    const maxWidth = Math.max(
+        CHAT_SOURCES_MIN_WIDTH,
+        panelWidth - CHAT_MAIN_MIN_WIDTH - CHAT_COL_RESIZER_WIDTH
+    );
+    const width = Math.min(Math.max(desiredWidth, CHAT_SOURCES_MIN_WIDTH), maxWidth);
+    sourcesPanel.style.flex = `0 0 ${width}px`;
+    return width;
+}
+
+// ── 套用參考片段區的記憶寬度（開啟面板 / 視窗大小變動時呼叫）──
+function applyChatSourcesWidth() {
+    const saved = Number(localStorage.getItem(CHAT_SOURCES_WIDTH_KEY)) || CHAT_SOURCES_DEFAULT_WIDTH;
+    const width = clampSourcesPanelWidth(saved);
+    localStorage.setItem(CHAT_SOURCES_WIDTH_KEY, String(width));
+}
+
+// ── 拖曳中間分隔線，自由調整左右比例 ──────────
+function initChatColumnResize() {
+    const resizer = document.getElementById('chatColResizer');
+    const sourcesPanel = document.getElementById('chatSourcesPanel');
+    let resizing = false, startX = 0, startWidth = 0;
+
+    resizer.addEventListener('mousedown', (e) => {
+        resizing = true;
+        startX = e.clientX;
+        startWidth = sourcesPanel.getBoundingClientRect().width;
+        resizer.classList.add('resizing');
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!resizing) return;
+        clampSourcesPanelWidth(startWidth - (e.clientX - startX));
+    });
+
+    window.addEventListener('mouseup', () => {
+        if (!resizing) return;
+        resizing = false;
+        resizer.classList.remove('resizing');
+        document.body.style.userSelect = '';
+        const width = sourcesPanel.getBoundingClientRect().width;
+        localStorage.setItem(CHAT_SOURCES_WIDTH_KEY, String(Math.round(width)));
+    });
+}
+
+// ── 拖曳視窗（用 Header 當拖曳把手，按鈕本身不觸發拖曳）──
+function initChatPanelDrag() {
+    const panel = document.getElementById('chatPanel');
+    const header = document.getElementById('chatHeader');
+    let dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+
+    header.addEventListener('mousedown', (e) => {
+        if (e.target.closest('button')) return;
+        dragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        const rect = panel.getBoundingClientRect();
+        startLeft = rect.left;
+        startTop = rect.top;
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        const left = Math.min(Math.max(startLeft + (e.clientX - startX), 0), window.innerWidth - 80);
+        const top = Math.min(Math.max(startTop + (e.clientY - startY), 0), window.innerHeight - 40);
+        panel.style.left = left + 'px';
+        panel.style.top = top + 'px';
+    });
+
+    window.addEventListener('mouseup', () => {
+        if (!dragging) return;
+        dragging = false;
+        document.body.style.userSelect = '';
+        const rect = panel.getBoundingClientRect();
+        localStorage.setItem(CHAT_POS_KEY, JSON.stringify({ left: rect.left, top: rect.top }));
+    });
+}
+
+// ── 縮放視窗（右下角把手）──────────────────────
+function initChatPanelResize() {
+    const panel = document.getElementById('chatPanel');
+    const handle = document.getElementById('chatResizeHandle');
+    let resizing = false, startX = 0, startY = 0, startWidth = 0, startHeight = 0;
+
+    handle.addEventListener('mousedown', (e) => {
+        resizing = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        const rect = panel.getBoundingClientRect();
+        startWidth = rect.width;
+        startHeight = rect.height;
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!resizing) return;
+        const rect = panel.getBoundingClientRect();
+        const maxWidth = window.innerWidth - rect.left - 16;
+        const maxHeight = window.innerHeight - rect.top - 16;
+        const width = Math.min(Math.max(CHAT_MIN_SIZE.width, startWidth + (e.clientX - startX)), maxWidth);
+        const height = Math.min(Math.max(CHAT_MIN_SIZE.height, startHeight + (e.clientY - startY)), maxHeight);
+        panel.style.width = width + 'px';
+        panel.style.height = height + 'px';
+        // 面板整體變窄時，參考片段區也要跟著夾住，避免擠壓掉左側對話區
+        clampSourcesPanelWidth(document.getElementById('chatSourcesPanel').getBoundingClientRect().width);
+    });
+
+    window.addEventListener('mouseup', () => {
+        if (!resizing) return;
+        resizing = false;
+        document.body.style.userSelect = '';
+        const rect = panel.getBoundingClientRect();
+        localStorage.setItem(CHAT_SIZE_KEY, JSON.stringify({ width: rect.width, height: rect.height }));
+        const sourcesWidth = document.getElementById('chatSourcesPanel').getBoundingClientRect().width;
+        localStorage.setItem(CHAT_SOURCES_WIDTH_KEY, String(Math.round(sourcesWidth)));
+    });
+}
+
+// ── 瀏覽器視窗縮放時，夾住面板目前的位置/大小，避免跑到可視範圍外按不到 ──
+function clampChatPanelToViewport() {
+    const panel = document.getElementById('chatPanel');
+    if (!panel.classList.contains('open')) return;
+
+    const rect = panel.getBoundingClientRect();
+    const width = Math.max(CHAT_MIN_SIZE.width, Math.min(rect.width, window.innerWidth - 40));
+    const height = Math.max(CHAT_MIN_SIZE.height, Math.min(rect.height, window.innerHeight - 40));
+    // 位置要用「縮完之後的新寬高」夾，否則右/下邊界還是會跑出視窗外
+    const left = Math.min(Math.max(rect.left, 0), Math.max(0, window.innerWidth - width));
+    const top = Math.min(Math.max(rect.top, 0), Math.max(0, window.innerHeight - height));
+
+    panel.style.width = width + 'px';
+    panel.style.height = height + 'px';
+    panel.style.left = left + 'px';
+    panel.style.top = top + 'px';
+
+    localStorage.setItem(CHAT_SIZE_KEY, JSON.stringify({ width, height }));
+    localStorage.setItem(CHAT_POS_KEY, JSON.stringify({ left, top }));
+
+    applyChatSourcesWidth();
+}
+
+window.addEventListener('resize', clampChatPanelToViewport);
+
+initChatPanelDrag();
+initChatPanelResize();
+initChatColumnResize();
+
+// ── 參考 Chunk 並排區渲染 ─────────────────────
+function renderSourcesPanel(sources) {
+    const body = document.getElementById('chatSourcesBody');
+    if (!body) return;
+    body.innerHTML = '';
+
+    if (!sources || sources.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'chat-sources-empty';
+        empty.textContent = '此回答沒有引用任何 Datasheet 原文片段。';
+        body.appendChild(empty);
+        return;
+    }
+
+    sources.forEach((src, idx) => {
+        const card = document.createElement('div');
+        card.className = 'source-chunk-card';
+
+        const row = document.createElement('div');
+        row.className = 'src-model-row';
+        const modelEl = document.createElement('span');
+        modelEl.className = 'src-model';
+        modelEl.textContent = `[${idx + 1}] ${src.model || '未知型號'}`;
+        const scoreEl = document.createElement('span');
+        scoreEl.className = 'src-score';
+        const similarity = (1 - (src.distance ?? 1)).toFixed(3);
+        scoreEl.textContent = `相似度 ${similarity}`;
+        row.appendChild(modelEl);
+        row.appendChild(scoreEl);
+
+        const contentEl = document.createElement('div');
+        contentEl.className = 'src-content';
+        contentEl.textContent = src.content || '';
+
+        card.appendChild(row);
+        card.appendChild(contentEl);
+        body.appendChild(card);
+    });
 }
 
 // ── Context Bar 渲染 ──────────────────────────
@@ -1236,26 +1508,9 @@ function appendMessage(role, text, isLoading = false, responseData = null) {
         wrapper.appendChild(detailsEl);
     }
 
-    // 可展開的 Datasheet 原文片段
-    if (responseData?.sources?.length > 0) {
-        const detailsEl = document.createElement('details');
-        detailsEl.style.cssText = 'font-size:0.75rem;color:#777;margin-top:8px;border-top:1px dashed #ccc;padding-top:4px;';
-        const summaryEl = document.createElement('summary');
-        summaryEl.style.cursor = 'pointer';
-        summaryEl.textContent = '🔍 查看 AI 參考的原廠規格片段';
-        detailsEl.appendChild(summaryEl);
-
-        const contentDiv = document.createElement('div');
-        contentDiv.style.cssText = 'margin-top:6px;padding:6px;background:rgba(0,0,0,0.04);border-radius:4px;max-height:150px;overflow-y:auto;';
-        responseData.sources.forEach((src, idx) => {
-            const p = document.createElement('div');
-            p.style.marginBottom = '6px';
-            const similarity = (1 - src.distance).toFixed(2);
-            p.innerHTML = `<strong>[${idx + 1}] ${src.model}</strong> (相似度: ${similarity})<br>${src.content.replace(/\\n/g, ' ')}`;
-            contentDiv.appendChild(p);
-        });
-        detailsEl.appendChild(contentDiv);
-        wrapper.appendChild(detailsEl);
+    // 參考 Datasheet 原文片段：改成塞進右側並排區，不再用每則訊息下方的收合區塊
+    if (role === 'assistant' && !isLoading) {
+        renderSourcesPanel(responseData?.sources || []);
     }
 
     msgs.appendChild(wrapper);
