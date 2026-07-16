@@ -745,17 +745,6 @@ function renderProductCards(data_list) {
             return '';
         })();
 
-        // 場景驗證 badge
-        const sceneVerifiedBadge = (() => {
-            if (!activeScene) return '';
-            const scene = SCENE_TEMPLATES.find(s => s.id === activeScene);
-            if (!scene || !scene.appKeywords || !scene.appKeywords.length) return '';
-            const appStr = (item.prod_application || '').toLowerCase();
-            const matched = scene.appKeywords.some(kw => appStr.includes(kw.toLowerCase()));
-            if (!matched) return '';
-            return `<span class="pb pb-scene-verified" title="Product spec sheet indicates suitability for ${scene.label} applications">✓ Scene Verified</span>`;
-        })();
-
         const certBadges = (item.prod_certifications || '').split(',').map(s => s.trim()).filter(Boolean)
             .map(c => `<span class="pb pb-cert">${c}</span>`).join('');
         const badgeHtml =
@@ -763,7 +752,6 @@ function renderProductCards(data_list) {
             (isW ? '<span class="pb pb-temp">Wide Temp</span>' : '') +
             (poeTotal > 0 ? `<span class="pb" style="background:#FEF3C7;color:#92400E;border-color:#FCD34D">PoE x${poeTotal}</span>` : '') +
             sfpBadge +
-            sceneVerifiedBadge +
             certBadges;
 
         // 組合研華官網搜尋 URL（使用 prod_url 欄位，或自動組合）
@@ -874,8 +862,7 @@ function submitItems() {
     const requestBody = {
         items: [...Object.keys(selectedItemsMap), ...extraItems],
         type: typeVal,
-        portnum: portVal,
-        application: 'ALL'
+        portnum: portVal
     };
 
     // 儲存目前的選型條件，供 PDF 報表使用
@@ -1462,6 +1449,51 @@ async function sendMessage() {
     }
 }
 
+// ── Pipeline 階段軌跡渲染（Hard Filter → Semantic Search）─────
+const PIPELINE_STAGE_ICONS = {
+    'Hard Filter（硬體規格篩選）': '🧮',
+    'Semantic Search（語意比對）': '🧠',
+};
+
+function renderPipelineSteps(steps) {
+    if (!steps || steps.length === 0) return null;
+
+    const container = document.createElement('div');
+    container.className = 'pipeline-steps';
+
+    steps.forEach((step) => {
+        const stepEl = document.createElement('details');
+        stepEl.className = 'pipeline-step';
+
+        const summaryEl = document.createElement('summary');
+        const iconEl = document.createElement('span');
+        iconEl.className = 'step-icon';
+        iconEl.textContent = PIPELINE_STAGE_ICONS[step.stage] || '▸';
+        const textEl = document.createElement('span');
+        textEl.className = 'step-text';
+        textEl.textContent = step.summary;
+        summaryEl.appendChild(iconEl);
+        summaryEl.appendChild(textEl);
+        stepEl.appendChild(summaryEl);
+
+        if (step.models && step.models.length > 0) {
+            const chipWrap = document.createElement('div');
+            chipWrap.className = 'pipeline-step-chips';
+            step.models.forEach((m) => {
+                const chip = document.createElement('span');
+                chip.className = 'ctx-model-chip';
+                chip.textContent = m;
+                chipWrap.appendChild(chip);
+            });
+            stepEl.appendChild(chipWrap);
+        }
+
+        container.appendChild(stepEl);
+    });
+
+    return container;
+}
+
 // ── 渲染訊息泡泡 ──────────────────────────────
 function appendMessage(role, text, isLoading = false, responseData = null) {
     const msgs = document.getElementById('chatMessages');
@@ -1479,6 +1511,12 @@ function appendMessage(role, text, isLoading = false, responseData = null) {
         bubble.innerHTML = text.replace(/\n/g, '<br>');
     }
     wrapper.appendChild(bubble);
+
+    // Pipeline 階段軌跡（Hard Filter → Semantic Search），僅情境推薦路徑會有
+    if (responseData?.steps?.length > 0) {
+        const stepsEl = renderPipelineSteps(responseData.steps);
+        if (stepsEl) wrapper.appendChild(stepsEl);
+    }
 
     // 參考型號（可收合）
     if (responseData?.referenced_models?.length > 0) {

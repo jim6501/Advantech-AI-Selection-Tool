@@ -178,6 +178,10 @@ def sync_to_mongo(hw_raw, sw_raw):
         if not pn:
             continue
 
+        # Application 不再同步為結構化欄位；防呆處理舊版 hardware_specs_raw.json
+        # 仍殘留這個 key 的情況（正常情況下 fetch_hardware_specs.py 已經在來源排除）
+        hw.pop("Application", None)
+
         hw["_id"] = pn
         hw_updates.append(UpdateOne({"_id": pn}, {"$set": hw}, upsert=True))
 

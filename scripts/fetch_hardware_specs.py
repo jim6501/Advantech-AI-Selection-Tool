@@ -70,14 +70,19 @@ def process_hardware(df):
     if df.empty:
         return []
     # 填充合併儲存格
-    cols_to_fill = ["Application", "Function", "Model Name", "Software Series", "Type"]
+    cols_to_fill = ["Function", "Model Name", "Software Series", "Type"]
     df = forward_fill_columns(df, cols_to_fill)
     
     # 針對 Input Voltage 統一符號 (將波浪號 ~ 轉為減號 -)
     input_voltage_col = next((col for col in df.columns if "Input Voltage" in col), None)
     if input_voltage_col:
         df[input_voltage_col] = df[input_voltage_col].astype(str).str.replace("~", "-", regex=False)
-        
+
+    # Application 欄位不再同步（決策：不以應用場景做結構化區分，選型工具與 chatbot
+    # 都不使用這個欄位），直接在來源排除，不寫進 hardware_specs_raw.json
+    if "Application" in df.columns:
+        df = df.drop(columns=["Application"])
+
     return df.to_dict(orient="records")
 
 def main():

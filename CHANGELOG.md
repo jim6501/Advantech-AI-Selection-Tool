@@ -4,6 +4,49 @@
 
 ---
 
+## 2026-07-16
+
+### Chatbot Pipeline：Type B 併入主流程，結構化欄位改為單一資料來源
+- **移除「Type B 直接跳過 Hard Filter」的特判分支**（[app/api/chat.py](app/api/chat.py)）：不論型號是訊息文字
+  偵測到、前端已篩選帶入，還是完全沒有型號，一律先進 Stage 0 解析範圍，再走完整 Stage 1（意圖解析）→ Stage 2
+  （Hard Filter）→ Stage 3（語意搜尋）→ Stage 5（報告生成）。改善此前「已知型號問結構化規格（如 port 數）」跟
+  「全庫篩選同一規格」會因為路徑不同各自算出不同答案的問題。
+- **新增文字型號模糊解析成精確 `product_pn`**（[app/rag/hard_filter.py](app/rag/hard_filter.py) 的
+  `resolve_text_models_to_pns()`）：使用者訊息裡打的型號常是不含地區/包裝後綴的基礎型號，透過家族前綴比對解析成
+  資料庫實際存在的精確 PN 縮限 Hard Filter 範圍；完全無法解析時直接誠實回覆「查無此型號」，不再默默退回全庫搜尋。
+- **`answer_from_chunks`（Type B 向量搜尋）降級為測試用**：僅保留給 `CHAT_TEST_MODE=vector_search` 除錯模式使用，
+  不再是正式請求路徑。
+
+### 移除 `application` 結構化欄位（chatbot / 選型工具 / 資料同步管線全面下架）
+現有資料沒有可靠對應「應用場景」的 tag，容易把描述性語句（如「電廠」「電力系統」）誤判成不存在的結構化值，
+導致明明有候選型號卻查出 0 筆；決定不再以應用場景做結構化區分，`Application` 欄位整條管線全面移除：
+- **意圖解析／結構化篩選**：[app/rag/intent_parser.py](app/rag/intent_parser.py) 的 `IntentFilter` 移除
+  `application` 欄位與 `VALID_APPLICATIONS` 白名單；[app/rag/hard_filter.py](app/rag/hard_filter.py) 的
+  `build_mongo_filter()` 不再套用 `hardware.Application` 條件。
+- **LLM 可見輸出**：[app/rag/report_generator.py](app/rag/report_generator.py) 的 `_summarize_doc()` 不再把
+  `hardware.Application` 塞進傳給 LLM 的結構化規格摘要（修正實測發現的殘留洩漏——LLM 會把這個欄位原樣寫進回答
+  變成「Application: 電力系統」）；查無結果的診斷說明 prompt 也移除對應欄位。
+- **資料同步管線**：[scripts/fetch_hardware_specs.py](scripts/fetch_hardware_specs.py) 在來源就把 `Application`
+  欄位從 Google Sheet DataFrame 排除，不再寫進 `data/hardware_specs_raw.json`；
+  [scripts/sync_specs_to_mongo.py](scripts/sync_specs_to_mongo.py)、[scripts/sync_all.py](scripts/sync_all.py)
+  寫入 MongoDB 前加防呆 `pop`，避免舊版 raw json 殘留值被同步進去。
+- **選型工具篩選功能**：[app/models/selection.py](app/models/selection.py)、
+  [app/api/selection.py](app/api/selection.py) 移除 `SubmitProdRequest.application` 篩選欄位、
+  `hardware.Application` 查詢條件、`prod_application` 顯示欄位；
+  [scripts/sw_index.py](scripts/sw_index.py) 移除 Application 分類的 facet 選單邏輯。
+- **前端「Scene Verified」徽章一併移除**：[frontend/js/app.js](frontend/js/app.js)、
+  [frontend/js/scenes.js](frontend/js/scenes.js)、[frontend/css/style.css](frontend/css/style.css) 移除
+  依賴 `prod_application` 關鍵字比對才會顯示的場景驗證徽章（`appKeywords` / `pb-scene-verified`），避免欄位
+  停止同步後徽章永遠不顯示的死程式碼；`index.html` 對應 cache-busting 版號一併調整。
+
+### 修正
+- **無結構化條件時，Stage 5 摘要用的是資料庫原始順序**（[app/api/chat.py](app/api/chat.py)）：問題完全沒有結構化
+  條件時，Hard Filter 幾乎等於回傳整個型號庫，`top_docs` 原本直接取 MongoDB 回傳順序前 15 筆，跟問題不一定相關。
+  新增 `_has_structured_condition()` / `_top_docs_from_semantic_chunks()`：這種情況下改用 Stage 3 語意搜尋命中
+  （已依相關性排序）的型號反查回完整規格文件，讓「結構化規格摘要」跟「語意片段」是同一批相關型號。
+
+---
+
 ## 2026-07-15
 
 ### Chatbot Type B：新增型號規格問答（向量搜尋 / Datasheet API 兩條路線）

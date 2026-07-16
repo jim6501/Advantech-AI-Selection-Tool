@@ -558,15 +558,6 @@ input[type="text"]:focus {
     letter-spacing: 0.03em;
 }
 
-/* 場景驗證 badge：產品 DB 標籤符合啟用場景時顯示 */
-.pb-scene-verified {
-    background: #D1FAE5;
-    color: #065F46;
-    border-color: #6EE7B7;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-}
-
 .pc-photo {
     flex-shrink: 0;
     width: 80px;
@@ -1341,6 +1332,55 @@ input[type="text"]:focus {
     color: var(--text-muted);
     font-style: italic;
     background: #f0f4fa;
+}
+
+/* ── PIPELINE STEPS（Hard Filter → Semantic Search 階段軌跡）──── */
+.pipeline-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 6px;
+    max-width: 88%;
+}
+
+.pipeline-step {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    background: #f4f7fb;
+    border: 1px solid var(--adv-border);
+    border-radius: 8px;
+    padding: 5px 8px;
+}
+
+.pipeline-step summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+}
+
+.pipeline-step summary::-webkit-details-marker {
+    display: none;
+}
+
+.pipeline-step .step-icon {
+    flex-shrink: 0;
+}
+
+.pipeline-step .step-text {
+    color: var(--text-main);
+}
+
+.pipeline-step-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 5px;
+    padding: 4px 0 0;
+    max-height: 120px;
+    overflow-y: auto;
 }
 
 /* ── QUICK PROMPTS ───────────────────────────── */

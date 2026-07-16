@@ -52,11 +52,21 @@ class ChatRequest(BaseModel):
 
 class SourceChunk(BaseModel):
     """
-    單筆 Datasheet 知識庫引用片段（Phase 2 才會有內容）。
+    單筆 Datasheet 知識庫引用片段。
     """
     model: str = ""
     content: str = ""
     distance: float = 1.0
+
+
+class PipelineStep(BaseModel):
+    """
+    情境推薦路徑（Hard Filter → Semantic Search → 報告生成）的單一階段執行摘要，
+    供前端顯示「依步驟呈現篩選結果」的軌跡。查無候選型號時（Hard Filter 0 筆）不產生 steps。
+    """
+    stage: str = Field(..., description="階段名稱，例如 'Hard Filter（硬體規格篩選）'")
+    summary: str = Field(..., description="這個階段的結果摘要，例如 '套用條件後找到 12 個候選型號'")
+    models: List[str] = Field(default=[], description="這個階段涉及的型號 PN 清單")
 
 
 class ChatResponse(BaseModel):
@@ -69,5 +79,8 @@ class ChatResponse(BaseModel):
         default=[], description="本次回答中參考的型號 PN 清單"
     )
     sources: List[SourceChunk] = Field(
-        default=[], description="Phase 1 永遠空；Phase 2 填入 Datasheet chunk"
+        default=[], description="回答引用的 Datasheet chunk 原文片段"
+    )
+    steps: List[PipelineStep] = Field(
+        default=[], description="情境推薦路徑的階段執行軌跡（Hard Filter / Semantic Search）"
     )

@@ -48,17 +48,7 @@ def load_dynamic_mappings_if_needed():
             category="Hardware Feature"
         ))
 
-    # 2. 動態取得硬體 Application
-    distinct_apps = db.product_specs.distinct("hardware.Application")
-    for app_val in distinct_apps:
-        if app_val and isinstance(app_val, str) and app_val.strip() != "None":
-            SEARCHABLE_ITEMS.append(SearchFeatureItem(
-                label=app_val,
-                key=f"application|||{app_val}",
-                category="Application"
-            ))
-
-    # 3. 動態展開軟體功能
+    # 2. 動態展開軟體功能
     sw_data = sample_doc.get("software", {})
     for category, features in sw_data.items():
         if not isinstance(features, dict):

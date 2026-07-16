@@ -16,12 +16,10 @@ class SubmitProdRequest(BaseModel):
     items: 使用者選取的特徵 key 清單（格式：category|||feat_key 或 硬體key）
     type:  管理類型過濾，"Managed" / "Unmanaged" / "ALL"
     portnum: 埠數過濾，-1 代表不限
-    application: 應用場景過濾，"ALL" 代表不限
     """
     items: List[str] = Field(default=[], description="選取的特徵 key 清單")
     type: str = Field(default="ALL", description="Managed / Unmanaged / ALL")
     portnum: int = Field(default=-1, description="埠數，-1 不限")
-    application: str = Field(default="ALL", description="應用場景，ALL 不限")
 
 
 # =========================================================================
@@ -70,7 +68,6 @@ class ProductItemResponse(BaseModel):
     prod_poe_budget: str = ""    # PoE 總功率預算（如 "240W"）
     prod_power_input: str = "—" # 電源輸入電壓範圍 (如 12-48VDC)
     prod_temp_range: str = "—"  # 工作溫度範圍 (如 -40 ~ 75C)
-    prod_application: str = ""  # 應用場景標記（來自 hardware.Application，輔助顯示用）
     prod_fiber_type: str = ""   # 光纖接口類型（SFP / SFP+ / Multi-mode / Single-mode / SC / 空白）
     prod_fiber_conn: str = ""   # 固定接頭規格（SC / ST / 空白）
     prod_certifications: str = "" # 認證清單（逗號分隔，如 CE, FCC, UL...）

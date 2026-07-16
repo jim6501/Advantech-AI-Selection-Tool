@@ -16,7 +16,6 @@ const SCENE_TEMPLATES = [
         label: 'Railway',
         icon: '🚆',
         description: 'EN 50155 · −40°C',
-        appKeywords: ['Train', 'Railway System', 'Railway Track'],   // 對應 DB hardware.Application 的關鍵字
         conditions: [
             { key: 'mgmtType', value: 'managed' },
             { key: 'certifications', value: ['EN50155'] },
@@ -28,7 +27,6 @@ const SCENE_TEMPLATES = [
         label: 'Power System',
         icon: '⚡',
         description: 'IEC 61850 · Ring',
-        appKeywords: ['Power System'],
         conditions: [
             { key: 'mgmtType', value: 'managed' },
             { key: 'certifications', value: ['IEC61850'] },
@@ -40,7 +38,6 @@ const SCENE_TEMPLATES = [
         label: 'Smart Factory',
         icon: '🏭',
         description: 'PoE',
-        appKeywords: ['Smart Factory'],
         conditions: [
             { key: 'poe', value: true },
             { key: 'mgmtType', value: 'managed' }
@@ -51,7 +48,6 @@ const SCENE_TEMPLATES = [
         label: 'Maritime',
         icon: '⚓',
         description: 'IEC 60945 · Anti-Corrosion',
-        appKeywords: [],    // DB 目前無對應標記，留空
         conditions: [
             { key: 'mgmtType', value: 'managed' },
             { key: 'certifications', value: ['IEC60945'] },

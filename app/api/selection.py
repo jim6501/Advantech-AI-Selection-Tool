@@ -357,9 +357,6 @@ def submit_product_selection(req: SubmitProdRequest):
             }
         })
 
-    if req.application != "ALL":
-        and_conditions.append({"hardware.Application": req.application})
-
     # Step 2：組裝軟硬體特徵條件
     for requested_key in req.items:
         if requested_key in DYNAMIC_SW_MAPPINGS:
@@ -420,7 +417,6 @@ def submit_product_selection(req: SubmitProdRequest):
             prod_poe_budget=str(hw.get("Power Budget (W)") or "").strip(),
             prod_power_input=str(hw.get("Input Voltage") or "—").strip(),
             prod_temp_range=str(hw.get("Op Temp Range") or hw.get("Temp Grade") or "—").strip(),
-            prod_application=str(hw.get("Application") or "").strip(),
             prod_fiber_type=str(hw.get("Fiber Type") or "").strip(),
             prod_fiber_conn=str(hw.get("Fiber Connector") or "").strip(),
             prod_certifications=str(hw.get("Certifications") or "").strip(),

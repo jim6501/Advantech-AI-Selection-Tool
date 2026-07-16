@@ -10,7 +10,6 @@ Stage 1：從使用者自然語言問題中抽取結構化篩選條件。
 【回傳格式（IntentResult）】
 {
   "filter": {
-    "application": "Rolling Stock" | null,
     "function":    "Managed" | "Unmanaged" | null,
     "has_poe":     true | false | null,
     "temp_grade":  "Wide" | "Normal" | null,
@@ -31,7 +30,6 @@ from app.api.selection import DYNAMIC_SW_MAPPINGS, load_dynamic_mappings_if_need
 # ── 意圖解析結果的資料結構 ─────────────────────────────────────────────────
 @dataclass
 class IntentFilter:
-    application: Optional[str]     = None  # Industrial / Rolling Stock / Substation / ...
     function:    Optional[str]     = None  # Managed / Unmanaged
     has_poe:     Optional[bool]    = None
     temp_grade:  Optional[str]     = None  # Wide / Normal
@@ -43,13 +41,6 @@ class IntentResult:
     filter: IntentFilter                    = field(default_factory=IntentFilter)
     software_requirements: list[str]        = field(default_factory=list)
     semantic_query: str                     = ""
-
-
-# ── Application 標準值（已鎖定，不隨意修改）────────────────────────────────
-VALID_APPLICATIONS = [
-    "Industrial", "Smart Factory", "Substation",
-    "Trackside", "General Purpose", "Train"
-]
 
 
 def _get_sw_feat_keys() -> list[str]:
@@ -87,7 +78,6 @@ def _build_intent_prompt(user_query: str, sw_feat_keys: list[str]) -> str:
 
 {{
   "filter": {{
-    "application": null,
     "function": null,
     "has_poe": null,
     "temp_grade": null,
@@ -98,7 +88,6 @@ def _build_intent_prompt(user_query: str, sw_feat_keys: list[str]) -> str:
 }}
 
 欄位規則：
-- application：只能填 {VALID_APPLICATIONS} 其中一個，或 null
 - function：只能填 "Managed" / "Unmanaged" / null
 - has_poe：true / false / null（true = 有提到需要 PoE）
 - temp_grade：提到「寬溫」「工業溫度」「-40°C」→ "Wide"；否則 null
@@ -130,16 +119,11 @@ def parse_intent(user_query: str) -> IntentResult:
     # 解析 filter
     f_raw = raw.get("filter", {}) or {}
     intent_filter = IntentFilter(
-        application    = f_raw.get("application"),
         function       = f_raw.get("function"),
         has_poe        = f_raw.get("has_poe"),
         temp_grade     = f_raw.get("temp_grade"),
         port_count_min = f_raw.get("port_count_min"),
     )
-
-    # 驗證 application 值合法性
-    if intent_filter.application not in VALID_APPLICATIONS:
-        intent_filter.application = None
 
     # 驗證 software_requirements 都在合法清單內
     valid_sw = set(sw_feat_keys)
